@@ -1,0 +1,68 @@
+{
+  "common_know": "იცოდე",
+  "common_georgian": "საქართველოს",
+  "common_history": "ისტორია!",
+  "common_start": "დაწყება",
+  "common_issues": "საკითხები",
+  "common_parameters": "პარამეტრები",
+  "common_rules": "წესები",
+  "common_correct_answer": "სწორი პასუხი:",
+  "common_hint": "მინიშნება",
+  "common_close": "დახურვა",
+  "common_ending": "დასრულება",
+  "common_logout": "გასვლა",
+  "common_continue": "გაგრძელება",
+  "common_connection_problem": "კავშირის პრობლემა",
+  "common_association": "ასოციაცია:",
+  "common_battles": "ბრძოლები",
+  "common_not_found_info": "ინფორმაცია ვერ მოიძებნა",
+  "common_public_figures": "საზოგადო მოღვაწეები",
+  "common_rulers": "მმართველები",
+  "common_choose_category": "აირჩიე კატეგორია",
+  "common_learn_more": "გაიგე მეტი",
+
+  "game_end": "თამაშის დასრულება",
+  "game_ending_confirmation": "ნამდვილად გსურთ თამაშის დასრულება?",
+  "game_sign_out_confirmation": "ნამდვილად გსურთ აპლიკაციიდან გასვლა?",
+  "game_continue": "თამაშის გაგრძელება",
+  "game_your_result": "შენი შედეგი",
+  "game_restart": "თავიდან დაწყება",
+  "game_best_score": "საუკეთესო შედეგი:",
+  "game_failed_to_load": "კითხვის ჩატვირთვა ვერ მოხერხდა",
+  "game_retry": "თავიდან ცდა",
+
+  "feedback_low": "გააგრძელე მეცადინეობა...",
+  "feedback_medium": "კარგი შედეგია! ასე გააგრძელე!",
+  "feedback_high": "ძალიან კარგი შედეგია!",
+  "feedback_excellent": "შესანიშნავი შედეგია!",
+  "feedback_outstanding": "ყოჩაღ! წარმოუდგენელი შედეგი გაქვს!",
+
+  "ethernet_connection_lost": "ინტერნეტთან კავშირი არ არის...",
+
+  "rules_title": "წესები ძალიან მარტივია:",
+  "rules_description": "გაქვს 5 შეცდომის დაშვების უფლება და 5-ჯერ შეგიძლია დახმარების გამოყენება. გახადე შენი მიზანი რეკორდის გაუმჯობესება!",
+
+  "vibration_turn_on": "ვიბრაციის ჩართვა",
+  "vibration_turn_off": "ვიბრაციის გამორთვა",
+
+  "sound_turn_on": "ხმის ჩართვა",
+  "sound_turn_off": "ხმის გამორთვა",
+
+  "notification_title": "გაიხსენე საქართველოს ისტორია...",
+  "notification_desc": "რამდენად კარგად იცი საქართველოს ისტორია?",
+
+  "learn_about_geo_history": "გაეცანი საქართველოს ისტორიას",
+
+  "game_share_message": "საქართველოს ისტორიაში {score} ქულა დავაგროვე! შეგიძლია დამამარცხო?",
+
+  "stats_title": "სტატისტიკა",
+  "stats_total_games": "თამაშები",
+  "stats_average_score": "საშუალო",
+  "stats_best_score": "რეკორდი",
+  "stats_total_questions": "კითხვები",
+  "stats_recent_games": "ბოლო თამაშები",
+  "stats_no_games": "ითამაშე რომ სტატისტიკა ნახო!",
+
+  "error_something_went_wrong": "დაფიქსირდა შეცდომა",
+  "error_please_try_again": "გთხოვთ სცადოთ თავიდან"
+}

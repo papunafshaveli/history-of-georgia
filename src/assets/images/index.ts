@@ -1,0 +1,20 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
+export const BodyRoll = require("./bodyRoll.webp");
+export const CloseIcon = require("./closeIcon.webp");
+export const Crown = require("./crown.webp");
+export const SplashScreenBackground = require("./firstBackground.webp");
+export const HeaderRoll = require("./headerRoll.webp");
+export const InfoIcon = require("./infoIcon.webp");
+export const MusicIcon = require("./musicIcon.webp");
+export const QuestionBackground = require("./questionBack.webp");
+export const StartScreenBack = require("./secondBackground.webp");
+export const Shield = require("./shield.webp");
+export const HintIcon = require("./hint.webp");
+export const CircleIcon = require("./circle.webp");
+export const KingTopic = require("./king.webp");
+export const BattleTopic = require("./battle.webp");
+export const PublicFigures = require("./publicFigures.webp");
+export const ShieldAndSword = require("./shieldAndSword.png");
+export const Ink = require("./Ink.png");
+export const HofGeLogo = require("./hofGeLogo.png");
+export const EmptyStateImg = require("./empty-state-img.png");

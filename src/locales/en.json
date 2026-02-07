@@ -1,0 +1,68 @@
+{
+  "common_know": "Know",
+  "common_georgian": "Georgian",
+  "common_history": "History!",
+  "common_start": "Start",
+  "common_issues": "Topics",
+  "common_parameters": "Settings",
+  "common_rules": "Rules",
+  "common_correct_answer": "Correct answer:",
+  "common_hint": "Hint",
+  "common_close": "Close",
+  "common_ending": "Finish",
+  "common_logout": "Exit",
+  "common_continue": "Continue",
+  "common_connection_problem": "Connection problem",
+  "common_association": "Association:",
+  "common_battles": "Battles",
+  "common_not_found_info": "No information found",
+  "common_public_figures": "Public figures",
+  "common_rulers": "Rulers",
+  "common_choose_category": "Choose a category",
+  "common_learn_more": "Learn more",
+
+  "game_end": "End game",
+  "game_ending_confirmation": "Are you sure you want to end the game?",
+  "game_sign_out_confirmation": "Are you sure you want to exit the app?",
+  "game_continue": "Continue game",
+  "game_your_result": "Your result",
+  "game_restart": "Restart",
+  "game_best_score": "Best score:",
+  "game_failed_to_load": "Failed to load question",
+  "game_retry": "Try again",
+
+  "feedback_low": "Keep studying...",
+  "feedback_medium": "Good result! Keep going!",
+  "feedback_high": "Very good result!",
+  "feedback_excellent": "Excellent result!",
+  "feedback_outstanding": "Bravo! Incredible result!",
+
+  "ethernet_connection_lost": "No internet connection...",
+
+  "rules_title": "The rules are very simple:",
+  "rules_description": "You have the right to make 5 mistakes and can use help 5 times. Make it your goal to improve your record!",
+
+  "vibration_turn_on": "Turn on vibration",
+  "vibration_turn_off": "Turn off vibration",
+
+  "sound_turn_on": "Turn on sound",
+  "sound_turn_off": "Turn off sound",
+
+  "notification_title": "Remember Georgian history...",
+  "notification_desc": "How well do you know Georgian history?",
+
+  "learn_about_geo_history": "Learn about Georgian history",
+
+  "game_share_message": "I scored {score} on History of Georgia! Can you beat me?",
+
+  "stats_title": "Statistics",
+  "stats_total_games": "Games played",
+  "stats_average_score": "Average",
+  "stats_best_score": "Best score",
+  "stats_total_questions": "Questions",
+  "stats_recent_games": "Recent games",
+  "stats_no_games": "Play a game to see your stats here!",
+
+  "error_something_went_wrong": "Something went wrong",
+  "error_please_try_again": "Please try again"
+}
