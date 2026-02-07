@@ -52,3 +52,6 @@ android-service-account-key/
 #firebase config
 
 .firebase.ts
+
+#plan
+bigChanges.md
