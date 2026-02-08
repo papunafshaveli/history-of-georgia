@@ -56,12 +56,12 @@
   "game_share_message": "საქართველოს ისტორიაში {score} ქულა დავაგროვე! შეგიძლია დამამარცხო?",
 
   "stats_title": "სტატისტიკა",
-  "stats_total_games": "თამაშები",
+  "stats_total_games": "თამაშების რაოდენობა",
   "stats_average_score": "საშუალო",
   "stats_best_score": "რეკორდი",
   "stats_total_questions": "კითხვები",
   "stats_recent_games": "ბოლო თამაშები",
-  "stats_no_games": "ითამაშე რომ სტატისტიკა ნახო!",
+  "stats_no_games": "ითამაშე და გააუმჯობესე შენი სტატისტიკა!",
 
   "error_something_went_wrong": "დაფიქსირდა შეცდომა",
   "error_please_try_again": "გთხოვთ სცადოთ თავიდან"
