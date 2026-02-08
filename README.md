@@ -29,7 +29,7 @@ npm test
 ## Upload data
 
 ```
-tsc upload.ts && node upload.js
+npx tsc upload.ts --esModuleInterop --resolveJsonModule --skipLibCheck && node upload.js
 ```
 
 ## Install latest node

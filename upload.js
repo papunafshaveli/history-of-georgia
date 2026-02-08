@@ -10,6 +10,39 @@ var __assign = (this && this.__assign) || function () {
     };
     return __assign.apply(this, arguments);
 };
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -47,18 +80,21 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var firestore_1 = require("firebase/firestore");
-var firebase_1 = require("./firebase");
+var admin = __importStar(require("firebase-admin"));
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+var serviceAccount = require("./android-service-account-key/history-of-georgia-43551-a94b0030ba5f-android-key.json");
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 var data = require("./data.json");
+admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount),
+});
+var db = admin.firestore();
 function uploadData() {
     return __awaiter(this, void 0, void 0, function () {
-        var q, existingDocs, docIds, _i, _a, doc1, questionData, docRef;
+        var existingDocs, docIds, _i, _a, doc1, questionData;
         return __generator(this, function (_b) {
             switch (_b.label) {
-                case 0:
-                    q = (0, firestore_1.query)((0, firestore_1.collection)(firebase_1.db, "tickets"));
-                    return [4 /*yield*/, (0, firestore_1.getDocs)(q)];
+                case 0: return [4 /*yield*/, db.collection("tickets").get()];
                 case 1:
                     existingDocs = _b.sent();
                     docIds = existingDocs.docs.map(function (item) { return Number(item.id); });
@@ -71,8 +107,7 @@ function uploadData() {
                         return [3 /*break*/, 4];
                     }
                     questionData = __assign(__assign({}, doc1), { randomField: Math.random() });
-                    docRef = (0, firestore_1.doc)(firebase_1.db, "tickets", String(doc1.id));
-                    return [4 /*yield*/, (0, firestore_1.setDoc)(docRef, questionData)];
+                    return [4 /*yield*/, db.collection("tickets").doc(String(doc1.id)).set(questionData)];
                 case 3:
                     _b.sent();
                     _b.label = 4;
