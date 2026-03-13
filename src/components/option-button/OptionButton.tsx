@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { ActivityIndicator, Pressable, Text } from "react-native";
+import { ActivityIndicator, Pressable } from "react-native";
 
-import { GLOBAL_COLORS } from "@/src/constants";
+import { useAppTheme, useStyles } from "@/src/hooks";
 
-import styles from "./styles";
+import { AppText } from "../text";
+
+import { getStyles } from "./styles";
 
 type OptionButtonProps = {
   option: string;
@@ -23,6 +25,8 @@ const OptionButton: React.FC<OptionButtonProps> = ({
   shouldShowCorrect,
 }) => {
   const [isPressed, setIsPressed] = useState(false);
+  const { colors } = useAppTheme();
+  const styles = useStyles(getStyles);
 
   useEffect(() => {
     setIsPressed(false);
@@ -48,12 +52,11 @@ const OptionButton: React.FC<OptionButtonProps> = ({
       ]}
     >
       {isLoading ? (
-        <ActivityIndicator
-          size="small"
-          color={GLOBAL_COLORS.mixedColors.darkCoffeeSecond}
-        />
+        <ActivityIndicator size="small" color={colors.coffeeMedium} />
       ) : (
-        <Text style={styles.optionText}>{option}</Text>
+        <AppText type="headline" fontFamily="primary" style={styles.optionText}>
+          {option}
+        </AppText>
       )}
     </Pressable>
   );

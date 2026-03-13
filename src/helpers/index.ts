@@ -6,3 +6,4 @@ export * from "./vibration";
 export * from "./analytics";
 export * from "./gameHistory";
 export * from "./logger";
+export * from "./date";

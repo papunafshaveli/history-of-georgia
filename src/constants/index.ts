@@ -1,5 +1,4 @@
 export * from "./dimensions";
-export * from "./globalColors";
 export * from "./keyboard";
 export * from "./platform";
 export * from "./hint";

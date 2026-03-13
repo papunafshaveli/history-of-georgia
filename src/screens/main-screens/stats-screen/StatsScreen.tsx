@@ -1,74 +1,155 @@
 import React, { useCallback, useState } from "react";
-import { View, Text, ScrollView } from "react-native";
+import { View, ScrollView, Share, Pressable } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useFocusEffect } from "@react-navigation/native";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 
-import { useTranslation } from "@/src/hooks";
+import { useStyles, useAppTheme, useTranslation } from "@/src/hooks";
 import {
   getGameHistory,
   getStats,
   GameResult,
-} from "@/src/helpers/gameHistory";
+  formatDate,
+} from "@/src/helpers";
+import { AppText, EmptyState, StatisticsCard } from "@/src/components";
 
-import styles from "./styles";
+import { getStyles } from "./styles";
+
+const STATS_CARDS = [
+  {
+    iconName: "sword-cross",
+    field: "totalGames",
+    descKey: "stats_total_games",
+  },
+  { iconName: "trophy", field: "bestScore", descKey: "stats_best_score" },
+  {
+    iconName: "chart-line",
+    field: "averageScore",
+    descKey: "stats_average_score",
+  },
+  {
+    iconName: "help-circle-outline",
+    field: "totalQuestions",
+    descKey: "stats_total_questions",
+  },
+] as const;
 
 const StatsScreen = () => {
   const t = useTranslation();
+  const styles = useStyles(getStyles);
+  const { colors } = useAppTheme();
   const [history, setHistory] = useState<GameResult[]>([]);
+
+  const handleShare = async (score: number) => {
+    const message = t.game_share_message.replace("{score}", String(score));
+    try {
+      await Share.share({ message });
+    } catch {
+      // Share cancelled or failed
+    }
+  };
 
   useFocusEffect(
     useCallback(() => {
       getGameHistory().then(setHistory);
-    }, [])
+    }, []),
   );
 
   const stats = getStats(history);
 
-  const formatDate = (isoDate: string) => {
-    const d = new Date(isoDate);
-    return `${d.getDate().toString().padStart(2, "0")}.${(d.getMonth() + 1).toString().padStart(2, "0")}.${d.getFullYear()}`;
-  };
-
   return (
     <SafeAreaView edges={[]} style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        <Text style={styles.title}>{t.stats_title}</Text>
+      <AppText
+        fontFamily="accent"
+        fontWeight="bold"
+        type="title"
+        color={colors.coffeeDark}
+        style={styles.title}
+      >
+        {t.stats_title}
+      </AppText>
+      <View style={styles.statsGrid}>
+        {STATS_CARDS.map(({ iconName, field, descKey }) => (
+          <StatisticsCard
+            key={field}
+            iconName={iconName}
+            title={stats[field]}
+            description={t[descKey]}
+          />
+        ))}
+      </View>
 
-        <View style={styles.statsGrid}>
-          <View style={styles.statCard}>
-            <Text style={styles.statValue}>{stats.totalGames}</Text>
-            <Text style={styles.statLabel}>{t.stats_total_games}</Text>
-          </View>
-          <View style={styles.statCard}>
-            <Text style={styles.statValue}>{stats.bestScore}</Text>
-            <Text style={styles.statLabel}>{t.stats_best_score}</Text>
-          </View>
-          <View style={styles.statCard}>
-            <Text style={styles.statValue}>{stats.averageScore}</Text>
-            <Text style={styles.statLabel}>{t.stats_average_score}</Text>
-          </View>
-          <View style={styles.statCard}>
-            <Text style={styles.statValue}>{stats.totalQuestions}</Text>
-            <Text style={styles.statLabel}>{t.stats_total_questions}</Text>
-          </View>
+      <View style={styles.sectionTitleRow}>
+        <MaterialCommunityIcons
+          name="history"
+          size={20}
+          color={colors.coffeeDark}
+        />
+        <AppText
+          fontFamily="accent"
+          fontWeight="bold"
+          type="subHeadline"
+          color={colors.coffeeDark}
+        >
+          {t.stats_recent_games}
+        </AppText>
+      </View>
+
+      {history.length === 0 ? (
+        <View style={{ flex: 1, justifyContent: "center" }}>
+          <EmptyState
+            title={t.stats_no_games_title}
+            description={t.stats_no_games_desc}
+          />
         </View>
-
-        <Text style={styles.sectionTitle}>{t.stats_recent_games}</Text>
-
-        {history.length === 0 ? (
-          <Text style={styles.emptyText}>{t.stats_no_games}</Text>
-        ) : (
-          history.map((game, index) => (
+      ) : (
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.scrollContent}
+        >
+          {history.map((game, index) => (
             <View key={index} style={styles.historyItem}>
-              <Text style={styles.historyDate}>{formatDate(game.date)}</Text>
-              <Text style={styles.historyScore}>{game.score}</Text>
-              <Text style={styles.historyDetail}>
-                {game.score}/{game.questionsAnswered}
-              </Text>
+              <View style={styles.historyLeft}>
+                <MaterialCommunityIcons
+                  name="calendar-outline"
+                  size={16}
+                  color={colors.muted}
+                />
+                <AppText fontSize={13} color={colors.muted}>
+                  {formatDate("DD/MM/YYYY", game.date)}
+                </AppText>
+              </View>
+              <View style={styles.historyRight}>
+                <AppText
+                  fontFamily="display"
+                  type="subHeadline"
+                  color={colors.coffeeDark}
+                >
+                  {game.score}
+                </AppText>
+                <AppText
+                  fontFamily="display"
+                  type="body"
+                  color={colors.coffeeMedium}
+                >
+                  /{game.questionsAnswered}
+                </AppText>
+                <Pressable
+                  onPress={() => handleShare(game.score)}
+                  style={styles.shareButton}
+                  accessibilityLabel="Share score"
+                >
+                  <MaterialCommunityIcons
+                    name="share-variant"
+                    size={18}
+                    color={colors.coffeeMedium}
+                  />
+                </Pressable>
+              </View>
             </View>
-          ))
-        )}
-      </ScrollView>
+          ))}
+        </ScrollView>
+      )}
     </SafeAreaView>
   );
 };

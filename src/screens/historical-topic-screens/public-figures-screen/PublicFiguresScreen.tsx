@@ -1,6 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import {
-  Text,
   ScrollView,
   View,
   StyleSheet,
@@ -11,25 +10,60 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
 import { NavigationProp } from "@react-navigation/native";
 
-import { EmptyState, NavigationPressable, SearchInput } from "@/src/components";
+import { AppText, EmptyState, NavigationPressable, SearchInput } from "@/src/components";
 import { RootStackParamList, ScreenName } from "@/src/types";
 import {
-  GLOBAL_COLORS,
   PUBLIC_FIGURES,
   KEYBOARD_AVOIDING_DEFAULT_BEHAVIOR,
 } from "@/src/constants";
+import type { AppTheme } from "@/src/theme";
 import { ClickSound, Ink } from "@/src/assets";
-import { usePlaySound, useSettings, useTranslation } from "@/src/hooks";
+import { useAppTheme, usePlaySound, useSettings, useTranslation } from "@/src/hooks";
 import { getAdjustedHeight, vibrateImpact } from "@/src/helpers";
 
 const MIN_AMOUNT_TO_SHOW_INPUT = 3;
 
+const getStyles = (theme: AppTheme) =>
+  StyleSheet.create({
+    safeArea: {
+      backgroundColor: theme.colors.background,
+      marginTop: getAdjustedHeight(-18),
+      flex: 1,
+      padding: 16,
+    },
+    container: {
+      flex: 1,
+    },
+    scrollViewContent: {
+      flexGrow: 1,
+      paddingBottom: getAdjustedHeight(20),
+    },
+    titleWrapper: {
+      alignItems: "center",
+      marginTop: getAdjustedHeight(20),
+      marginBottom: getAdjustedHeight(20),
+    },
+    searchInputWrapper: {
+      width: "100%",
+      marginBottom: getAdjustedHeight(16),
+    },
+    emptyStateContainer: {
+      flex: 1,
+      justifyContent: "center",
+      alignItems: "center",
+      paddingVertical: getAdjustedHeight(16),
+    },
+  });
+
 const PublicFiguresScreen = () => {
   const t = useTranslation();
+  const theme = useAppTheme();
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const { playSound } = usePlaySound();
 
   const { isMuted, isVibrationOff } = useSettings();
+
+  const styles = useMemo(() => getStyles(theme), [theme]);
 
   const handlePress = (publicFigureId: string) => {
     if (!isVibrationOff) {
@@ -59,7 +93,9 @@ const PublicFiguresScreen = () => {
         keyboardVerticalOffset={Platform.select({ ios: 0, android: 30 })}
       >
         <View style={styles.titleWrapper}>
-          <Text style={styles.title}>{t.common_public_figures}</Text>
+          <AppText fontWeight="bold" type="headline">
+            {t.common_public_figures}
+          </AppText>
         </View>
         {showSearchInput && (
           <View style={styles.searchInputWrapper}>
@@ -99,38 +135,3 @@ const PublicFiguresScreen = () => {
 };
 
 export default PublicFiguresScreen;
-
-const styles = StyleSheet.create({
-  safeArea: {
-    backgroundColor: GLOBAL_COLORS.mixedColors.cream,
-    marginTop: getAdjustedHeight(-18),
-    flex: 1,
-    padding: 16,
-  },
-  container: {
-    flex: 1,
-  },
-  scrollViewContent: {
-    flexGrow: 1,
-    paddingBottom: getAdjustedHeight(20),
-  },
-  titleWrapper: {
-    alignItems: "center",
-    marginTop: getAdjustedHeight(20),
-    marginBottom: getAdjustedHeight(20),
-  },
-  title: {
-    fontSize: 18,
-    fontWeight: "bold",
-  },
-  searchInputWrapper: {
-    width: "100%",
-    marginBottom: getAdjustedHeight(16),
-  },
-  emptyStateContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    paddingVertical: getAdjustedHeight(16),
-  },
-});

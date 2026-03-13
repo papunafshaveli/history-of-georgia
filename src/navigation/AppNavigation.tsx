@@ -46,12 +46,12 @@ export const AppNavigation: React.FC<AppNavigationProps> = ({
         <CustomHeader
           onLeftBtnPress={onBackBtnClick}
           onRightBtnPress={toggleSettingsModal}
-          leftBtnIconName="backburger"
-          rightBtnIconName="cellphone-sound"
+          leftBtnIconName="arrow-back-ios"
+          rightBtnIconName="settings-suggest"
         />
       ),
     }),
-    [toggleRulesModal, toggleSettingsModal]
+    [toggleRulesModal, toggleSettingsModal],
   );
 
   return (

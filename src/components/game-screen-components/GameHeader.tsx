@@ -1,9 +1,11 @@
 import React from "react";
-import { View, Image, Text } from "react-native";
+import { View, Image } from "react-native";
 
-import { useTranslation } from "@/src/hooks";
+import { useAppTheme, useStyles, useTranslation } from "@/src/hooks";
 
-import styles from "./styles";
+import { AppText } from "../text";
+
+import { getStyles } from "./styles";
 
 type GameHeaderProps = {
   crowns: number[];
@@ -17,8 +19,11 @@ const GameHeader: React.FC<GameHeaderProps> = ({
   questionsCount,
 }) => {
   const t = useTranslation();
+  const styles = useStyles(getStyles);
+  const { colors } = useAppTheme();
 
-  const correctAnswerText = `${t.common_correct_answer} ${correctAnswersCount}/${questionsCount}`;
+  const correctAnswerCountColor =
+    correctAnswersCount > 0 ? colors.correctBorder : colors.dark;
 
   return (
     <>
@@ -27,7 +32,24 @@ const GameHeader: React.FC<GameHeaderProps> = ({
           <Image key={index} source={crown} style={styles.singleCrown} />
         ))}
       </View>
-      <Text style={styles.answersTextAndCount}>{correctAnswerText}</Text>
+      <AppText
+        type="headline"
+        fontFamily="primary"
+        style={styles.answersTextAndCount}
+      >
+        {t.common_correct_answer}{" "}
+        <AppText
+          color={correctAnswerCountColor}
+          type="headline"
+          fontFamily="primary"
+        >
+          {correctAnswersCount}
+        </AppText>
+        /
+        <AppText type="headline" fontFamily="primary">
+          {questionsCount}
+        </AppText>
+      </AppText>
     </>
   );
 };
