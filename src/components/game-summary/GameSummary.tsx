@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 
-import { View, Text, ImageBackground, Pressable, Linking, Share } from "react-native";
+import { View, ImageBackground, Pressable, Linking } from "react-native";
 
 import * as Animatable from "react-native-animatable";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -8,20 +8,20 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as StoreReview from "expo-store-review";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 
-import {
-  GLOBAL_COLORS,
-  IS_ANDROID,
-  ScoreThreshold,
-} from "@/src/constants";
+import { NavigationProp, useNavigation } from "@react-navigation/native";
+
+import { IS_ANDROID, ScoreThreshold } from "@/src/constants";
 import { CircleIcon } from "@/src/assets";
 import { openAppOrUrl } from "@/src/helpers";
-import { useTranslation } from "@/src/hooks";
+import { useAppTheme, useStyles, useTranslation } from "@/src/hooks";
 import { STORE_REVIEW_PULSE_DURATION_MS } from "@/src/constants";
+import { RootStackParamList, ScreenName } from "@/src/types";
 
 import IconButton from "../icon-button/IconButton";
 import GradientWrapper from "../gradient-wrapper/GradientWrapper";
+import { AppText } from "../text";
 
-import styles from "./styles";
+import { getStyles } from "./styles";
 
 type GameSummaryProps = {
   onRestartBtnPress: () => void;
@@ -33,7 +33,10 @@ const GameSummary: React.FC<GameSummaryProps> = ({
   score,
 }) => {
   const [highestScore, setHighestScore] = useState<number | null>(null);
+  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const t = useTranslation();
+  const { colors } = useAppTheme();
+  const styles = useStyles(getStyles);
 
   const promptForReview = async () => {
     if (await StoreReview.isAvailableAsync()) {
@@ -81,13 +84,8 @@ const GameSummary: React.FC<GameSummaryProps> = ({
     Linking.openURL(visitLink).catch(() => {});
   };
 
-  const handleShare = async () => {
-    const message = t.game_share_message.replace("{score}", String(score));
-    try {
-      await Share.share({ message });
-    } catch {
-      // Share cancelled or failed
-    }
+  const handleNavigateToStats = () => {
+    navigation.navigate("tabs", { screen: ScreenName.STATS_SCREEN });
   };
 
   const scoreFeedback = useMemo(() => {
@@ -98,7 +96,7 @@ const GameSummary: React.FC<GameSummaryProps> = ({
     } else if (score <= ScoreThreshold.High) {
       return t.feedback_high;
     } else if (score <= ScoreThreshold.Excellent) {
-      return t.feedback_excellent;
+      return t.feedback_outstanding;
     } else {
       return t.feedback_outstanding;
     }
@@ -112,19 +110,38 @@ const GameSummary: React.FC<GameSummaryProps> = ({
         resizeMode="contain"
         imageStyle={styles.imageBackground}
       >
-        <Text style={styles.scoreText}>{score}</Text>
+        <AppText
+          lineHeight={100}
+          fontFamily="primary"
+          type="display"
+          color={colors.onImage}
+        >
+          {score}
+        </AppText>
       </ImageBackground>
-      <Text style={styles.resultFeedbackText}>{scoreFeedback}</Text>
-      <Text style={styles.highScoreText}>
+      <AppText
+        type="display"
+        fontFamily="primary"
+        color={colors.onImage}
+        style={styles.resultFeedbackText}
+      >
+        {scoreFeedback}
+      </AppText>
+      <AppText
+        type="title"
+        fontFamily="primary"
+        color={colors.onImage}
+        style={styles.highScoreText}
+      >
         {t.game_best_score} {highestScore}
-      </Text>
+      </AppText>
       <View style={styles.buttonsWrapper}>
         <GradientWrapper style={styles.gradient}>
           <IconButton
             iconName="facebook"
             onPress={handleVisitFbPage}
             size={24}
-            color={GLOBAL_COLORS.mixedColors.darkCoffeeThird}
+            color={colors.coffeeDark}
             containerStyle={styles.gradient}
             accessibilityLabel="Facebook"
           />
@@ -132,12 +149,12 @@ const GameSummary: React.FC<GameSummaryProps> = ({
 
         <GradientWrapper style={styles.gradient}>
           <IconButton
-            iconName="share-variant"
-            onPress={handleShare}
+            iconName="bar-chart"
+            onPress={handleNavigateToStats}
             size={24}
-            color={GLOBAL_COLORS.mixedColors.darkCoffeeThird}
+            color={colors.coffeeDark}
             containerStyle={styles.gradient}
-            accessibilityLabel="Share score"
+            accessibilityLabel="Stats"
           />
         </GradientWrapper>
 
@@ -147,11 +164,13 @@ const GameSummary: React.FC<GameSummaryProps> = ({
           accessibilityLabel={t.game_restart}
         >
           <GradientWrapper style={styles.button}>
-            <Text style={styles.btnText}>{t.game_restart}</Text>
+            <AppText type="headline" fontFamily="primary">
+              {t.game_restart}
+            </AppText>
             <MaterialCommunityIcons
               name="restart"
               size={24}
-              color={GLOBAL_COLORS.mixedColors.darkCoffeeThird}
+              color={colors.coffeeDark}
             />
           </GradientWrapper>
         </Pressable>
@@ -164,9 +183,9 @@ const GameSummary: React.FC<GameSummaryProps> = ({
         >
           <GradientWrapper style={styles.gradient}>
             <IconButton
-              iconName="star-circle"
+              iconName="star-border-purple500"
               size={24}
-              color={GLOBAL_COLORS.mixedColors.darkCoffeeThird}
+              color={colors.coffeeDark}
               onPress={handleVisitStore}
               containerStyle={styles.gradient}
               accessibilityLabel="Rate app"

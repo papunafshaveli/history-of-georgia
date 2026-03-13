@@ -4,7 +4,12 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { NavigationContainer } from "@react-navigation/native";
 import { registerRootComponent } from "expo";
 
-import { AisiBoldItalic, Helvetica, MediaMain } from "@/src/assets";
+import {
+  BPGNinoEliteUltra,
+  DMMedea,
+  GFAisiBoldItalic,
+  Helvetica,
+} from "@/src/assets";
 import {
   useBackHandler,
   useCustomFonts,
@@ -17,17 +22,26 @@ import { SettingsProvider } from "@/src/context/SettingsContext";
 
 import { AppNavigation } from "@/src/navigation/AppNavigation";
 
-import { GLOBAL_COLORS } from "./src/constants";
+import {
+  ThemeProvider,
+  ThemeModeContext,
+  useModifyThemeMode,
+  AppTheme,
+  useStyles,
+} from "./src/theme";
 import { LanguageProvider } from "./src/context/LanguageContext";
 
 const App: React.FC = () => {
   useNotifications(false);
 
   const fontsLoaded = useCustomFonts({
-    "dm-media-main": MediaMain,
-    "gf-aisi-bold-italic": AisiBoldItalic,
+    "aisi-bold": GFAisiBoldItalic,
+    "dm-medea": DMMedea,
     "helvetica-main": Helvetica,
+    "nino-elite": BPGNinoEliteUltra,
   });
+
+  const styles = useStyles(getStyles);
 
   const {
     isRulesModalVisible,
@@ -38,6 +52,8 @@ const App: React.FC = () => {
     toggleExitModal,
     isEthernetModalVisible,
   } = useModalState();
+
+  const { themeMode, isThemeDark, setThemeMode, theme } = useModifyThemeMode();
 
   useBackHandler(() => {
     toggleExitModal();
@@ -50,27 +66,33 @@ const App: React.FC = () => {
     <ErrorBoundary>
       <LanguageProvider>
         <SettingsProvider>
-          <SafeAreaProvider>
-            <View style={appStyles.container}>
-              <StatusBar hidden />
-              <NavigationContainer>
-                <AppNavigation
-                  toggleRulesModal={toggleRulesModal}
-                  toggleSettingsModal={toggleSettingsModal}
-                />
-              </NavigationContainer>
-              <AppModals
-                isRulesModalVisible={isRulesModalVisible}
-                toggleRulesModal={toggleRulesModal}
-                isSettingsModalVisible={isSettingsModalVisible}
-                toggleSettingsModal={toggleSettingsModal}
-                isExitModalVisible={isExitModalVisible}
-                toggleExitModal={toggleExitModal}
-                handleExitApp={BackHandler.exitApp}
-                isEthernetModalVisible={isEthernetModalVisible}
-              />
-            </View>
-          </SafeAreaProvider>
+          <ThemeModeContext.Provider
+            value={{ themeMode, isThemeDark, setThemeMode }}
+          >
+            <ThemeProvider theme={theme}>
+              <SafeAreaProvider>
+                <View style={styles.container}>
+                  <StatusBar hidden />
+                  <NavigationContainer>
+                    <AppNavigation
+                      toggleRulesModal={toggleRulesModal}
+                      toggleSettingsModal={toggleSettingsModal}
+                    />
+                  </NavigationContainer>
+                  <AppModals
+                    isRulesModalVisible={isRulesModalVisible}
+                    toggleRulesModal={toggleRulesModal}
+                    isSettingsModalVisible={isSettingsModalVisible}
+                    toggleSettingsModal={toggleSettingsModal}
+                    isExitModalVisible={isExitModalVisible}
+                    toggleExitModal={toggleExitModal}
+                    handleExitApp={BackHandler.exitApp}
+                    isEthernetModalVisible={isEthernetModalVisible}
+                  />
+                </View>
+              </SafeAreaProvider>
+            </ThemeProvider>
+          </ThemeModeContext.Provider>
         </SettingsProvider>
       </LanguageProvider>
     </ErrorBoundary>
@@ -81,9 +103,10 @@ registerRootComponent(App);
 
 export default App;
 
-const appStyles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: GLOBAL_COLORS.primaryColors.dark,
-  },
-});
+const getStyles = (theme: AppTheme) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: theme.colors.dark,
+    },
+  });

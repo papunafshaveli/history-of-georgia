@@ -1,7 +1,9 @@
 import React from "react";
-import { StyleProp, ViewStyle } from "react-native";
+import { StyleProp, StyleSheet, View, ViewStyle } from "react-native";
 
 import { LinearGradient } from "expo-linear-gradient";
+
+import { useAppTheme } from "@/src/hooks";
 
 interface GradientWrapperProps {
   children: React.ReactNode;
@@ -15,21 +17,29 @@ interface GradientWrapperProps {
 const GradientWrapper: React.FC<GradientWrapperProps> = ({
   children,
   style,
-  colors = ["#b9976e", "#d8c2aa", "#b9976e"] as const,
+  colors,
   locations = [0, 0.5, 1] as const,
   start = { x: 0, y: 0 },
   end = { x: 0, y: 1 },
 }) => {
+  const { colors: appColors } = useAppTheme();
+  const defaultColors = [
+    appColors.gradientStart,
+    appColors.gradientMid,
+    appColors.gradientEnd,
+  ] as const;
+
   return (
-    <LinearGradient
-      colors={colors}
-      locations={locations}
-      start={start}
-      end={end}
-      style={style}
-    >
+    <View style={[style, { overflow: "hidden" }]}>
+      <LinearGradient
+        colors={colors ?? defaultColors}
+        locations={locations}
+        start={start}
+        end={end}
+        style={StyleSheet.absoluteFillObject}
+      />
       {children}
-    </LinearGradient>
+    </View>
   );
 };
 

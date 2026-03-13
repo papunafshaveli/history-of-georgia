@@ -61,8 +61,14 @@
   "stats_best_score": "Best score",
   "stats_total_questions": "Questions",
   "stats_recent_games": "Recent games",
-  "stats_no_games": "Play a game to see your stats here!",
+  "stats_no_games_title": "Statistics not found",
+  "stats_no_games_desc": "Play a game to see your stats here!",
 
   "error_something_went_wrong": "Something went wrong",
-  "error_please_try_again": "Please try again"
+  "error_please_try_again": "Please try again",
+
+  "common_theme": "Theme",
+  "theme_light": "Light",
+  "theme_dark": "Dark",
+  "theme_system": "System"
 }

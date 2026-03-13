@@ -1,11 +1,14 @@
 import React from "react";
-import { View, Text, ImageBackground, Pressable } from "react-native";
+import { View, ImageBackground, Pressable } from "react-native";
 
 import { CloseIcon } from "@/src/assets";
 
-import GradientWrapper from "../gradient-wrapper/GradientWrapper";
+import { useAppTheme, useStyles } from "@/src/hooks";
 
-import styles from "./styles";
+import GradientWrapper from "../gradient-wrapper/GradientWrapper";
+import { AppText } from "../text";
+
+import { getStyles } from "./styles";
 
 type EndgameProps = {
   onPressContinue: () => void;
@@ -22,6 +25,8 @@ const Endgame: React.FC<EndgameProps> = ({
   continueBtnText,
   closeBtnText,
 }) => {
+  const { colors } = useAppTheme();
+  const styles = useStyles(getStyles);
   return (
     <View style={styles.container}>
       <ImageBackground
@@ -31,7 +36,14 @@ const Endgame: React.FC<EndgameProps> = ({
         imageStyle={styles.imageBackground}
         accessibilityElementsHidden
       />
-      <Text style={styles.question}>{title}</Text>
+      <AppText
+        fontFamily="primary"
+        type="display"
+        color={colors.onImage}
+        style={styles.question}
+      >
+        {title}
+      </AppText>
       <View style={styles.buttonsWrapper}>
         <Pressable
           onPress={onPressContinue}
@@ -39,7 +51,9 @@ const Endgame: React.FC<EndgameProps> = ({
           accessibilityLabel={continueBtnText}
         >
           <GradientWrapper style={styles.button}>
-            <Text style={styles.btnText}>{continueBtnText}</Text>
+            <AppText fontFamily="primary" type="headline">
+              {continueBtnText}
+            </AppText>
           </GradientWrapper>
         </Pressable>
         <Pressable
@@ -48,7 +62,9 @@ const Endgame: React.FC<EndgameProps> = ({
           accessibilityLabel={closeBtnText}
         >
           <GradientWrapper style={styles.button}>
-            <Text style={styles.btnText}>{closeBtnText}</Text>
+            <AppText fontFamily="primary" type="headline">
+              {closeBtnText}
+            </AppText>
           </GradientWrapper>
         </Pressable>
       </View>

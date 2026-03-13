@@ -1,8 +1,10 @@
 import React, { Component, ErrorInfo, ReactNode } from "react";
 import { View, Text, Pressable, StyleSheet } from "react-native";
-import { GLOBAL_COLORS } from "@/src/constants";
+
+import { lightTheme } from "@/src/theme";
 import { logger } from "@/src/helpers/logger";
 import ka from "@/src/locales/ka.json";
+import { getAdjustedHeight, getAdjustedWidth } from "@/src/helpers";
 
 type Props = {
   children: ReactNode;
@@ -52,32 +54,32 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: GLOBAL_COLORS.mixedColors.cream,
-    paddingHorizontal: 32,
-    gap: 12,
+    backgroundColor: lightTheme.colors.background,
+    paddingHorizontal: getAdjustedWidth(32),
+    gap: getAdjustedHeight(12),
   },
   title: {
-    fontFamily: "gf-aisi-bold-italic",
+    fontFamily: lightTheme.fonts.accent,
     fontSize: 22,
-    color: GLOBAL_COLORS.mixedColors.darkCoffeeThird,
+    color: lightTheme.colors.coffeeDark,
     textAlign: "center",
   },
   subtitle: {
     fontSize: 16,
-    color: GLOBAL_COLORS.mixedColors.darkCoffeeSecond,
+    color: lightTheme.colors.coffeeMedium,
     textAlign: "center",
     marginBottom: 8,
   },
   button: {
-    backgroundColor: GLOBAL_COLORS.mixedColors.darkCoffee,
+    backgroundColor: lightTheme.colors.coffee,
     paddingHorizontal: 28,
     paddingVertical: 14,
-    borderRadius: 12,
+    borderRadius: lightTheme.borderRadius.md,
   },
   buttonText: {
-    fontFamily: "gf-aisi-bold-italic",
+    fontFamily: lightTheme.fonts.accent,
     fontSize: 16,
-    color: GLOBAL_COLORS.primaryColors.white,
+    color: lightTheme.colors.surface,
   },
 });
 

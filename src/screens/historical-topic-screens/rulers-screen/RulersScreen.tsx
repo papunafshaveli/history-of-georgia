@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import {
-  Text,
   ScrollView,
   View,
   KeyboardAvoidingView,
@@ -13,17 +12,18 @@ import { NavigationProp } from "@react-navigation/native";
 import { RootStackParamList, ScreenName } from "@/src/types";
 import { KEYBOARD_AVOIDING_DEFAULT_BEHAVIOR, RULERS } from "@/src/constants";
 import { ClickSound, Crown } from "@/src/assets";
-import { EmptyState, NavigationPressable, SearchInput } from "@/src/components";
-import { usePlaySound, useSettings, useTranslation } from "@/src/hooks";
+import { AppText, EmptyState, NavigationPressable, SearchInput } from "@/src/components";
+import { usePlaySound, useSettings, useStyles, useTranslation } from "@/src/hooks";
 import { vibrateImpact } from "@/src/helpers";
 
-import styles from "./styles";
+import { getStyles } from "./styles";
 
 const MIN_AMOUNT_TO_SHOW_INPUT = 3;
 
 const RulersScreen = () => {
   const t = useTranslation();
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+  const styles = useStyles(getStyles);
   const { playSound } = usePlaySound();
 
   const { isMuted, isVibrationOff } = useSettings();
@@ -55,7 +55,9 @@ const RulersScreen = () => {
         keyboardVerticalOffset={Platform.select({ ios: 0, android: 30 })}
       >
         <View style={styles.titleWrapper}>
-          <Text style={styles.title}>{t.common_rulers}</Text>
+          <AppText fontWeight="bold" type="headline">
+            {t.common_rulers}
+          </AppText>
         </View>
         {showSearchInput && (
           <View style={styles.searchInputWrapper}>

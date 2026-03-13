@@ -1,19 +1,23 @@
 import React from "react";
 import { View, StyleSheet } from "react-native";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { MaterialIcons } from "@expo/vector-icons";
 
-import { usePlaySound, useSettings } from "@/src/hooks";
+import { useAppTheme, usePlaySound, useSettings, useStyles, useTranslation } from "@/src/hooks";
 import { ClickSound } from "@/src/assets";
-import { getAdjustedWidth, vibrateImpact } from "@/src/helpers";
+import {
+  getAdjustedHeight,
+  getAdjustedWidth,
+  vibrateImpact,
+} from "@/src/helpers";
+import type { AppTheme } from "@/src/theme";
 
 import IconButton from "../icon-button/IconButton";
-import { GLOBAL_COLORS } from "../../constants";
 
 type CustomHeaderProps = {
   onLeftBtnPress: () => void;
   onRightBtnPress: () => void;
-  leftBtnIconName: keyof typeof MaterialCommunityIcons.glyphMap;
-  rightBtnIconName: keyof typeof MaterialCommunityIcons.glyphMap;
+  leftBtnIconName: keyof typeof MaterialIcons.glyphMap;
+  rightBtnIconName: keyof typeof MaterialIcons.glyphMap;
 };
 
 const CustomHeader: React.FC<CustomHeaderProps> = ({
@@ -22,8 +26,12 @@ const CustomHeader: React.FC<CustomHeaderProps> = ({
   leftBtnIconName,
   rightBtnIconName,
 }) => {
+  const t = useTranslation();
   const { playSound } = usePlaySound();
   const { isMuted, isVibrationOff } = useSettings();
+
+  const styles = useStyles(getStyles);
+  const { colors } = useAppTheme();
 
   const handleLeftBtnPress = () => {
     if (!isVibrationOff) {
@@ -46,40 +54,40 @@ const CustomHeader: React.FC<CustomHeaderProps> = ({
       <View style={styles.contentContainer}>
         <IconButton
           iconName={leftBtnIconName}
-          color={GLOBAL_COLORS.mixedColors.lightCoffee}
+          color={colors.coffeeLight}
           size={24}
           onPress={handleLeftBtnPress}
-          accessibilityLabel="Settings"
+          accessibilityLabel={t.common_parameters}
         />
         <IconButton
           iconName={rightBtnIconName}
-          color={GLOBAL_COLORS.mixedColors.lightCoffee}
+          color={colors.coffeeLight}
           size={24}
           onPress={handleRightBtnPress}
-          accessibilityLabel="Rules"
+          accessibilityLabel={t.common_rules}
         />
       </View>
     </View>
   );
 };
 
-const styles = StyleSheet.create({
-  headerContainer: {
-    backgroundColor: GLOBAL_COLORS.primaryColors.dark,
-    height: 80,
-    justifyContent: "flex-end",
-    zIndex: 1000,
-    borderBottomLeftRadius: 15,
-    borderBottomRightRadius: 15,
-  },
-  contentContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-
-    paddingHorizontal: getAdjustedWidth(16),
-    height: 60,
-  },
-});
-
 export default CustomHeader;
+
+const getStyles = (theme: AppTheme) =>
+  StyleSheet.create({
+    headerContainer: {
+      backgroundColor: theme.colors.headerBg,
+      height: getAdjustedHeight(80),
+      justifyContent: "flex-end",
+      zIndex: theme.zIndex.header,
+      borderBottomLeftRadius: 15,
+      borderBottomRightRadius: 15,
+    },
+    contentContainer: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      paddingHorizontal: getAdjustedWidth(16),
+      height: getAdjustedHeight(60),
+    },
+  });

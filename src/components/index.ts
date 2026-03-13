@@ -16,3 +16,5 @@ export { default as TopicDetailsContent } from "./topic-details-content/TopicDet
 export { default as SearchInput } from "./search-input/SearchInput";
 export { default as EmptyState } from "./empty-state/EmptyState";
 export { default as ErrorBoundary } from "./error-boundary/ErrorBoundary";
+export { default as StatisticsCard } from "./statistics-card/StatisticsCard";
+export { AppText } from "./text";

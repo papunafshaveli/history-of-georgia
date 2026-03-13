@@ -1,62 +1,46 @@
 import { StyleSheet } from "react-native";
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "space-evenly",
-  },
+import { AppTheme } from "@/src/theme";
+import { getAdjustedHeight, getAdjustedWidth } from "@/src/helpers";
 
-  settingsWrapper: {
-    alignItems: "center",
-    gap: 20,
+export const getStyles = (theme: AppTheme) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      justifyContent: "center",
+      alignItems: "center",
+      paddingHorizontal: theme.spacing.x4,
+      gap: theme.spacing.x6,
+    },
 
-    padding: 20,
-    marginHorizontal: 20,
-
-    backgroundColor: "rgba(0, 0, 0, 0.2)",
-    borderRadius: 12,
-  },
-
-  imageBackgroundWrapper: {
-    width: 100,
-    height: 100,
-
-    overflow: "hidden",
-
-    borderRadius: "50%",
-  },
-  imageBackground: {
-    width: "100%",
-    height: "100%",
-  },
-
-  vibrationSettingsWrapper: {
-    width: "100%",
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-  vibrationTextAndIcon: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-  soundSettingsWrapper: {
-    width: "100%",
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-  soundTextAndIcon: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-  },
-  text: {
-    fontSize: 13,
-    fontFamily: "dm-media-main",
-  },
-});
-
-export default styles;
+    themeSection: {
+      width: "100%",
+      alignItems: "center",
+      gap: theme.spacing.x4,
+    },
+    themeLabelRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: theme.spacing.x3,
+    },
+    themeOptions: {
+      flexDirection: "row",
+      gap: getAdjustedWidth(8),
+    },
+    themeOption: {
+      paddingHorizontal: getAdjustedWidth(12),
+      paddingVertical: getAdjustedHeight(6),
+      borderRadius: theme.borderRadius.sm,
+      backgroundColor: "rgba(0, 0, 0, 0.12)",
+    },
+    themeOptionActive: {
+      backgroundColor: theme.colors.coffee,
+    },
+    themeOptionText: {
+      opacity: 0.7,
+    },
+    themeOptionTextActive: {
+      color: theme.colors.white,
+      opacity: 1,
+    },
+  });

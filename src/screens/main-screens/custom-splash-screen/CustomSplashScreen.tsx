@@ -12,12 +12,13 @@ import {
 
 import { SplashScreenBackground } from "@/src/assets";
 import { SPLASH_SCREEN_MIN_DURATION_MS } from "@/src/constants";
-import { useTranslation } from "@/src/hooks";
+import { useStyles, useTranslation } from "@/src/hooks";
 
-import styles from "./styles";
+import { getStyles } from "./styles";
 
 const CustomSplashScreen = () => {
   const navigation: NavigationProp<ParamListBase> = useNavigation();
+  const styles = useStyles(getStyles);
 
   useEffect(() => {
     SplashScreen.hideAsync();

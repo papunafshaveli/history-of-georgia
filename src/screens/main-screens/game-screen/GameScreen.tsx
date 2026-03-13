@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, Pressable, StyleSheet } from "react-native";
+import { View, Pressable, StyleSheet } from "react-native";
 
 import {
   SafeAreaView,
@@ -15,14 +15,18 @@ import {
 } from "@/src/components/game-screen-components";
 
 import { useGameScreen } from "@/src/hooks/useGameScreen";
-import { useTranslation } from "@/src/hooks";
-import { GLOBAL_COLORS } from "@/src/constants";
+import { useAppTheme, useStyles, useTranslation } from "@/src/hooks";
+import { AppText } from "@/src/components";
+import type { AppTheme } from "@/src/theme";
 
-import styles from "./styles";
+import { getStyles } from "./styles";
 
 const GameScreen = () => {
   const { gameState, actions, modalHandlers } = useGameScreen();
   const t = useTranslation();
+  const theme = useAppTheme();
+  const styles = useStyles(getStyles);
+  const errorStyles = useStyles(getErrorStyles);
 
   const { top: topInset, bottom: bottomInset } = useSafeAreaInsets();
 
@@ -33,7 +37,7 @@ const GameScreen = () => {
         flex: 1,
         paddingTop: topInset,
         paddingBottom: bottomInset,
-        backgroundColor: GLOBAL_COLORS.mixedColors.cream,
+        backgroundColor: theme.colors.background,
       }}
     >
       <View style={styles.gameScreenContainer}>
@@ -45,9 +49,22 @@ const GameScreen = () => {
 
         {gameState.status.hasError ? (
           <View style={errorStyles.container}>
-            <Text style={errorStyles.text}>{t.game_failed_to_load}</Text>
+            <AppText
+              fontFamily="accent"
+              type="headline"
+              color={theme.colors.coffeeDark}
+              style={errorStyles.text}
+            >
+              {t.game_failed_to_load}
+            </AppText>
             <Pressable style={errorStyles.button} onPress={actions.handleRetry}>
-              <Text style={errorStyles.buttonText}>{t.game_retry}</Text>
+              <AppText
+                fontFamily="accent"
+                type="subHeadline"
+                color={theme.colors.surface}
+              >
+                {t.game_retry}
+              </AppText>
             </Pressable>
           </View>
         ) : (
@@ -90,30 +107,23 @@ const GameScreen = () => {
   );
 };
 
-const errorStyles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    gap: 16,
-  },
-  text: {
-    fontFamily: "gf-aisi-bold-italic",
-    fontSize: 18,
-    color: GLOBAL_COLORS.mixedColors.darkCoffeeThird,
-    textAlign: "center",
-  },
-  button: {
-    backgroundColor: GLOBAL_COLORS.mixedColors.darkCoffee,
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 12,
-  },
-  buttonText: {
-    fontFamily: "gf-aisi-bold-italic",
-    fontSize: 16,
-    color: GLOBAL_COLORS.primaryColors.white,
-  },
-});
+const getErrorStyles = (theme: AppTheme) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      justifyContent: "center",
+      alignItems: "center",
+      gap: 16,
+    },
+    text: {
+      textAlign: "center",
+    },
+    button: {
+      backgroundColor: theme.colors.coffee,
+      paddingHorizontal: 24,
+      paddingVertical: 12,
+      borderRadius: theme.borderRadius.md,
+    },
+  });
 
 export default GameScreen;
