@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-require-imports */
 
-export const MediaMain = require("./DM-Medea.ttf");
-export const AisiBoldItalic = require("./gf_aisi_nus-bold-italic.otf");
+export const BPGNinoEliteUltra = require("./BPGNinoEliteUltra.ttf");
+export const DMMedea = require("./DMMedea.ttf");
+export const GFAisiBoldItalic = require("./GFAisiBoldItalic.otf");
 export const Helvetica = require("./Helvetica.ttf");

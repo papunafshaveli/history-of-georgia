@@ -1,7 +1,7 @@
 import React from "react";
 import { ActivityIndicator, ImageBackground } from "react-native";
 
-import { GLOBAL_COLORS } from "@/src/constants";
+import { lightTheme } from "@/src/theme";
 import { SplashScreenBackground } from "@/src/assets";
 
 import styles from "./styles";
@@ -14,7 +14,7 @@ const Loading = () => {
       style={styles.imageBackContainer}
       imageStyle={styles.imageBackStyles}
     >
-      <ActivityIndicator size="large" color={GLOBAL_COLORS.primaryColors.red} />
+      <ActivityIndicator size="large" color={lightTheme.colors.accent} />
     </ImageBackground>
   );
 };

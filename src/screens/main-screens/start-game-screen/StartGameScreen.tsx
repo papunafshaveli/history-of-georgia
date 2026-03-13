@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, ImageBackground, Pressable } from "react-native";
+import { View, ImageBackground, Pressable } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import {
   NavigationProp,
@@ -8,13 +8,19 @@ import {
 } from "@react-navigation/native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { GLOBAL_COLORS } from "@/src/constants";
-import { usePlaySound, useSettings, useTranslation } from "@/src/hooks";
+import {
+  useAppTheme,
+  usePlaySound,
+  useSettings,
+  useStyles,
+  useTranslation,
+} from "@/src/hooks";
 import { ScreenName } from "@/src/types";
 import { ClickSound, Shield, StartScreenBack } from "@/src/assets";
 import { vibrateImpact } from "@/src/helpers";
+import { AppText } from "@/src/components";
 
-import styles from "./styles";
+import { getStyles } from "./styles";
 
 const StartGameScreen = () => {
   const { isMuted, isVibrationOff } = useSettings();
@@ -22,6 +28,8 @@ const StartGameScreen = () => {
   const { playSound } = usePlaySound();
 
   const navigation: NavigationProp<ParamListBase> = useNavigation();
+  const { colors } = useAppTheme();
+  const styles = useStyles(getStyles);
 
   const handlePressStart = async () => {
     if (!isVibrationOff) {
@@ -46,7 +54,7 @@ const StartGameScreen = () => {
         >
           <Pressable
             android_ripple={{
-              color: GLOBAL_COLORS.primaryColors.lightGrey,
+              color: colors.border,
               borderless: true,
             }}
             onPress={handlePressStart}
@@ -61,10 +69,17 @@ const StartGameScreen = () => {
               imageStyle={styles.imageBackStyles}
             >
               <View style={styles.textAndIcon}>
-                <Text style={styles.startGameText}>{t.common_start}</Text>
+                <AppText
+                  color={colors.coffeeLight}
+                  type="display"
+                  fontFamily="display"
+                  lineHeight={100}
+                >
+                  {t.common_start}
+                </AppText>
                 <MaterialCommunityIcons
                   name="sword-cross"
-                  color={GLOBAL_COLORS.mixedColors.darkCoffee}
+                  color={colors.coffeeLight}
                   size={40}
                 />
               </View>

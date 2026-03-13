@@ -2,7 +2,8 @@ import React from "react";
 import { TextInput, StyleSheet, View } from "react-native";
 import { EvilIcons } from "@expo/vector-icons";
 
-import { GLOBAL_COLORS } from "@/src/constants";
+import type { AppTheme } from "@/src/theme";
+import { useAppTheme, useStyles } from "@/src/hooks";
 import { getAdjustedHeight, getAdjustedWidth } from "@/src/helpers";
 
 type SearchInputProps = {
@@ -16,11 +17,14 @@ const SearchInput: React.FC<SearchInputProps> = ({
   onChangeSearchText,
   placeHolder = "მოძებნე",
 }) => {
+  const theme = useAppTheme();
+  const styles = useStyles(getStyles);
+
   return (
     <View style={styles.container}>
       <EvilIcons
         name="search"
-        color={GLOBAL_COLORS.mixedColors.midGrey}
+        color={theme.colors.muted}
         size={32}
         style={styles.searchIcon}
       />
@@ -29,7 +33,7 @@ const SearchInput: React.FC<SearchInputProps> = ({
         value={searchText}
         onChangeText={onChangeSearchText}
         placeholder={placeHolder}
-        placeholderTextColor={GLOBAL_COLORS.mixedColors.midGrey}
+        placeholderTextColor={theme.colors.muted}
         accessibilityLabel={placeHolder}
         accessibilityRole="search"
       />
@@ -39,28 +43,29 @@ const SearchInput: React.FC<SearchInputProps> = ({
 
 export default SearchInput;
 
-const styles = StyleSheet.create({
-  container: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: GLOBAL_COLORS.mixedColors.cream,
-    width: "100%",
-    height: getAdjustedHeight(62),
-    borderStyle: "solid",
-    borderColor: GLOBAL_COLORS.mixedColors.midGrey,
-    borderWidth: 1,
-    borderRadius: 16,
-    paddingHorizontal: getAdjustedWidth(16),
-  },
-  input: {
-    flex: 1,
-    fontFamily: "helvetica-main",
-    fontSize: 16,
-    fontWeight: "700",
-    color: GLOBAL_COLORS.primaryColors.dark,
-    paddingVertical: getAdjustedHeight(16),
-  },
-  searchIcon: {
-    marginRight: getAdjustedWidth(8),
-  },
-});
+const getStyles = (theme: AppTheme) =>
+  StyleSheet.create({
+    container: {
+      flexDirection: "row",
+      alignItems: "center",
+      backgroundColor: theme.colors.background,
+      width: "100%",
+      height: getAdjustedHeight(62),
+      borderStyle: "solid",
+      borderColor: theme.colors.muted,
+      borderWidth: 1,
+      borderRadius: theme.borderRadius.lg,
+      paddingHorizontal: getAdjustedWidth(16),
+    },
+    input: {
+      flex: 1,
+      fontFamily: theme.fonts.secondary,
+      fontSize: 16,
+      fontWeight: "700",
+      color: theme.colors.dark,
+      paddingVertical: getAdjustedHeight(16),
+    },
+    searchIcon: {
+      marginRight: getAdjustedWidth(8),
+    },
+  });

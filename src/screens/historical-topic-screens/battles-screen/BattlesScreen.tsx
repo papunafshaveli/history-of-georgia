@@ -1,6 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import {
-  Text,
   ScrollView,
   View,
   StyleSheet,
@@ -11,24 +10,34 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
 import { NavigationProp } from "@react-navigation/native";
 
-import { EmptyState, NavigationPressable, SearchInput } from "@/src/components";
-import { RootStackParamList, ScreenName } from "@/src/types";
 import {
-  BATTLES,
-  GLOBAL_COLORS,
-  KEYBOARD_AVOIDING_DEFAULT_BEHAVIOR,
-} from "@/src/constants";
+  AppText,
+  EmptyState,
+  NavigationPressable,
+  SearchInput,
+} from "@/src/components";
+import { RootStackParamList, ScreenName } from "@/src/types";
+import { BATTLES, KEYBOARD_AVOIDING_DEFAULT_BEHAVIOR } from "@/src/constants";
+import type { AppTheme } from "@/src/theme";
 import { ClickSound, ShieldAndSword } from "@/src/assets";
-import { usePlaySound, useSettings, useTranslation } from "@/src/hooks";
+import {
+  useAppTheme,
+  usePlaySound,
+  useSettings,
+  useTranslation,
+} from "@/src/hooks";
 import { getAdjustedHeight, vibrateImpact } from "@/src/helpers";
 
 const MIN_AMOUNT_TO_SHOW_INPUT = 3;
 
 const BattlesScreen = () => {
   const t = useTranslation();
+  const theme = useAppTheme();
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const { playSound } = usePlaySound();
   const { isMuted, isVibrationOff } = useSettings();
+
+  const styles = useMemo(() => getStyles(theme), [theme]);
 
   const handlePress = (battleId: string) => {
     if (!isVibrationOff) {
@@ -57,7 +66,9 @@ const BattlesScreen = () => {
         keyboardVerticalOffset={Platform.select({ ios: 0, android: 30 })}
       >
         <View style={styles.titleWrapper}>
-          <Text style={styles.title}>{t.common_battles}</Text>
+          <AppText fontWeight="bold" type="headline">
+            {t.common_battles}
+          </AppText>
         </View>
         {showSearchInput && (
           <View style={styles.searchInputWrapper}>
@@ -77,12 +88,12 @@ const BattlesScreen = () => {
             </View>
           ) : (
             filteredBattles.map((battle) => {
-              const onRulerPress = () => {
+              const onBattlePress = () => {
                 handlePress(battle.id);
               };
               return (
                 <NavigationPressable
-                  onBtnPress={onRulerPress}
+                  onBtnPress={onBattlePress}
                   title={battle.name}
                   img={ShieldAndSword}
                   key={battle.id}
@@ -98,37 +109,34 @@ const BattlesScreen = () => {
 
 export default BattlesScreen;
 
-const styles = StyleSheet.create({
-  safeArea: {
-    backgroundColor: GLOBAL_COLORS.mixedColors.cream,
-    marginTop: getAdjustedHeight(-18),
-    flex: 1,
-    padding: 16,
-  },
-  container: {
-    flex: 1,
-  },
-  scrollViewContent: {
-    flexGrow: 1,
-    paddingBottom: getAdjustedHeight(20),
-  },
-  titleWrapper: {
-    alignItems: "center",
-    marginTop: getAdjustedHeight(20),
-    marginBottom: getAdjustedHeight(20),
-  },
-  title: {
-    fontSize: 18,
-    fontWeight: "bold",
-  },
-  searchInputWrapper: {
-    width: "100%",
-    marginBottom: getAdjustedHeight(16),
-  },
-  emptyStateContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    paddingVertical: getAdjustedHeight(16),
-  },
-});
+const getStyles = (theme: AppTheme) =>
+  StyleSheet.create({
+    safeArea: {
+      backgroundColor: theme.colors.background,
+      marginTop: getAdjustedHeight(-18),
+      flex: 1,
+      padding: 16,
+    },
+    container: {
+      flex: 1,
+    },
+    scrollViewContent: {
+      flexGrow: 1,
+      paddingBottom: getAdjustedHeight(20),
+    },
+    titleWrapper: {
+      alignItems: "center",
+      marginTop: getAdjustedHeight(20),
+      marginBottom: getAdjustedHeight(20),
+    },
+    searchInputWrapper: {
+      width: "100%",
+      marginBottom: getAdjustedHeight(16),
+    },
+    emptyStateContainer: {
+      flex: 1,
+      justifyContent: "center",
+      alignItems: "center",
+      paddingVertical: getAdjustedHeight(16),
+    },
+  });

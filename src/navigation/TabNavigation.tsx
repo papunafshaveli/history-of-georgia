@@ -12,10 +12,10 @@ import HistoricalTopicsScreen from "@/src/screens/main-screens/historical-topics
 import StatsScreen from "@/src/screens/main-screens/stats-screen/StatsScreen";
 
 import { CustomHeader } from "@/src/components";
-import { GLOBAL_COLORS } from "@/src/constants";
+import type { AppTheme } from "@/src/theme";
 import { ScreenName, TabParamList } from "@/src/types";
 
-import { useTranslation } from "../hooks";
+import { useAppTheme, useTranslation } from "../hooks";
 import { getAdjustedHeight } from "../helpers";
 
 const Tab = createBottomTabNavigator<TabParamList>();
@@ -25,11 +25,29 @@ type TabNavigationProps = {
   toggleSettingsModal: () => void;
 };
 
+const getStyles = (theme: AppTheme) =>
+  StyleSheet.create({
+    tabBar: {
+      backgroundColor: theme.colors.headerBg,
+      height: getAdjustedHeight(90),
+      borderTopColor: theme.colors.headerBg,
+      borderTopWidth: 0,
+    },
+    tabBarLabel: {
+      fontSize: 14,
+      fontWeight: "bold",
+      fontFamily: theme.fonts.accent,
+    },
+  });
+
 const TabNavigation: React.FC<TabNavigationProps> = ({
   toggleRulesModal,
   toggleSettingsModal,
 }) => {
   const t = useTranslation();
+  const theme = useAppTheme();
+
+  const styles = useMemo(() => getStyles(theme), [theme]);
 
   const commonOptions: BottomTabNavigationOptions = useMemo(
     () => ({
@@ -37,12 +55,12 @@ const TabNavigation: React.FC<TabNavigationProps> = ({
         <CustomHeader
           onLeftBtnPress={toggleSettingsModal}
           onRightBtnPress={toggleRulesModal}
-          leftBtnIconName="cellphone-sound"
-          rightBtnIconName="frequently-asked-questions"
+          leftBtnIconName="settings-suggest"
+          rightBtnIconName="rule-folder"
         />
       ),
     }),
-    [toggleRulesModal, toggleSettingsModal]
+    [toggleRulesModal, toggleSettingsModal],
   );
 
   const startGameOptions: BottomTabNavigationOptions = {
@@ -69,22 +87,19 @@ const TabNavigation: React.FC<TabNavigationProps> = ({
     ...commonOptions,
     tabBarLabel: t.stats_title,
     tabBarIcon: ({ color, size }) => (
-      <MaterialCommunityIcons
-        name="chart-bar"
-        size={size}
-        color={color}
-      />
+      <MaterialCommunityIcons name="chart-bar" size={size} color={color} />
     ),
   };
 
   return (
     <Tab.Navigator
       screenOptions={{
-        tabBarActiveTintColor: GLOBAL_COLORS.mixedColors.darkCoffee,
-        tabBarInactiveTintColor: GLOBAL_COLORS.mixedColors.darkCoffeeThird,
+        tabBarActiveTintColor: theme.colors.coffee,
+        tabBarInactiveTintColor: theme.colors.coffeeDark,
         tabBarStyle: styles.tabBar,
         tabBarLabelStyle: styles.tabBarLabel,
         tabBarLabelPosition: "below-icon",
+        sceneStyle: { backgroundColor: theme.colors.background },
       }}
     >
       <Tab.Screen
@@ -107,17 +122,3 @@ const TabNavigation: React.FC<TabNavigationProps> = ({
 };
 
 export default TabNavigation;
-
-const styles = StyleSheet.create({
-  tabBar: {
-    backgroundColor: GLOBAL_COLORS.primaryColors.dark,
-    height: getAdjustedHeight(90),
-    borderTopColor: GLOBAL_COLORS.primaryColors.dark,
-    borderTopWidth: 0,
-  },
-  tabBarLabel: {
-    fontSize: 14,
-    fontWeight: "bold",
-    fontFamily: "gf-aisi-bold-italic",
-  },
-});

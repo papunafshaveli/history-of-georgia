@@ -4,7 +4,6 @@ import {
   ImageSourcePropType,
   Pressable,
   ScrollView,
-  Text,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -17,10 +16,17 @@ import {
   KingTopic,
   PublicFigures,
 } from "@/src/assets";
-import { usePlaySound, useSettings, useTranslation } from "@/src/hooks";
+import {
+  useAppTheme,
+  usePlaySound,
+  useSettings,
+  useStyles,
+  useTranslation,
+} from "@/src/hooks";
 import { vibrateImpact } from "@/src/helpers";
+import { AppText } from "@/src/components";
 
-import styles from "./styles";
+import { getStyles } from "./styles";
 
 type Topic = {
   id: number;
@@ -33,7 +39,9 @@ type Topic = {
 const HistoricalTopicsScreen = () => {
   const navigation = useNavigation();
   const t = useTranslation();
+  const styles = useStyles(getStyles);
   const { playSound } = usePlaySound();
+  const { colors } = useAppTheme();
 
   const { isMuted, isVibrationOff } = useSettings();
 
@@ -72,8 +80,17 @@ const HistoricalTopicsScreen = () => {
   return (
     <SafeAreaView edges={[]} style={styles.safeArea}>
       <View style={styles.titleDescWrapper}>
-        <Text style={styles.title}>{t.learn_about_geo_history}</Text>
-        <Text style={styles.description}>{t.common_choose_category}</Text>
+        <AppText fontFamily="secondary" fontWeight="bold" type="headline">
+          {t.learn_about_geo_history}
+        </AppText>
+        <AppText
+          fontFamily="secondary"
+          fontWeight="bold"
+          type="subHeadline"
+          color={colors.muted}
+        >
+          {t.common_choose_category}
+        </AppText>
       </View>
       <ScrollView contentContainerStyle={styles.historicalTopicsContainer}>
         <View style={styles.gridContainer}>
@@ -90,7 +107,14 @@ const HistoricalTopicsScreen = () => {
                   source={topic.img as ImageSourcePropType}
                   style={styles.imageBackgroundStyle}
                 >
-                  <Text style={styles.text}>{topic.title}</Text>
+                  <AppText
+                    fontFamily="accent"
+                    type="headline"
+                    color={colors.white}
+                    style={styles.text}
+                  >
+                    {topic.title}
+                  </AppText>
                 </ImageBackground>
               </Pressable>
             );

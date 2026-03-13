@@ -1,9 +1,11 @@
 import React, { useLayoutEffect, useState } from "react";
 import { FlatList } from "react-native";
 
+import { useStyles } from "@/src/hooks";
+
 import OptionButton from "../option-button/OptionButton";
 
-import styles from "./styles";
+import { getStyles } from "./styles";
 
 type OptionDisplayProps = {
   options?: string[];
@@ -20,6 +22,7 @@ const OptionsDisplay: React.FC<OptionDisplayProps> = ({
   isLoading,
   isOptionDisabled,
 }) => {
+  const styles = useStyles(getStyles);
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
 
   useLayoutEffect(() => {
