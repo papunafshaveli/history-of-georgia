@@ -1,43 +1,42 @@
 import { StyleSheet } from "react-native";
 
-import { GLOBAL_COLORS } from "@/src/constants";
+import type { AppTheme } from "@/src/theme";
 import { getAdjustedHeight } from "@/src/helpers";
 
-const styles = StyleSheet.create({
-  splashScreenContainer: {
-    flex: 1,
-  },
-  imageBackContainer: {
-    flex: 1,
-  },
-  imageBackStyles: {
-    width: "100%",
-    height: "100%",
-  },
-  fistText: {
-    fontFamily: "dm-media-main",
-    fontSize: 35,
-    color: GLOBAL_COLORS.primaryColors.dark,
-    textAlign: "left",
-  },
-  secondText: {
-    fontFamily: "dm-media-main",
-    fontSize: 35,
-    color: GLOBAL_COLORS.primaryColors.red,
-    textAlign: "center",
-  },
-  thirdText: {
-    fontFamily: "dm-media-main",
-    fontSize: 35,
-    color: GLOBAL_COLORS.primaryColors.dark,
-    textAlign: "right",
-  },
-  textsContainer: {
-    flex: 1,
-    marginTop: getAdjustedHeight(200),
-    paddingHorizontal: 20,
-    gap: 20,
-  },
-});
-
-export default styles;
+export const getStyles = (theme: AppTheme) =>
+  StyleSheet.create({
+    splashScreenContainer: {
+      flex: 1,
+    },
+    imageBackContainer: {
+      flex: 1,
+    },
+    imageBackStyles: {
+      width: "100%",
+      height: "100%",
+    },
+    fistText: {
+      fontFamily: theme.fonts.display,
+      fontSize: 35,
+      color: theme.colors.dark,
+      textAlign: "left",
+    },
+    secondText: {
+      fontFamily: theme.fonts.display,
+      fontSize: 35,
+      color: theme.colors.accent,
+      textAlign: "center",
+    },
+    thirdText: {
+      fontFamily: theme.fonts.display,
+      fontSize: 35,
+      color: theme.colors.dark,
+      textAlign: "right",
+    },
+    textsContainer: {
+      flex: 1,
+      marginTop: getAdjustedHeight(200),
+      paddingHorizontal: 20,
+      gap: 20,
+    },
+  });

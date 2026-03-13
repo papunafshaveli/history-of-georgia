@@ -6,3 +6,4 @@ export * from "./useNotifications";
 export * from "./useSettings";
 export * from "./useTranslation";
 export * from "./usePlaySound";
+export { useAppTheme, useStyles, useThemeMode } from "@/src/theme";

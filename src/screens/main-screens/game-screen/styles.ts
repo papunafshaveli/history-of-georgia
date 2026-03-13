@@ -1,17 +1,17 @@
-import { GLOBAL_COLORS } from "@/src/constants";
 import { StyleSheet } from "react-native";
 
-const styles = StyleSheet.create({
-  gameScreenContainer: {
-    flex: 1,
-    alignItems: "center",
+import type { AppTheme } from "@/src/theme";
 
-    backgroundColor: GLOBAL_COLORS.mixedColors.cream,
+export const getStyles = (theme: AppTheme) =>
+  StyleSheet.create({
+    gameScreenContainer: {
+      flex: 1,
+      alignItems: "center",
 
-    paddingHorizontal: 24,
+      backgroundColor: theme.colors.background,
 
-    position: "relative",
-  },
-});
+      paddingHorizontal: 24,
 
-export default styles;
+      position: "relative",
+    },
+  });

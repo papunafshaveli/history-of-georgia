@@ -1,11 +1,12 @@
-import { ActivityIndicator, ImageBackground, Text } from "react-native";
+import { ActivityIndicator, ImageBackground } from "react-native";
 import React from "react";
 
-import { GLOBAL_COLORS } from "@/src/constants";
 import { QuestionBackground } from "@/src/assets";
-import { useTranslation } from "@/src/hooks";
+import { useAppTheme, useStyles, useTranslation } from "@/src/hooks";
 
-import styles from "./styles";
+import { AppText } from "../text";
+
+import { getStyles } from "./styles";
 
 type QuestionDisplayProps = {
   isLoading?: boolean;
@@ -17,15 +18,12 @@ const QuestionDisplay: React.FC<QuestionDisplayProps> = ({
   question,
 }) => {
   const t = useTranslation();
+  const { colors } = useAppTheme();
+  const styles = useStyles(getStyles);
   const associationText = t.common_association;
   const startsWithAssociationText = question?.startsWith(associationText);
 
   const withoutAssociationText = question?.slice(associationText.length);
-
-  const associationTextStyles = {
-    color: GLOBAL_COLORS.primaryColors.brown,
-    fontSize: 16,
-  };
 
   return (
     <ImageBackground
@@ -34,21 +32,31 @@ const QuestionDisplay: React.FC<QuestionDisplayProps> = ({
       resizeMode="contain"
     >
       {isLoading ? (
-        <ActivityIndicator
-          size="large"
-          color={GLOBAL_COLORS.mixedColors.darkCoffeeSecond}
-        />
+        <ActivityIndicator size="large" color={colors.coffeeMedium} />
       ) : (
-        <Text style={styles.questionText}>
+        <AppText
+          fontFamily="primary"
+          type="title"
+          color={colors.onImage}
+          style={styles.questionText}
+        >
           {startsWithAssociationText ? (
             <>
-              <Text style={associationTextStyles}>{associationText}</Text>
-              <Text> {withoutAssociationText}</Text>
+              <AppText
+                fontFamily="primary"
+                type="title"
+                color={colors.primary}
+              >
+                {associationText}
+              </AppText>
+              <AppText fontFamily="primary" type="title" color={colors.onImage}>
+                {withoutAssociationText}
+              </AppText>
             </>
           ) : (
             question
           )}
-        </Text>
+        </AppText>
       )}
     </ImageBackground>
   );

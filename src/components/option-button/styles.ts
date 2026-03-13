@@ -1,35 +1,31 @@
 import { StyleSheet } from "react-native";
 
-import { GLOBAL_COLORS } from "@/src/constants";
+import type { AppTheme } from "@/src/theme";
 
-const styles = StyleSheet.create({
-  pressableBtn: {
-    width: "100%",
-    height: 45,
-    borderWidth: 1,
-    borderRadius: 12,
-    borderColor: GLOBAL_COLORS.mixedColors.midGrey,
+export const getStyles = (theme: AppTheme) =>
+  StyleSheet.create({
+    pressableBtn: {
+      width: "100%",
+      height: 45,
+      borderWidth: 1,
+      borderRadius: theme.borderRadius.md,
+      borderColor: theme.colors.muted,
 
-    alignItems: "center",
-    justifyContent: "center",
+      alignItems: "center",
+      justifyContent: "center",
 
-    backgroundColor: GLOBAL_COLORS.primaryColors.btnDefault,
-  },
-  correctOption: {
-    backgroundColor: GLOBAL_COLORS.primaryColors.right,
-    borderColor: GLOBAL_COLORS.primaryColors.rightBorder,
-  },
-  incorrectOption: {
-    backgroundColor: GLOBAL_COLORS.primaryColors.incorrect,
-    borderColor: GLOBAL_COLORS.primaryColors.incorrectBorder,
-  },
+      backgroundColor: theme.colors.surfaceAlt,
+    },
+    correctOption: {
+      backgroundColor: theme.colors.correctBg,
+      borderColor: theme.colors.correctBorder,
+    },
+    incorrectOption: {
+      backgroundColor: theme.colors.incorrectBg,
+      borderColor: theme.colors.incorrectBorder,
+    },
 
-  optionText: {
-    fontSize: 18,
-
-    fontFamily: "gf-aisi-bold-italic",
-    textAlign: "center",
-  },
-});
-
-export default styles;
+    optionText: {
+      textAlign: "center",
+    },
+  });

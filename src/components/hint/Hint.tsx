@@ -1,12 +1,13 @@
 import React from "react";
-import { View, Text, ImageBackground, Pressable } from "react-native";
+import { View, ImageBackground, Pressable } from "react-native";
 
 import { HintIcon } from "@/src/assets";
-import { useTranslation } from "@/src/hooks";
+import { useAppTheme, useStyles, useTranslation } from "@/src/hooks";
 
 import GradientWrapper from "../gradient-wrapper/GradientWrapper";
+import { AppText } from "../text";
 
-import styles from "./styles";
+import { getStyles } from "./styles";
 
 type HintProps = {
   onPressContinue: () => void;
@@ -15,6 +16,8 @@ type HintProps = {
 
 const Hint: React.FC<HintProps> = ({ onPressContinue, currentHint }) => {
   const t = useTranslation();
+  const { colors } = useAppTheme();
+  const styles = useStyles(getStyles);
   return (
     <View style={styles.container}>
       <ImageBackground
@@ -24,9 +27,15 @@ const Hint: React.FC<HintProps> = ({ onPressContinue, currentHint }) => {
         imageStyle={styles.imageBackground}
         accessibilityElementsHidden
       />
-      <Text accessibilityRole="text" style={styles.hint}>
+      <AppText
+        fontFamily="primary"
+        type="title"
+        color={colors.onImage}
+        accessibilityRole="text"
+        style={styles.hint}
+      >
         {currentHint}
-      </Text>
+      </AppText>
 
       <Pressable
         style={styles.button}
@@ -35,7 +44,9 @@ const Hint: React.FC<HintProps> = ({ onPressContinue, currentHint }) => {
         accessibilityLabel={t.common_close}
       >
         <GradientWrapper style={styles.gradient}>
-          <Text style={styles.btnText}>{t.common_close}</Text>
+          <AppText fontFamily="primary" type="headline">
+            {t.common_close}
+          </AppText>
         </GradientWrapper>
       </Pressable>
     </View>

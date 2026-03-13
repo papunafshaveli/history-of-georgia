@@ -3,15 +3,17 @@ import {
   Pressable,
   View,
   StyleSheet,
-  Text,
   Image,
   ImageSourcePropType,
 } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 
-import { GLOBAL_COLORS } from "@/src/constants";
+import type { AppTheme } from "@/src/theme";
+import { useAppTheme, useStyles } from "@/src/hooks";
 import { getAdjustedHeight, getAdjustedWidth } from "@/src/helpers";
+
+import { AppText } from "../text";
 
 type NavigationPressableProps = {
   onBtnPress: () => void;
@@ -24,6 +26,9 @@ const NavigationPressable: React.FC<NavigationPressableProps> = ({
   img,
   title,
 }) => {
+  const theme = useAppTheme();
+  const styles = useStyles(getStyles);
+
   return (
     <Pressable
       style={styles.pressable}
@@ -40,13 +45,15 @@ const NavigationPressable: React.FC<NavigationPressableProps> = ({
         >
           <Image resizeMode="contain" width={50} height={50} source={img} />
         </LinearGradient>
-        <Text style={styles.title}>{title}</Text>
+        <AppText fontFamily="secondary" fontWeight="700" type="body">
+          {title}
+        </AppText>
       </View>
       <View style={styles.iconWrapper}>
         <MaterialCommunityIcons
           name="arrow-right"
           size={20}
-          color={GLOBAL_COLORS.primaryColors.dark}
+          color={theme.colors.dark}
         />
       </View>
     </Pressable>
@@ -55,55 +62,50 @@ const NavigationPressable: React.FC<NavigationPressableProps> = ({
 
 export default NavigationPressable;
 
-const styles = StyleSheet.create({
-  pressable: {
-    backgroundColor: GLOBAL_COLORS.primaryColors.btnDefault,
-    borderWidth: 1,
-    borderColor: GLOBAL_COLORS.mixedColors.midGrey,
-    borderRadius: 16,
-    boxShadow: "0px 2px 5.9px 0px rgba(62, 45, 3, 0.12)",
+const getStyles = (theme: AppTheme) =>
+  StyleSheet.create({
+    pressable: {
+      backgroundColor: theme.colors.surfaceAlt,
+      borderWidth: 1,
+      borderColor: theme.colors.muted,
+      borderRadius: theme.borderRadius.lg,
+      boxShadow: "0px 2px 5.9px 0px rgba(62, 45, 3, 0.12)",
 
-    paddingVertical: getAdjustedHeight(12),
-    paddingHorizontal: getAdjustedWidth(16),
-    marginBottom: getAdjustedHeight(16),
+      paddingVertical: getAdjustedHeight(12),
+      paddingHorizontal: getAdjustedWidth(16),
+      marginBottom: getAdjustedHeight(16),
 
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+    },
 
-  imgAndTextWrapper: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-  },
+    imgAndTextWrapper: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 12,
+    },
 
-  crownWrapper: {
-    alignItems: "center",
-    justifyContent: "center",
-    width: getAdjustedWidth(50),
-    height: getAdjustedWidth(50),
+    crownWrapper: {
+      alignItems: "center",
+      justifyContent: "center",
+      width: getAdjustedWidth(50),
+      height: getAdjustedWidth(50),
 
-    paddingHorizontal: getAdjustedWidth(6),
-    paddingVertical: getAdjustedHeight(10),
-    borderWidth: 1,
-    borderColor: GLOBAL_COLORS.mixedColors.darkCoffeeSecond,
-    borderRadius: 12,
-    overflow: "hidden",
-  },
+      paddingHorizontal: getAdjustedWidth(6),
+      paddingVertical: getAdjustedHeight(10),
+      borderWidth: 1,
+      borderColor: theme.colors.coffeeMedium,
+      borderRadius: theme.borderRadius.md,
+      overflow: "hidden",
+    },
 
-  iconWrapper: {
-    alignItems: "center",
-    justifyContent: "center",
-    padding: getAdjustedWidth(10),
-    borderWidth: 1,
-    borderColor: GLOBAL_COLORS.mixedColors.midGrey,
-    borderRadius: 12,
-  },
-
-  title: {
-    fontFamily: "helvetica-main",
-    fontSize: 14,
-    fontWeight: "700",
-  },
-});
+    iconWrapper: {
+      alignItems: "center",
+      justifyContent: "center",
+      padding: getAdjustedWidth(10),
+      borderWidth: 1,
+      borderColor: theme.colors.muted,
+      borderRadius: theme.borderRadius.md,
+    },
+  });

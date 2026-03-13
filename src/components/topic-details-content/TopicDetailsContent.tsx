@@ -1,12 +1,13 @@
 import React from "react";
-import { View, Text, ScrollView, StyleSheet } from "react-native";
+import { View, ScrollView, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { useTranslation } from "@/src/hooks";
+import { useStyles, useTranslation } from "@/src/hooks";
 
 import YoutubePlayer from "../youtube-player/YoutubePlayer";
+import { AppText } from "../text";
 
-import styles from "./styles";
+import { getStyles } from "./styles";
 
 type DescriptionItem = {
   biography?: string[];
@@ -24,6 +25,7 @@ const TopicDetailsContent: React.FC<DetailsScreenProps> = ({
   description,
   ytVideoIds,
 }) => {
+  const styles = useStyles(getStyles);
   const scrollVideosHorizontally = Number(ytVideoIds?.length) > 1;
   const content = description.biography || description.facts || [];
 
@@ -37,7 +39,9 @@ const TopicDetailsContent: React.FC<DetailsScreenProps> = ({
   return (
     <SafeAreaView edges={[]} style={styles.safeArea}>
       <View style={styles.titleWrapper}>
-        <Text style={styles.title}>{title}</Text>
+        <AppText fontFamily="secondary" fontWeight="bold" type="headline">
+          {title}
+        </AppText>
       </View>
       <ScrollView style={styles.scrollView}>
         {content.map((paragraph, index) => {
@@ -49,14 +53,23 @@ const TopicDetailsContent: React.FC<DetailsScreenProps> = ({
           );
 
           return (
-            <Text style={paragraphStyles} key={index}>
+            <AppText
+              fontFamily="secondary"
+              fontWeight={isTitle ? "bold" : undefined}
+              type={isTitle ? "subHeadline" : "body"}
+              lineHeight={isTitle ? undefined : 22}
+              style={paragraphStyles}
+              key={index}
+            >
               {paragraph}
-            </Text>
+            </AppText>
           );
         })}
         {!!ytVideoIds?.length && (
           <View style={styles.videoInfoWrapper}>
-            <Text style={styles.text}>{t.common_learn_more}</Text>
+            <AppText fontWeight="bold" fontSize={20} style={styles.text}>
+              {t.common_learn_more}
+            </AppText>
             <ScrollView
               horizontal={scrollVideosHorizontally}
               showsHorizontalScrollIndicator={false}

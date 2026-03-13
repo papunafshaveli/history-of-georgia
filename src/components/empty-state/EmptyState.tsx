@@ -1,8 +1,10 @@
 import React from "react";
-import { View, StyleSheet, Image, Text } from "react-native";
+import { View, StyleSheet, Image } from "react-native";
 
 import { EmptyStateImg } from "@/src/assets";
 import { getAdjustedHeight } from "@/src/helpers";
+
+import { AppText } from "../text";
 
 type EmptyStateProps = {
   title: string;
@@ -13,8 +15,12 @@ const EmptyState: React.FC<EmptyStateProps> = ({ title, description }) => {
   return (
     <View style={styles.container}>
       <Image source={EmptyStateImg} style={styles.image} />
-      <Text style={styles.title}>{title}</Text>
-      <Text style={styles.desc}>{description}</Text>
+      <AppText type="title" fontFamily="primary" style={styles.text}>
+        {title}
+      </AppText>
+      <AppText type="headline" fontFamily="primary" style={styles.text}>
+        {description}
+      </AppText>
     </View>
   );
 };
@@ -32,16 +38,7 @@ const styles = StyleSheet.create({
     maxWidth: getAdjustedHeight(145),
     maxHeight: getAdjustedHeight(145),
   },
-  title: {
-    fontFamily: "helvetica-main",
-    fontSize: 16,
-    fontWeight: "700",
-    textAlign: "center",
-  },
-  desc: {
-    fontFamily: "helvetica-main",
-    fontSize: 14,
-    fontWeight: "400",
+  text: {
     textAlign: "center",
   },
 });

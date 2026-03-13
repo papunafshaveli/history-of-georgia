@@ -1,13 +1,13 @@
 import React from "react";
-import { StyleSheet, Text } from "react-native";
+import { StyleSheet } from "react-native";
 
-import { GLOBAL_COLORS } from "@/src/constants";
-import { useTranslation } from "@/src/hooks";
+import { useAppTheme, useStyles, useTranslation } from "@/src/hooks";
 
 import Modal from "../modal/Modal";
 import AppSettings from "../app-settings/AppSettings";
 import Rules from "../rules/Rules";
 import Endgame from "../end-game/EndGame";
+import { AppText } from "../text";
 
 type AppModalsProps = {
   isRulesModalVisible: boolean;
@@ -32,8 +32,18 @@ const AppModals: React.FC<AppModalsProps> = ({
 }) => {
   const t = useTranslation();
 
+  const styles = useStyles(getStyles);
+  const { colors } = useAppTheme();
+
   const ethernetRenderComponent = (
-    <Text style={styles.ethernetText}>{t.ethernet_connection_lost}</Text>
+    <AppText
+      fontFamily="primary"
+      type="display"
+      color={colors.accent}
+      style={styles.ethernetText}
+    >
+      {t.ethernet_connection_lost}
+    </AppText>
   );
   return (
     <>
@@ -74,12 +84,10 @@ const AppModals: React.FC<AppModalsProps> = ({
 
 export default AppModals;
 
-const styles = StyleSheet.create({
-  ethernetText: {
-    fontFamily: "dm-media-main",
-    textAlign: "center",
-    marginTop: "30%",
-    fontSize: 20,
-    color: GLOBAL_COLORS.primaryColors.red,
-  },
-});
+const getStyles = () =>
+  StyleSheet.create({
+    ethernetText: {
+      textAlign: "center",
+      marginTop: "30%",
+    },
+  });

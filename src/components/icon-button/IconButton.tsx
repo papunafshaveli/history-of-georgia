@@ -1,12 +1,16 @@
 import React from "react";
-import { Pressable, View, Text, StyleProp, ViewStyle } from "react-native";
+import { Pressable, View, StyleProp, ViewStyle } from "react-native";
 
-import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { MaterialIcons } from "@expo/vector-icons";
+
+import { useAppTheme } from "@/src/hooks";
+
+import { AppText } from "../text";
 
 import { styles } from "./styles";
 
 type IconButtonProps = {
-  iconName: keyof typeof MaterialCommunityIcons.glyphMap;
+  iconName: keyof typeof MaterialIcons.glyphMap;
   size: number;
   color?: string;
   onPress: () => void;
@@ -24,6 +28,7 @@ const IconButton: React.FC<IconButtonProps> = ({
   containerStyle,
   accessibilityLabel,
 }) => {
+  const { colors } = useAppTheme();
   return (
     <Pressable
       onPress={onPress}
@@ -32,8 +37,12 @@ const IconButton: React.FC<IconButtonProps> = ({
       accessibilityLabel={accessibilityLabel || iconName}
     >
       <View style={[styles.btnContainer, containerStyle]}>
-        <MaterialCommunityIcons name={iconName} size={size} color={color} />
-        {text && <Text style={styles.btnText}>{text}</Text>}
+        <MaterialIcons name={iconName} size={size} color={color} />
+        {text && (
+          <AppText color={colors.white} fontFamily="primary" type="headline">
+            {text}
+          </AppText>
+        )}
       </View>
     </Pressable>
   );

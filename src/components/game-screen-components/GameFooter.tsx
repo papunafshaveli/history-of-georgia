@@ -1,15 +1,15 @@
 import React from "react";
-import { Pressable, View, Text } from "react-native";
+import { Pressable, View } from "react-native";
 
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 
-import { GLOBAL_COLORS } from "@/src/constants";
-import { useTranslation } from "@/src/hooks";
+import { useAppTheme, useStyles, useTranslation } from "@/src/hooks";
 
 import IconButton from "../icon-button/IconButton";
 import GradientWrapper from "../gradient-wrapper/GradientWrapper";
+import { AppText } from "../text";
 
-import styles from "./styles";
+import { getStyles } from "./styles";
 
 type GameFooterProps = {
   onExit: () => void;
@@ -27,6 +27,8 @@ const GameFooter: React.FC<GameFooterProps> = ({
   isHintDisabled,
 }) => {
   const t = useTranslation();
+  const { colors } = useAppTheme();
+  const styles = useStyles(getStyles);
 
   const hintWrapperColor =
     hintsCount === 0 || isHintDisabled
@@ -39,9 +41,9 @@ const GameFooter: React.FC<GameFooterProps> = ({
     <View style={styles.footerWrapper}>
       <GradientWrapper style={styles.iconButtonContainer}>
         <IconButton
-          iconName="arrow-left-thin"
+          iconName="keyboard-backspace"
           size={30}
-          color={GLOBAL_COLORS.primaryColors.dark}
+          color={colors.dark}
           onPress={onExit}
           containerStyle={styles.iconButtonContainer}
           accessibilityLabel={t.common_logout}
@@ -60,20 +62,26 @@ const GameFooter: React.FC<GameFooterProps> = ({
             <MaterialCommunityIcons
               name="lightbulb-on"
               size={24}
-              color={GLOBAL_COLORS.primaryColors.dark}
+              color={colors.dark}
             />
-            <Text style={styles.hintText}>
+
+            <AppText
+              color={colors.dark}
+              type="title"
+              fontFamily="primary"
+              style={styles.hintText}
+            >
               {t.common_hint} ({hintsCount})
-            </Text>
+            </AppText>
           </View>
         </GradientWrapper>
       </Pressable>
 
       <GradientWrapper style={styles.iconButtonContainer}>
         <IconButton
-          iconName="cellphone-sound"
+          iconName="settings-suggest"
           size={24}
-          color={GLOBAL_COLORS.primaryColors.dark}
+          color={colors.dark}
           onPress={onSettings}
           containerStyle={styles.iconButtonContainer}
           accessibilityLabel={t.common_parameters}
