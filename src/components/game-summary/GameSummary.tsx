@@ -25,11 +25,13 @@ import { getStyles } from "./styles";
 
 type GameSummaryProps = {
   onRestartBtnPress: () => void;
+  onCloseSummary: () => void;
   score: number;
 };
 
 const GameSummary: React.FC<GameSummaryProps> = ({
   onRestartBtnPress,
+  onCloseSummary,
   score,
 }) => {
   const [highestScore, setHighestScore] = useState<number | null>(null);
@@ -85,6 +87,7 @@ const GameSummary: React.FC<GameSummaryProps> = ({
   };
 
   const handleNavigateToStats = () => {
+    onCloseSummary();
     navigation.navigate("tabs", { screen: ScreenName.STATS_SCREEN });
   };
 
@@ -112,7 +115,7 @@ const GameSummary: React.FC<GameSummaryProps> = ({
       >
         <AppText
           lineHeight={100}
-          fontFamily="script"
+          fontFamily="display"
           type="display"
           color={colors.onImage}
         >
@@ -133,7 +136,15 @@ const GameSummary: React.FC<GameSummaryProps> = ({
         color={colors.onImage}
         style={styles.highScoreText}
       >
-        {t.game_best_score} {highestScore}
+        {t.game_best_score}{" "}
+        <AppText
+          type="title"
+          fontFamily="sans"
+          color={colors.onImage}
+          style={styles.highScoreText}
+        >
+          {highestScore}
+        </AppText>
       </AppText>
       <View style={styles.buttonsWrapper}>
         <GradientWrapper style={styles.gradient}>

@@ -20,6 +20,7 @@ type GameModalsProps = {
     toggleExitModal: () => void;
     toggleSettingsModal: () => void;
     toggleHintModal: () => void;
+    closeSummaryModal: () => void;
   };
   onExit: () => void;
   onRestart: () => void;
@@ -73,10 +74,12 @@ const GameModals: React.FC<GameModalsProps> = ({
       <Modal
         isVisible={modals.summary}
         headerTitle={t.game_your_result}
+        onClose={onClose.closeSummaryModal}
         renderComponent={
           <GameSummary
             score={modals.correctAnswers}
             onRestartBtnPress={onRestart}
+            onCloseSummary={onClose.closeSummaryModal}
           />
         }
       />

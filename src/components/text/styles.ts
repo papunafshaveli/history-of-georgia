@@ -27,13 +27,30 @@ type TextStyleProps = Pick<
 export const getTextStyles = (theme: AppTheme, props: TextStyleProps) => {
   const preset = TEXT_PRESETS[props.type ?? "body"];
   const fontFamilyKey = props.fontFamily ?? "script";
+  const fontSize = getAdjustedWidth(props.fontSize ?? preset.fontSize);
+  const baseLineHeight = getAdjustedWidth(
+    props.lineHeight ?? preset.lineHeight,
+  );
+  const lineHeightBoost =
+    fontFamilyKey === "script"
+      ? Math.ceil(fontSize * 0.25)
+      : fontFamilyKey === "display"
+        ? Math.ceil(fontSize * 0.15)
+        : 0;
+  const rightBleedFix =
+    fontFamilyKey === "script"
+      ? Math.ceil(fontSize * 0.08)
+      : fontFamilyKey === "display"
+        ? Math.ceil(fontSize * 0.05)
+        : 0;
 
   return StyleSheet.create({
     text: {
       fontFamily: theme.fonts[fontFamilyKey],
-      fontSize: getAdjustedWidth(props.fontSize ?? preset.fontSize),
-      lineHeight: getAdjustedWidth(props.lineHeight ?? preset.lineHeight),
+      fontSize,
+      lineHeight: baseLineHeight + lineHeightBoost,
       color: props.color ?? theme.colors.text,
+      ...(rightBleedFix ? { paddingRight: rightBleedFix } : {}),
       ...(props.fontWeight ? { fontWeight: props.fontWeight } : {}),
     },
   });
