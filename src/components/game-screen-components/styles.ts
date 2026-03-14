@@ -49,7 +49,7 @@ export const getStyles = (theme: AppTheme) =>
     },
     iconButtonContainer: {
       borderWidth: 1.5,
-      borderColor: theme.colors.coffeeMedium,
+      borderColor: theme.colors.bronzeMid,
       borderRadius: 10,
       width: getAdjustedWidth(50),
       height: getAdjustedWidth(50),
@@ -59,7 +59,7 @@ export const getStyles = (theme: AppTheme) =>
 
     helpGradient: {
       borderWidth: 1.5,
-      borderColor: theme.colors.coffeeMedium,
+      borderColor: theme.colors.bronzeMid,
       borderRadius: 10,
       height: getAdjustedHeight(50),
       alignItems: "center",

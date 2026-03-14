@@ -28,6 +28,10 @@ const NavigationPressable: React.FC<NavigationPressableProps> = ({
 }) => {
   const theme = useAppTheme();
   const styles = useStyles(getStyles);
+  const crownGradientColors = [
+    theme.colors.parchmentAlt,
+    theme.colors.parchment,
+  ] as const;
 
   return (
     <Pressable
@@ -38,14 +42,14 @@ const NavigationPressable: React.FC<NavigationPressableProps> = ({
     >
       <View style={styles.imgAndTextWrapper}>
         <LinearGradient
-          colors={["rgba(255, 240, 219, 0.5)", "rgba(214, 174, 129, 0.5)"]}
+          colors={crownGradientColors}
           start={{ x: 0.2, y: 0.1 }}
           end={{ x: 0.2, y: 0.8 }}
           style={styles.crownWrapper}
         >
           <Image resizeMode="contain" width={50} height={50} source={img} />
         </LinearGradient>
-        <AppText fontFamily="secondary" fontWeight="700" type="body">
+        <AppText fontFamily="sans" fontWeight="700" type="body">
           {title}
         </AppText>
       </View>
@@ -53,7 +57,7 @@ const NavigationPressable: React.FC<NavigationPressableProps> = ({
         <MaterialCommunityIcons
           name="arrow-right"
           size={20}
-          color={theme.colors.dark}
+          color={theme.colors.text}
         />
       </View>
     </Pressable>
@@ -65,9 +69,9 @@ export default NavigationPressable;
 const getStyles = (theme: AppTheme) =>
   StyleSheet.create({
     pressable: {
-      backgroundColor: theme.colors.surfaceAlt,
+      backgroundColor: theme.colors.surfaceRaised,
       borderWidth: 1,
-      borderColor: theme.colors.muted,
+      borderColor: theme.colors.border,
       borderRadius: theme.borderRadius.lg,
       boxShadow: "0px 2px 5.9px 0px rgba(62, 45, 3, 0.12)",
 
@@ -95,7 +99,7 @@ const getStyles = (theme: AppTheme) =>
       paddingHorizontal: getAdjustedWidth(6),
       paddingVertical: getAdjustedHeight(10),
       borderWidth: 1,
-      borderColor: theme.colors.coffeeMedium,
+      borderColor: theme.colors.bronzeMid,
       borderRadius: theme.borderRadius.md,
       overflow: "hidden",
     },
@@ -105,7 +109,7 @@ const getStyles = (theme: AppTheme) =>
       justifyContent: "center",
       padding: getAdjustedWidth(10),
       borderWidth: 1,
-      borderColor: theme.colors.muted,
+      borderColor: theme.colors.border,
       borderRadius: theme.borderRadius.md,
     },
   });

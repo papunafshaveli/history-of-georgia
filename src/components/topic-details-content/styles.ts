@@ -30,7 +30,7 @@ export const getStyles = (theme: AppTheme) =>
       paddingHorizontal: getAdjustedWidth(12),
       borderRadius: theme.borderRadius.lg,
       borderWidth: 1,
-      borderColor: theme.colors.muted,
+      borderColor: theme.colors.uiMuted,
       width: "100%",
       backgroundColor: theme.colors.surfaceAlt,
     },

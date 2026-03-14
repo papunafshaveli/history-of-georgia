@@ -1,7 +1,11 @@
-import React from "react";
-import { BackHandler, StatusBar, View, StyleSheet } from "react-native";
+import React, { useMemo } from "react";
+import { BackHandler, StatusBar, View } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
-import { NavigationContainer } from "@react-navigation/native";
+import {
+  NavigationContainer,
+  DefaultTheme,
+  DarkTheme,
+} from "@react-navigation/native";
 import { registerRootComponent } from "expo";
 
 import {
@@ -26,22 +30,20 @@ import {
   ThemeProvider,
   ThemeModeContext,
   useModifyThemeMode,
-  AppTheme,
-  useStyles,
 } from "./src/theme";
 import { LanguageProvider } from "./src/context/LanguageContext";
+
+const FONT_MAP = {
+  "aisi-bold": GFAisiBoldItalic,
+  "dm-medea": DMMedea,
+  "helvetica-main": Helvetica,
+  "nino-elite": BPGNinoEliteUltra,
+} as const;
 
 const App: React.FC = () => {
   useNotifications(false);
 
-  const fontsLoaded = useCustomFonts({
-    "aisi-bold": GFAisiBoldItalic,
-    "dm-medea": DMMedea,
-    "helvetica-main": Helvetica,
-    "nino-elite": BPGNinoEliteUltra,
-  });
-
-  const styles = useStyles(getStyles);
+  const fontsLoaded = useCustomFonts(FONT_MAP);
 
   const {
     isRulesModalVisible,
@@ -54,6 +56,27 @@ const App: React.FC = () => {
   } = useModalState();
 
   const { themeMode, isThemeDark, setThemeMode, theme } = useModifyThemeMode();
+
+  const containerStyle = useMemo(
+    () => ({ flex: 1, backgroundColor: theme.colors.background }),
+    [theme],
+  );
+
+  const navigationTheme = React.useMemo(() => {
+    const baseTheme = isThemeDark ? DarkTheme : DefaultTheme;
+    return {
+      ...baseTheme,
+      colors: {
+        ...baseTheme.colors,
+        primary: theme.colors.primary,
+        background: theme.colors.background,
+        card: theme.colors.surface,
+        text: theme.colors.text,
+        border: theme.colors.border,
+        notification: theme.colors.accent,
+      },
+    };
+  }, [isThemeDark, theme]);
 
   useBackHandler(() => {
     toggleExitModal();
@@ -71,9 +94,13 @@ const App: React.FC = () => {
           >
             <ThemeProvider theme={theme}>
               <SafeAreaProvider>
-                <View style={styles.container}>
-                  <StatusBar hidden />
-                  <NavigationContainer>
+                <View style={containerStyle}>
+                  <StatusBar
+                    hidden
+                    barStyle={isThemeDark ? "light-content" : "dark-content"}
+                    backgroundColor={theme.colors.background}
+                  />
+                  <NavigationContainer theme={navigationTheme}>
                     <AppNavigation
                       toggleRulesModal={toggleRulesModal}
                       toggleSettingsModal={toggleSettingsModal}
@@ -102,11 +129,3 @@ const App: React.FC = () => {
 registerRootComponent(App);
 
 export default App;
-
-const getStyles = (theme: AppTheme) =>
-  StyleSheet.create({
-    container: {
-      flex: 1,
-      backgroundColor: theme.colors.dark,
-    },
-  });

@@ -52,9 +52,9 @@ const OptionButton: React.FC<OptionButtonProps> = ({
       ]}
     >
       {isLoading ? (
-        <ActivityIndicator size="small" color={colors.coffeeMedium} />
+        <ActivityIndicator size="small" color={colors.bronzeMid} />
       ) : (
-        <AppText type="headline" fontFamily="primary" style={styles.optionText}>
+        <AppText type="headline" fontFamily="script" style={styles.optionText}>
           {option}
         </AppText>
       )}
