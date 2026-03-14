@@ -39,7 +39,7 @@ export const getStyles = (theme: AppTheme) =>
 
       borderRadius: theme.borderRadius.lg,
       borderWidth: 3,
-      borderColor: theme.colors.coffee,
+      borderColor: theme.colors.bronze,
     },
 
     buttonsWrapper: {
@@ -62,7 +62,7 @@ export const getStyles = (theme: AppTheme) =>
       alignItems: "center",
       justifyContent: "center",
 
-      borderColor: theme.colors.coffee,
+      borderColor: theme.colors.bronze,
     },
     resultFeedbackText: {
       marginTop: getAdjustedHeight(10),

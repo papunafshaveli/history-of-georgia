@@ -30,12 +30,10 @@ const GameFooter: React.FC<GameFooterProps> = ({
   const { colors } = useAppTheme();
   const styles = useStyles(getStyles);
 
-  const hintWrapperColor =
-    hintsCount === 0 || isHintDisabled
-      ? (["#C4B3A1", "#E0D8CC", "#C4B3A1"] as const)
-      : undefined;
-
   const isDisabled = hintsCount === 0 || isHintDisabled;
+  const hintWrapperColor = isDisabled
+    ? ([colors.disabled, colors.surfaceSunken, colors.disabled] as const)
+    : undefined;
 
   return (
     <View style={styles.footerWrapper}>
@@ -43,7 +41,7 @@ const GameFooter: React.FC<GameFooterProps> = ({
         <IconButton
           iconName="keyboard-backspace"
           size={30}
-          color={colors.dark}
+          color={colors.text}
           onPress={onExit}
           containerStyle={styles.iconButtonContainer}
           accessibilityLabel={t.common_logout}
@@ -62,13 +60,13 @@ const GameFooter: React.FC<GameFooterProps> = ({
             <MaterialCommunityIcons
               name="lightbulb-on"
               size={24}
-              color={colors.dark}
+              color={colors.text}
             />
 
             <AppText
-              color={colors.dark}
+              color={colors.text}
               type="title"
-              fontFamily="primary"
+              fontFamily="script"
               style={styles.hintText}
             >
               {t.common_hint} ({hintsCount})
@@ -81,7 +79,7 @@ const GameFooter: React.FC<GameFooterProps> = ({
         <IconButton
           iconName="settings-suggest"
           size={24}
-          color={colors.dark}
+          color={colors.text}
           onPress={onSettings}
           containerStyle={styles.iconButtonContainer}
           accessibilityLabel={t.common_parameters}

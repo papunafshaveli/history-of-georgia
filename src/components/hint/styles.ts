@@ -44,8 +44,8 @@ export const getStyles = (theme: AppTheme) =>
 
       borderRadius: theme.borderRadius.lg,
       borderWidth: 3,
-      borderColor: theme.colors.coffee,
+      borderColor: theme.colors.bronze,
 
-      backgroundColor: theme.colors.coffeeLight,
+      backgroundColor: theme.colors.bronzeLight,
     },
   });

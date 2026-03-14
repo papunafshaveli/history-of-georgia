@@ -39,7 +39,7 @@ const TopicDetailsContent: React.FC<DetailsScreenProps> = ({
   return (
     <SafeAreaView edges={[]} style={styles.safeArea}>
       <View style={styles.titleWrapper}>
-        <AppText fontFamily="secondary" fontWeight="bold" type="headline">
+        <AppText fontFamily="sans" fontWeight="bold" type="headline">
           {title}
         </AppText>
       </View>
@@ -54,7 +54,7 @@ const TopicDetailsContent: React.FC<DetailsScreenProps> = ({
 
           return (
             <AppText
-              fontFamily="secondary"
+              fontFamily="sans"
               fontWeight={isTitle ? "bold" : undefined}
               type={isTitle ? "subHeadline" : "body"}
               lineHeight={isTitle ? undefined : 22}

@@ -39,7 +39,7 @@ const IconButton: React.FC<IconButtonProps> = ({
       <View style={[styles.btnContainer, containerStyle]}>
         <MaterialIcons name={iconName} size={size} color={color} />
         {text && (
-          <AppText color={colors.white} fontFamily="primary" type="headline">
+          <AppText color={colors.white} fontFamily="script" type="headline">
             {text}
           </AppText>
         )}

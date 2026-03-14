@@ -26,14 +26,14 @@ type TextStyleProps = Pick<
 
 export const getTextStyles = (theme: AppTheme, props: TextStyleProps) => {
   const preset = TEXT_PRESETS[props.type ?? "body"];
-  const fontFamilyKey = props.fontFamily ?? "primary";
+  const fontFamilyKey = props.fontFamily ?? "script";
 
   return StyleSheet.create({
     text: {
       fontFamily: theme.fonts[fontFamilyKey],
       fontSize: getAdjustedWidth(props.fontSize ?? preset.fontSize),
       lineHeight: getAdjustedWidth(props.lineHeight ?? preset.lineHeight),
-      color: props.color ?? theme.colors.dark,
+      color: props.color ?? theme.colors.text,
       ...(props.fontWeight ? { fontWeight: props.fontWeight } : {}),
     },
   });

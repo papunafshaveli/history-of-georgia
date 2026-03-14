@@ -66,7 +66,7 @@ const AppSettings: React.FC = () => {
             size={22}
             color={colors.onImage}
           />
-          <AppText type="title" fontFamily="primary" color={colors.onImage}>
+          <AppText type="title" fontFamily="script" color={colors.onImage}>
             {t.common_theme}
           </AppText>
         </View>
@@ -85,8 +85,8 @@ const AppSettings: React.FC = () => {
                 ]}
               >
                 <AppText
-                  color={colors.onImage}
-                  fontFamily="primary"
+                  color={isActive ? colors.textOnPrimary : colors.text}
+                  fontFamily="script"
                   type="headline"
                   style={[
                     styles.themeOptionText,

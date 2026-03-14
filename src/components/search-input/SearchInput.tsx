@@ -24,7 +24,7 @@ const SearchInput: React.FC<SearchInputProps> = ({
     <View style={styles.container}>
       <EvilIcons
         name="search"
-        color={theme.colors.muted}
+        color={theme.colors.textMuted}
         size={32}
         style={styles.searchIcon}
       />
@@ -33,7 +33,8 @@ const SearchInput: React.FC<SearchInputProps> = ({
         value={searchText}
         onChangeText={onChangeSearchText}
         placeholder={placeHolder}
-        placeholderTextColor={theme.colors.muted}
+        placeholderTextColor={theme.colors.textMuted}
+        selectionColor={theme.colors.primary}
         accessibilityLabel={placeHolder}
         accessibilityRole="search"
       />
@@ -48,21 +49,21 @@ const getStyles = (theme: AppTheme) =>
     container: {
       flexDirection: "row",
       alignItems: "center",
-      backgroundColor: theme.colors.background,
+      backgroundColor: theme.colors.surface,
       width: "100%",
       height: getAdjustedHeight(62),
       borderStyle: "solid",
-      borderColor: theme.colors.muted,
+      borderColor: theme.colors.border,
       borderWidth: 1,
       borderRadius: theme.borderRadius.lg,
       paddingHorizontal: getAdjustedWidth(16),
     },
     input: {
       flex: 1,
-      fontFamily: theme.fonts.secondary,
+      fontFamily: theme.fonts.sans,
       fontSize: 16,
       fontWeight: "700",
-      color: theme.colors.dark,
+      color: theme.colors.text,
       paddingVertical: getAdjustedHeight(16),
     },
     searchIcon: {

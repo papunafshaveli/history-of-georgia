@@ -49,17 +49,17 @@ const GameScreen = () => {
 
         {gameState.status.hasError ? (
           <View style={errorStyles.container}>
-            <AppText
-              fontFamily="accent"
-              type="headline"
-              color={theme.colors.coffeeDark}
-              style={errorStyles.text}
-            >
-              {t.game_failed_to_load}
-            </AppText>
+              <AppText
+                fontFamily="serif"
+                type="headline"
+                color={theme.colors.bronzeDark}
+                style={errorStyles.text}
+              >
+                {t.game_failed_to_load}
+              </AppText>
             <Pressable style={errorStyles.button} onPress={actions.handleRetry}>
               <AppText
-                fontFamily="accent"
+                fontFamily="serif"
                 type="subHeadline"
                 color={theme.colors.surface}
               >
@@ -119,7 +119,7 @@ const getErrorStyles = (theme: AppTheme) =>
       textAlign: "center",
     },
     button: {
-      backgroundColor: theme.colors.coffee,
+      backgroundColor: theme.colors.bronze,
       paddingHorizontal: 24,
       paddingVertical: 12,
       borderRadius: theme.borderRadius.md,

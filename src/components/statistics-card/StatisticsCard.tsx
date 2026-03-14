@@ -29,15 +29,15 @@ const StatisticsCard: React.FC<CardProps> = ({
         <MaterialCommunityIcons
           name={iconName}
           size={22}
-          color={colors.coffeeDark}
+          color={colors.bronzeDark}
         />
       </View>
-      <AppText fontFamily="primary" type="title" color={colors.coffeeDark}>
+      <AppText fontFamily="script" type="title" color={colors.bronzeDark}>
         {title}
       </AppText>
       <AppText
-        color={colors.coffeeMedium}
-        fontFamily="primary"
+        color={colors.bronzeMid}
+        fontFamily="script"
         type="headline"
         style={styles.statLabel}
       >
@@ -56,7 +56,7 @@ const getStyles = (theme: AppTheme) =>
       height: getAdjustedHeight(150),
       borderRadius: theme.borderRadius.md,
       borderWidth: 1.5,
-      borderColor: theme.colors.coffee,
+      borderColor: theme.colors.bronze,
       alignItems: "center",
       justifyContent: "center",
       marginBottom: getAdjustedHeight(12),
@@ -67,7 +67,7 @@ const getStyles = (theme: AppTheme) =>
       height: 40,
       borderRadius: 20,
       borderWidth: 1.5,
-      borderColor: theme.colors.coffeeDark,
+      borderColor: theme.colors.bronzeDark,
       alignItems: "center",
       justifyContent: "center",
       marginBottom: getAdjustedHeight(8),

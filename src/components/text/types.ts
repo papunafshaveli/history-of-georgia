@@ -18,7 +18,7 @@ export type CustomTextProps = {
       ? W
       : never
     : never;
-  fontFamily?: "primary" | "secondary" | "accent" | "display";
+  fontFamily?: "sans" | "serif" | "script" | "display";
 };
 
 export type TextProps = RNTextProps & CustomTextProps;
