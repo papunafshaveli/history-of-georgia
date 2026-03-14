@@ -8,6 +8,15 @@ export const getStyles = (theme: AppTheme) =>
     startGameContainer: {
       flex: 1,
     },
+    overlayBase: {
+      ...StyleSheet.absoluteFillObject,
+    },
+    overlayDark: {
+      backgroundColor: theme.colors.overlayLight,
+    },
+    overlayLight: {
+      backgroundColor: "transparent",
+    },
     imageBackContainer: {
       flex: 1,
       alignItems: "center",

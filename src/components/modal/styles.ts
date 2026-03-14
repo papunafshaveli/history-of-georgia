@@ -40,4 +40,9 @@ export const getStyles = (theme: AppTheme) =>
       flex: 1,
       padding: getAdjustedWidth(15),
     },
+
+    darkTint: {
+      ...StyleSheet.absoluteFillObject,
+      backgroundColor: "rgba(15, 10, 5, 0.2)",
+    },
   });

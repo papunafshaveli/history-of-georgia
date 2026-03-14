@@ -42,7 +42,7 @@ const TabNavigation: React.FC<TabNavigationProps> = ({
           onLeftBtnPress={toggleSettingsModal}
           onRightBtnPress={toggleRulesModal}
           leftBtnIconName="settings-suggest"
-          rightBtnIconName="rule-folder"
+          rightBtnIconName="menu-book"
         />
       ),
     }),

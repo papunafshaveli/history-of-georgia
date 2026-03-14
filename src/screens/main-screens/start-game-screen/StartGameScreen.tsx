@@ -13,6 +13,7 @@ import {
   usePlaySound,
   useSettings,
   useStyles,
+  useThemeMode,
   useTranslation,
 } from "@/src/hooks";
 import { ScreenName } from "@/src/types";
@@ -24,12 +25,14 @@ import { getStyles } from "./styles";
 
 const StartGameScreen = () => {
   const { isMuted, isVibrationOff } = useSettings();
+  const { isThemeDark } = useThemeMode();
 
   const { playSound } = usePlaySound();
 
   const navigation: NavigationProp<ParamListBase> = useNavigation();
   const { colors } = useAppTheme();
   const styles = useStyles(getStyles);
+  const overlayStyle = isThemeDark ? styles.overlayDark : styles.overlayLight;
 
   const handlePressStart = async () => {
     if (!isVibrationOff) {
@@ -52,6 +55,10 @@ const StartGameScreen = () => {
           style={styles.imageBackContainer}
           imageStyle={styles.imageBackStyles}
         >
+          <View
+            pointerEvents="none"
+            style={[styles.overlayBase, overlayStyle]}
+          />
           <Pressable
             android_ripple={{
               color: colors.border,
@@ -74,6 +81,7 @@ const StartGameScreen = () => {
                   type="display"
                   fontFamily="display"
                   lineHeight={100}
+                  style={isThemeDark ? { opacity: 0.7 } : undefined}
                 >
                   {t.common_start}
                 </AppText>
@@ -81,6 +89,7 @@ const StartGameScreen = () => {
                   name="sword-cross"
                   color={colors.bronzeLight}
                   size={40}
+                  style={isThemeDark ? { opacity: 0.7 } : undefined}
                 />
               </View>
             </ImageBackground>

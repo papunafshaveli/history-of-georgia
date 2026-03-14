@@ -18,7 +18,7 @@ export const getStyles = (theme: AppTheme) =>
     fistText: {
       fontFamily: theme.fonts.display,
       fontSize: 35,
-      color: theme.colors.text,
+      color: theme.colors.onImage,
       textAlign: "left",
     },
     secondText: {
@@ -30,7 +30,7 @@ export const getStyles = (theme: AppTheme) =>
     thirdText: {
       fontFamily: theme.fonts.display,
       fontSize: 35,
-      color: theme.colors.text,
+      color: theme.colors.onImage,
       textAlign: "right",
     },
     textsContainer: {

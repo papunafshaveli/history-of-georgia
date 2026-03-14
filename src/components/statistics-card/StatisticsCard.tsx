@@ -32,7 +32,7 @@ const StatisticsCard: React.FC<CardProps> = ({
           color={colors.bronzeDark}
         />
       </View>
-      <AppText fontFamily="script" type="title" color={colors.bronzeDark}>
+      <AppText fontFamily="sans" type="title" color={colors.bronzeDark}>
         {title}
       </AppText>
       <AppText

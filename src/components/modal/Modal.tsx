@@ -1,9 +1,14 @@
 import React from "react";
-import { Modal as NativeModal, ImageBackground, Pressable } from "react-native";
+import {
+  Modal as NativeModal,
+  ImageBackground,
+  Pressable,
+  View,
+} from "react-native";
 
 import { EvilIcons } from "@expo/vector-icons";
 
-import { useAppTheme, useStyles } from "@/src/hooks";
+import { useAppTheme, useStyles, useThemeMode } from "@/src/hooks";
 import { BodyRoll, HeaderRoll } from "@/src/assets";
 
 import GradientWrapper from "../gradient-wrapper/GradientWrapper";
@@ -25,6 +30,7 @@ const ReusableModal: React.FC<ReusableModalProps> = ({
   isVisible,
 }) => {
   const { colors } = useAppTheme();
+  const { isThemeDark } = useThemeMode();
   const styles = useStyles(getStyles);
 
   const handleModalPress = (event: { stopPropagation: () => void }) => {
@@ -48,6 +54,7 @@ const ReusableModal: React.FC<ReusableModalProps> = ({
             }}
             resizeMode="stretch"
           >
+            {isThemeDark && <View style={styles.darkTint} />}
             <AppText>{""}</AppText>
             <AppText fontFamily="script" type="title" color={colors.onImage}>
               {headerTitle}
@@ -66,6 +73,7 @@ const ReusableModal: React.FC<ReusableModalProps> = ({
             style={styles.background}
             resizeMode="stretch"
           >
+            {isThemeDark && <View style={styles.darkTint} />}
             {renderComponent}
           </ImageBackground>
         </Pressable>

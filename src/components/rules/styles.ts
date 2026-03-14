@@ -6,7 +6,6 @@ export const getStyles = (theme: AppTheme) =>
   StyleSheet.create({
     container: {
       flex: 1,
-      justifyContent: "space-around",
       alignItems: "center",
     },
 
@@ -24,16 +23,13 @@ export const getStyles = (theme: AppTheme) =>
     },
 
     rulesTextWrapper: {
-      marginHorizontal: 20,
+      marginHorizontal: theme.spacing.x5,
       padding: 10,
-      backgroundColor: theme.colors.overlayLight,
       borderRadius: 12,
+      gap: theme.spacing.x5,
     },
 
-    ruleTextTitle: {
-      textAlign: "center",
-    },
-    ruleTextDesc: {
+    alignCenter: {
       textAlign: "center",
     },
   });

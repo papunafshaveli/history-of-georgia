@@ -22,10 +22,20 @@ const Rules = () => {
       />
       <View style={styles.rulesTextWrapper}>
         <>
-          <AppText color={colors.onImage} fontSize={17} style={styles.ruleTextTitle}>
+          <AppText
+            color={colors.onImage}
+            type="display"
+            fontFamily="script"
+            style={styles.alignCenter}
+          >
             {t.rules_title}
           </AppText>
-          <AppText color={colors.onImage} type="body" style={styles.ruleTextDesc}>
+          <AppText
+            color={colors.onImage}
+            type="title"
+            fontFamily="script"
+            style={styles.alignCenter}
+          >
             {t.rules_description}
           </AppText>
         </>

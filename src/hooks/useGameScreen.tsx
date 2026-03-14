@@ -128,12 +128,14 @@ export const useGameScreen = () => {
         getNextQuestion();
       }, nextQuestionGetTime);
     },
-    [gameState.currentQuestion, gameState.status, isMuted, isVibrationOff, playSound, getNextQuestion]
+    [gameState, isMuted, isVibrationOff, playSound, getNextQuestion],
   );
 
   const handleHint = useCallback(() => {
     if (gameState.hintsRemaining > 0) {
-      logEvent(AnalyticsEvent.HINT_USED, { remaining: gameState.hintsRemaining - 1 });
+      logEvent(AnalyticsEvent.HINT_USED, {
+        remaining: gameState.hintsRemaining - 1,
+      });
       if (!isVibrationOff) {
         vibrateImpact();
       }
@@ -194,6 +196,13 @@ export const useGameScreen = () => {
     }));
   }, [isVibrationOff]);
 
+  const closeSummaryModal = useCallback(() => {
+    setGameState((prev) => ({
+      ...prev,
+      modals: { ...prev.modals, summary: false },
+    }));
+  }, []);
+
   const actions = useMemo(
     () => ({
       handleOptionPress,
@@ -202,7 +211,7 @@ export const useGameScreen = () => {
       handleRestart,
       handleRetry,
     }),
-    [handleOptionPress, handleHint, handleExit, handleRestart, handleRetry]
+    [handleOptionPress, handleHint, handleExit, handleRestart, handleRetry],
   );
 
   const modalHandlers = useMemo(
@@ -210,13 +219,14 @@ export const useGameScreen = () => {
       toggleExitModal,
       toggleSettingsModal,
       toggleHintModal,
+      closeSummaryModal,
     }),
-    [toggleExitModal, toggleSettingsModal, toggleHintModal]
+    [toggleExitModal, toggleSettingsModal, toggleHintModal, closeSummaryModal],
   );
 
   const crownsArray = useMemo(
     () => Array(gameState.crowns).fill(Crown),
-    [gameState.crowns]
+    [gameState.crowns],
   );
 
   return {

@@ -7,16 +7,33 @@ export const getStyles = (theme: AppTheme) =>
   StyleSheet.create({
     container: {
       flex: 1,
-      justifyContent: "center",
-      alignItems: "center",
+      paddingTop: getAdjustedHeight(40),
       paddingHorizontal: theme.spacing.x4,
-      gap: theme.spacing.x6,
+      gap: getAdjustedHeight(20),
+    },
+
+    section: {
+      width: "100%",
+      backgroundColor: "rgba(0, 0, 0, 0.06)",
+      borderRadius: theme.borderRadius.md,
+      paddingVertical: getAdjustedHeight(12),
+      paddingHorizontal: getAdjustedWidth(14),
+    },
+
+    divider: {
+      height: StyleSheet.hairlineWidth,
+      backgroundColor: "rgba(0, 0, 0, 0.12)",
+      marginVertical: getAdjustedHeight(10),
     },
 
     themeSection: {
       width: "100%",
+      backgroundColor: "rgba(0, 0, 0, 0.06)",
+      borderRadius: theme.borderRadius.md,
+      paddingVertical: getAdjustedHeight(14),
+      paddingHorizontal: getAdjustedWidth(14),
       alignItems: "center",
-      gap: theme.spacing.x4,
+      gap: getAdjustedHeight(12),
     },
     themeLabelRow: {
       flexDirection: "row",
@@ -31,16 +48,16 @@ export const getStyles = (theme: AppTheme) =>
       paddingHorizontal: getAdjustedWidth(12),
       paddingVertical: getAdjustedHeight(6),
       borderRadius: theme.borderRadius.sm,
-      backgroundColor: theme.colors.surfaceAlt,
+      backgroundColor: "rgba(255, 255, 255, 0.35)",
       borderWidth: 1,
-      borderColor: theme.colors.border,
+      borderColor: "rgba(0, 0, 0, 0.1)",
     },
     themeOptionActive: {
       backgroundColor: theme.colors.primary,
       borderColor: theme.colors.primary,
     },
     themeOptionText: {
-      opacity: 0.8,
+      opacity: 0.7,
     },
     themeOptionTextActive: {
       opacity: 1,

@@ -30,34 +30,23 @@ const AppSettings: React.FC = () => {
 
   const styles = useStyles(getStyles);
 
-  const toggleSettings = [
-    {
-      key: "vibration",
-      iconName: "vibrate" as const,
-      label: isVibrationOff ? t.vibration_turn_on : t.vibration_turn_off,
-      value: !isVibrationOff,
-      onValueChange: () => setIsVibrationOff(!isVibrationOff),
-    },
-    {
-      key: "sound",
-      iconName: "volume-high" as const,
-      label: isMuted ? t.sound_turn_on : t.sound_turn_off,
-      value: !isMuted,
-      onValueChange: () => setIsMuted(!isMuted),
-    },
-  ];
-
   return (
     <View style={styles.container}>
-      {toggleSettings.map(({ key, iconName, label, value, onValueChange }) => (
+      <View style={styles.section}>
         <SettingToggle
-          key={key}
-          iconName={iconName}
-          label={label}
-          value={value}
-          onValueChange={onValueChange}
+          iconName="vibrate"
+          label={isVibrationOff ? t.vibration_turn_on : t.vibration_turn_off}
+          value={!isVibrationOff}
+          onValueChange={() => setIsVibrationOff(!isVibrationOff)}
         />
-      ))}
+        <View style={styles.divider} />
+        <SettingToggle
+          iconName="volume-high"
+          label={isMuted ? t.sound_turn_on : t.sound_turn_off}
+          value={!isMuted}
+          onValueChange={() => setIsMuted(!isMuted)}
+        />
+      </View>
 
       <View style={styles.themeSection}>
         <View style={styles.themeLabelRow}>
@@ -85,7 +74,7 @@ const AppSettings: React.FC = () => {
                 ]}
               >
                 <AppText
-                  color={isActive ? colors.textOnPrimary : colors.text}
+                  color={isActive ? colors.textOnPrimary : colors.onImage}
                   fontFamily="script"
                   type="headline"
                   style={[
