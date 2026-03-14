@@ -31,16 +31,18 @@ export const getStyles = (theme: AppTheme) =>
       paddingHorizontal: getAdjustedWidth(12),
       paddingVertical: getAdjustedHeight(6),
       borderRadius: theme.borderRadius.sm,
-      backgroundColor: "rgba(0, 0, 0, 0.12)",
+      backgroundColor: theme.colors.surfaceAlt,
+      borderWidth: 1,
+      borderColor: theme.colors.border,
     },
     themeOptionActive: {
-      backgroundColor: theme.colors.coffee,
+      backgroundColor: theme.colors.primary,
+      borderColor: theme.colors.primary,
     },
     themeOptionText: {
-      opacity: 0.7,
+      opacity: 0.8,
     },
     themeOptionTextActive: {
-      color: theme.colors.white,
       opacity: 1,
     },
   });

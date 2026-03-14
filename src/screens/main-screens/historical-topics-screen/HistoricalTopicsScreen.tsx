@@ -80,14 +80,14 @@ const HistoricalTopicsScreen = () => {
   return (
     <SafeAreaView edges={[]} style={styles.safeArea}>
       <View style={styles.titleDescWrapper}>
-        <AppText fontFamily="secondary" fontWeight="bold" type="headline">
+        <AppText fontFamily="sans" fontWeight="bold" type="headline">
           {t.learn_about_geo_history}
         </AppText>
         <AppText
-          fontFamily="secondary"
+          fontFamily="sans"
           fontWeight="bold"
           type="subHeadline"
-          color={colors.muted}
+          color={colors.uiMuted}
         >
           {t.common_choose_category}
         </AppText>
@@ -108,7 +108,7 @@ const HistoricalTopicsScreen = () => {
                   style={styles.imageBackgroundStyle}
                 >
                   <AppText
-                    fontFamily="accent"
+                    fontFamily="serif"
                     type="headline"
                     color={colors.white}
                     style={styles.text}

@@ -112,7 +112,7 @@ const GameSummary: React.FC<GameSummaryProps> = ({
       >
         <AppText
           lineHeight={100}
-          fontFamily="primary"
+          fontFamily="script"
           type="display"
           color={colors.onImage}
         >
@@ -121,7 +121,7 @@ const GameSummary: React.FC<GameSummaryProps> = ({
       </ImageBackground>
       <AppText
         type="display"
-        fontFamily="primary"
+        fontFamily="script"
         color={colors.onImage}
         style={styles.resultFeedbackText}
       >
@@ -129,7 +129,7 @@ const GameSummary: React.FC<GameSummaryProps> = ({
       </AppText>
       <AppText
         type="title"
-        fontFamily="primary"
+        fontFamily="script"
         color={colors.onImage}
         style={styles.highScoreText}
       >
@@ -141,7 +141,7 @@ const GameSummary: React.FC<GameSummaryProps> = ({
             iconName="facebook"
             onPress={handleVisitFbPage}
             size={24}
-            color={colors.coffeeDark}
+            color={colors.bronzeDark}
             containerStyle={styles.gradient}
             accessibilityLabel="Facebook"
           />
@@ -152,7 +152,7 @@ const GameSummary: React.FC<GameSummaryProps> = ({
             iconName="bar-chart"
             onPress={handleNavigateToStats}
             size={24}
-            color={colors.coffeeDark}
+            color={colors.bronzeDark}
             containerStyle={styles.gradient}
             accessibilityLabel="Stats"
           />
@@ -164,13 +164,13 @@ const GameSummary: React.FC<GameSummaryProps> = ({
           accessibilityLabel={t.game_restart}
         >
           <GradientWrapper style={styles.button}>
-            <AppText type="headline" fontFamily="primary">
+            <AppText type="headline" fontFamily="script">
               {t.game_restart}
             </AppText>
             <MaterialCommunityIcons
               name="restart"
               size={24}
-              color={colors.coffeeDark}
+              color={colors.bronzeDark}
             />
           </GradientWrapper>
         </Pressable>
@@ -185,7 +185,7 @@ const GameSummary: React.FC<GameSummaryProps> = ({
             <IconButton
               iconName="star-border-purple500"
               size={24}
-              color={colors.coffeeDark}
+              color={colors.bronzeDark}
               onPress={handleVisitStore}
               containerStyle={styles.gradient}
               accessibilityLabel="Rate app"

@@ -9,7 +9,7 @@ export const getStyles = (theme: AppTheme) =>
       height: 45,
       borderWidth: 1,
       borderRadius: theme.borderRadius.md,
-      borderColor: theme.colors.muted,
+      borderColor: theme.colors.uiMuted,
 
       alignItems: "center",
       justifyContent: "center",

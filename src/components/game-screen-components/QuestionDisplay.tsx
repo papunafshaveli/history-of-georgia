@@ -32,10 +32,10 @@ const QuestionDisplay: React.FC<QuestionDisplayProps> = ({
       resizeMode="contain"
     >
       {isLoading ? (
-        <ActivityIndicator size="large" color={colors.coffeeMedium} />
+        <ActivityIndicator size="large" color={colors.bronzeMid} />
       ) : (
         <AppText
-          fontFamily="primary"
+          fontFamily="script"
           type="title"
           color={colors.onImage}
           style={styles.questionText}
@@ -43,13 +43,13 @@ const QuestionDisplay: React.FC<QuestionDisplayProps> = ({
           {startsWithAssociationText ? (
             <>
               <AppText
-                fontFamily="primary"
+                fontFamily="script"
                 type="title"
                 color={colors.primary}
               >
                 {associationText}
               </AppText>
-              <AppText fontFamily="primary" type="title" color={colors.onImage}>
+              <AppText fontFamily="script" type="title" color={colors.onImage}>
                 {withoutAssociationText}
               </AppText>
             </>

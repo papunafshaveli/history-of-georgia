@@ -28,7 +28,7 @@ const Hint: React.FC<HintProps> = ({ onPressContinue, currentHint }) => {
         accessibilityElementsHidden
       />
       <AppText
-        fontFamily="primary"
+        fontFamily="script"
         type="title"
         color={colors.onImage}
         accessibilityRole="text"
@@ -44,7 +44,7 @@ const Hint: React.FC<HintProps> = ({ onPressContinue, currentHint }) => {
         accessibilityLabel={t.common_close}
       >
         <GradientWrapper style={styles.gradient}>
-          <AppText fontFamily="primary" type="headline">
+          <AppText fontFamily="script" type="headline">
             {t.common_close}
           </AppText>
         </GradientWrapper>

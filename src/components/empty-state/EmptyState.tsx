@@ -15,10 +15,10 @@ const EmptyState: React.FC<EmptyStateProps> = ({ title, description }) => {
   return (
     <View style={styles.container}>
       <Image source={EmptyStateImg} style={styles.image} />
-      <AppText type="title" fontFamily="primary" style={styles.text}>
+      <AppText type="title" fontFamily="script" style={styles.text}>
         {title}
       </AppText>
-      <AppText type="headline" fontFamily="primary" style={styles.text}>
+      <AppText type="headline" fontFamily="script" style={styles.text}>
         {description}
       </AppText>
     </View>

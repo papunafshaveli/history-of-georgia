@@ -49,7 +49,7 @@ const ReusableModal: React.FC<ReusableModalProps> = ({
             resizeMode="stretch"
           >
             <AppText>{""}</AppText>
-            <AppText fontFamily="primary" type="title" color={colors.onImage}>
+            <AppText fontFamily="script" type="title" color={colors.onImage}>
               {headerTitle}
             </AppText>
             {onClose && (

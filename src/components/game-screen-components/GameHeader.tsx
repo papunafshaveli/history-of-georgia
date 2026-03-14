@@ -23,7 +23,7 @@ const GameHeader: React.FC<GameHeaderProps> = ({
   const { colors } = useAppTheme();
 
   const correctAnswerCountColor =
-    correctAnswersCount > 0 ? colors.correctBorder : colors.dark;
+    correctAnswersCount > 0 ? colors.correctBorder : colors.text;
 
   return (
     <>
@@ -34,19 +34,19 @@ const GameHeader: React.FC<GameHeaderProps> = ({
       </View>
       <AppText
         type="headline"
-        fontFamily="primary"
+        fontFamily="script"
         style={styles.answersTextAndCount}
       >
         {t.common_correct_answer}{" "}
         <AppText
           color={correctAnswerCountColor}
-          type="headline"
-          fontFamily="primary"
+          type="title"
+          fontFamily="script"
         >
           {correctAnswersCount}
         </AppText>
         /
-        <AppText type="headline" fontFamily="primary">
+        <AppText type="title" fontFamily="script">
           {questionsCount}
         </AppText>
       </AppText>

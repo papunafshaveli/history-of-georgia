@@ -26,7 +26,7 @@ export const getStyles = (theme: AppTheme) =>
     rulesTextWrapper: {
       marginHorizontal: 20,
       padding: 10,
-      backgroundColor: "rgba(0, 0, 0, 0.2)",
+      backgroundColor: theme.colors.overlayLight,
       borderRadius: 12,
     },
 

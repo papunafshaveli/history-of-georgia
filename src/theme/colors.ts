@@ -4,6 +4,8 @@ type ColorScheme = {
   background: string;
   surface: string;
   surfaceAlt: string;
+  surfaceRaised: string;
+  surfaceSunken: string;
   overlay: string;
   white: string;
   overlayLight: string;
@@ -13,65 +15,73 @@ type ColorScheme = {
   incorrectBorder: string;
   parchment: string;
   parchmentAlt: string;
-  dark: string;
-  light: string;
+  text: string;
+  textMuted: string;
+  textOnPrimary: string;
   border: string;
-  coffee: string;
-  coffeeLight: string;
-  coffeeMedium: string;
-  coffeeDark: string;
-  muted: string;
+  disabled: string;
+  disabledBorder: string;
+  bronze: string;
+  bronzeLight: string;
+  bronzeMid: string;
+  bronzeDark: string;
+  uiMuted: string;
   gradientStart: string;
   gradientMid: string;
   gradientEnd: string;
-  headerBg: string;
+  chromeBg: string;
   onImage: string;
   transparent: string;
 };
 
 export const lightColors: ColorScheme = {
   // Brand
-  primary: "#A31D1D",
-  accent: "#ED2B2A",
+  primary: "#8F1E1E",
+  accent: "#D14B2E",
   white: "#FFFFFF",
 
   // Surfaces
-  background: "#FBF3E3",
-  surface: "#FFFFFF",
-  surfaceAlt: "#ECE4D5",
-  overlay: "rgba(0, 0, 0, 0.5)",
-  overlayLight: "rgba(0, 0, 0, 0.2)",
+  background: "#F7EFE4",
+  surface: "#FFF9F0",
+  surfaceAlt: "#EFE1D1",
+  surfaceRaised: "#FFFCF6",
+  surfaceSunken: "#E8D7C5",
+  overlay: "rgba(17, 12, 7, 0.55)",
+  overlayLight: "rgba(17, 12, 7, 0.2)",
 
   // Answer feedback
-  correctBg: "#DCECD5",
-  correctBorder: "#469663",
-  incorrectBg: "#FDDEDE",
-  incorrectBorder: "#964646",
+  correctBg: "#D7EFE0",
+  correctBorder: "#3F8F63",
+  incorrectBg: "#F7DADA",
+  incorrectBorder: "#B85A5A",
 
   // Parchment / old-roll
-  parchment: "#fbc67f",
-  parchmentAlt: "#debb92",
+  parchment: "#E9C78F",
+  parchmentAlt: "#D8B27E",
 
   // Neutrals
-  dark: "#2C2C2C",
-  light: "#FBF9FA",
-  border: "#DDE6ED",
+  text: "#2C241B",
+  textMuted: "#7F6D5F",
+  textOnPrimary: "#FFF6ED",
+  border: "#D7C7B6",
+  disabled: "#E9DECF",
+  disabledBorder: "#D2C1B0",
 
-  // Coffee palette
-  coffee: "#AF8260",
-  coffeeLight: "#E4C59E",
-  coffeeMedium: "#A38474",
-  coffeeDark: "#6c5443",
-  muted: "#C8BFB0",
+  // Bronze palette
+  bronze: "#B07A52",
+  bronzeLight: "#E9C39A",
+  bronzeMid: "#A37B62",
+  bronzeDark: "#6D4B36",
+  uiMuted: "#B7A392",
 
   // Gradients
-  gradientStart: "#b9976e",
-  gradientMid: "#d8c2aa",
-  gradientEnd: "#b9976e",
+  gradientStart: "#D4B894",
+  gradientMid: "#EAD8C2",
+  gradientEnd: "#C9A881",
 
   // Chrome & image overlays
-  headerBg: "#2C2C2C",
-  onImage: "#2C2C2C",
+  chromeBg: "#7A5C46",
+  onImage: "#2B221A",
 
   // Transparent
   transparent: "transparent",
@@ -79,47 +89,52 @@ export const lightColors: ColorScheme = {
 
 export const darkColors: ColorScheme = {
   // Brand
-  primary: "#B82525",
-  accent: "#F04040",
+  primary: "#C23A3A",
+  accent: "#E25B3B",
   white: "#FFFFFF",
 
   // Surfaces — warm dark browns (not cold grays) to match parchment images
-  background: "#1A1510",
-  surface: "#262018",
-  surfaceAlt: "#332B22",
+  background: "#15110D",
+  surface: "#241C15",
+  surfaceAlt: "#30261D",
+  surfaceRaised: "#382C22",
+  surfaceSunken: "#1B1510",
   overlay: "rgba(0, 0, 0, 0.7)",
-  overlayLight: "rgba(0, 0, 0, 0.4)",
+  overlayLight: "rgba(0, 0, 0, 0.35)",
 
   // Answer feedback
-  correctBg: "#1A2B1A",
-  correctBorder: "#5AAE78",
-  incorrectBg: "#2B1A1A",
-  incorrectBorder: "#C86060",
+  correctBg: "#1A2E22",
+  correctBorder: "#5DB47C",
+  incorrectBg: "#2E1A1A",
+  incorrectBorder: "#D17373",
 
   // Parchment — kept close to light theme since parchment images don't change
-  parchment: "#C4A868",
-  parchmentAlt: "#B49858",
+  parchment: "#C6A96C",
+  parchmentAlt: "#B7955B",
 
   // Neutrals
-  dark: "#EDE5D8",
-  light: "#1A1510",
-  border: "#4A3E32",
+  text: "#F1E7D9",
+  textMuted: "#B3A08F",
+  textOnPrimary: "#FFF3E8",
+  border: "#5B4D3E",
+  disabled: "#2B221A",
+  disabledBorder: "#3A2F26",
 
-  // Coffee palette — warm tones to complement fixed parchment images
-  coffee: "#C89870",
-  coffeeLight: "#DDB888",
-  coffeeMedium: "#B08A76",
-  coffeeDark: "#D4BCA6",
-  muted: "#7A7068",
+  // Bronze palette — warm tones to complement fixed parchment images
+  bronze: "#CD996E",
+  bronzeLight: "#F0C99E",
+  bronzeMid: "#C09574",
+  bronzeDark: "#EBD4BA",
+  uiMuted: "#B29C88",
 
   // Gradients
-  gradientStart: "#5A4830",
-  gradientMid: "#6E5C46",
-  gradientEnd: "#5A4830",
+  gradientStart: "#5A4635",
+  gradientMid: "#6B5643",
+  gradientEnd: "#513E30",
 
   // Chrome & image overlays — stay dark regardless of theme
-  headerBg: "#131010",
-  onImage: "#3A2E22",
+  chromeBg: "#15100C",
+  onImage: "#2B221A",
 
   // Transparent
   transparent: "transparent",

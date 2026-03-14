@@ -70,7 +70,7 @@ const StartGameScreen = () => {
             >
               <View style={styles.textAndIcon}>
                 <AppText
-                  color={colors.coffeeLight}
+                  color={colors.bronzeLight}
                   type="display"
                   fontFamily="display"
                   lineHeight={100}
@@ -79,7 +79,7 @@ const StartGameScreen = () => {
                 </AppText>
                 <MaterialCommunityIcons
                   name="sword-cross"
-                  color={colors.coffeeLight}
+                  color={colors.bronzeLight}
                   size={40}
                 />
               </View>

@@ -37,7 +37,7 @@ const Endgame: React.FC<EndgameProps> = ({
         accessibilityElementsHidden
       />
       <AppText
-        fontFamily="primary"
+        fontFamily="script"
         type="display"
         color={colors.onImage}
         style={styles.question}
@@ -51,7 +51,7 @@ const Endgame: React.FC<EndgameProps> = ({
           accessibilityLabel={continueBtnText}
         >
           <GradientWrapper style={styles.button}>
-            <AppText fontFamily="primary" type="headline">
+            <AppText fontFamily="script" type="headline">
               {continueBtnText}
             </AppText>
           </GradientWrapper>
@@ -62,7 +62,7 @@ const Endgame: React.FC<EndgameProps> = ({
           accessibilityLabel={closeBtnText}
         >
           <GradientWrapper style={styles.button}>
-            <AppText fontFamily="primary" type="headline">
+            <AppText fontFamily="script" type="headline">
               {closeBtnText}
             </AppText>
           </GradientWrapper>
