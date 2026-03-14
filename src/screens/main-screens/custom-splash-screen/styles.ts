@@ -1,7 +1,7 @@
 import { StyleSheet } from "react-native";
 
 import type { AppTheme } from "@/src/theme";
-import { getAdjustedHeight } from "@/src/helpers";
+import { getAdjustedHeight, getAdjustedWidth } from "@/src/helpers";
 
 export const getStyles = (theme: AppTheme) =>
   StyleSheet.create({
@@ -36,7 +36,7 @@ export const getStyles = (theme: AppTheme) =>
     textsContainer: {
       flex: 1,
       marginTop: getAdjustedHeight(200),
-      paddingHorizontal: 20,
-      gap: 20,
+      paddingHorizontal: getAdjustedWidth(20),
+      gap: getAdjustedHeight(20),
     },
   });

@@ -56,7 +56,7 @@ export const getStyles = (theme: AppTheme) =>
     gradient: {
       borderWidth: 3,
 
-      borderRadius: 10,
+      borderRadius: theme.borderRadius.sm,
       width: getAdjustedWidth(56),
       height: getAdjustedWidth(56),
       alignItems: "center",

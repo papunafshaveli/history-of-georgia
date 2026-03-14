@@ -43,6 +43,6 @@ export const getStyles = (theme: AppTheme) =>
 
     darkTint: {
       ...StyleSheet.absoluteFillObject,
-      backgroundColor: "rgba(15, 10, 5, 0.2)",
+      backgroundColor: theme.colors.darkTint,
     },
   });

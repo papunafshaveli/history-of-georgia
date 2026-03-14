@@ -33,12 +33,10 @@ const GameScreen = () => {
   return (
     <SafeAreaView
       edges={[]}
-      style={{
-        flex: 1,
-        paddingTop: topInset,
-        paddingBottom: bottomInset,
-        backgroundColor: theme.colors.background,
-      }}
+      style={[
+        styles.safeArea,
+        { paddingTop: topInset, paddingBottom: bottomInset },
+      ]}
     >
       <View style={styles.gameScreenContainer}>
         <GameHeader
@@ -49,14 +47,14 @@ const GameScreen = () => {
 
         {gameState.status.hasError ? (
           <View style={errorStyles.container}>
-              <AppText
-                fontFamily="serif"
-                type="headline"
-                color={theme.colors.bronzeDark}
-                style={errorStyles.text}
-              >
-                {t.game_failed_to_load}
-              </AppText>
+            <AppText
+              fontFamily="serif"
+              type="headline"
+              color={theme.colors.bronzeDark}
+              style={errorStyles.text}
+            >
+              {t.game_failed_to_load}
+            </AppText>
             <Pressable style={errorStyles.button} onPress={actions.handleRetry}>
               <AppText
                 fontFamily="serif"
@@ -113,15 +111,15 @@ const getErrorStyles = (theme: AppTheme) =>
       flex: 1,
       justifyContent: "center",
       alignItems: "center",
-      gap: 16,
+      gap: theme.spacing.x4,
     },
     text: {
       textAlign: "center",
     },
     button: {
       backgroundColor: theme.colors.bronze,
-      paddingHorizontal: 24,
-      paddingVertical: 12,
+      paddingHorizontal: theme.spacing.x6,
+      paddingVertical: theme.spacing.x3,
       borderRadius: theme.borderRadius.md,
     },
   });

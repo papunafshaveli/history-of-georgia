@@ -8,7 +8,7 @@ export const getStyles = (theme: AppTheme) =>
     safeArea: {
       backgroundColor: theme.colors.background,
       marginTop: getAdjustedHeight(-18),
-      paddingHorizontal: 4,
+      paddingHorizontal: getAdjustedWidth(4),
       flex: 1,
     },
 
@@ -54,7 +54,7 @@ export const getStyles = (theme: AppTheme) =>
       textAlign: "left",
     },
     titleParagraph: {
-      paddingVertical: 16,
+      paddingVertical: getAdjustedHeight(16),
       textAlign: "center",
     },
   });
