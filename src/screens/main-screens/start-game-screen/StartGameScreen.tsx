@@ -47,7 +47,7 @@ const StartGameScreen = () => {
   const t = useTranslation();
 
   return (
-    <SafeAreaView edges={[]} style={{ flex: 1 }}>
+    <SafeAreaView edges={[]} style={styles.safeArea}>
       <View style={styles.startGameContainer}>
         <ImageBackground
           source={StartScreenBack}
@@ -81,7 +81,7 @@ const StartGameScreen = () => {
                   type="display"
                   fontFamily="display"
                   lineHeight={100}
-                  style={isThemeDark ? { opacity: 0.7 } : undefined}
+                  style={isThemeDark ? styles.darkOpacity : undefined}
                 >
                   {t.common_start}
                 </AppText>
@@ -89,7 +89,7 @@ const StartGameScreen = () => {
                   name="sword-cross"
                   color={colors.bronzeLight}
                   size={40}
-                  style={isThemeDark ? { opacity: 0.7 } : undefined}
+                  style={isThemeDark ? styles.darkOpacity : undefined}
                 />
               </View>
             </ImageBackground>

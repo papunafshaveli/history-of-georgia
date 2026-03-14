@@ -8,7 +8,7 @@ export const getStyles = (theme: AppTheme) =>
     safeArea: {
       backgroundColor: theme.colors.background,
       marginTop: getAdjustedHeight(-18),
-      padding: 16,
+      padding: theme.spacing.x4,
       flex: 1,
     },
     container: {

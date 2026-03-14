@@ -26,7 +26,7 @@ export const getStyles = (theme: AppTheme) =>
     sectionTitleRow: {
       flexDirection: "row",
       alignItems: "center",
-      gap: 6,
+      gap: getAdjustedWidth(6),
       marginBottom: getAdjustedHeight(12),
     },
     scrollContent: {
@@ -38,7 +38,7 @@ export const getStyles = (theme: AppTheme) =>
       alignItems: "center",
       justifyContent: "space-between",
       backgroundColor: theme.colors.surface,
-      borderRadius: 10,
+      borderRadius: theme.borderRadius.sm,
       borderWidth: 1,
       borderColor: theme.colors.bronzeLight,
       paddingVertical: getAdjustedHeight(12),
@@ -48,7 +48,7 @@ export const getStyles = (theme: AppTheme) =>
     historyLeft: {
       flexDirection: "row",
       alignItems: "center",
-      gap: 6,
+      gap: getAdjustedWidth(6),
     },
     historyRight: {
       flexDirection: "row",
@@ -56,7 +56,12 @@ export const getStyles = (theme: AppTheme) =>
     },
 
     shareButton: {
-      padding: 6,
-      marginLeft: 8,
+      padding: getAdjustedWidth(6),
+      marginLeft: theme.spacing.x2,
+    },
+
+    emptyStateContainer: {
+      flex: 1,
+      justifyContent: "center",
     },
   });

@@ -13,7 +13,7 @@ export const getStyles = (theme: AppTheme) =>
 
     titleDescWrapper: {
       alignItems: "center",
-      gap: 5,
+      gap: getAdjustedHeight(5),
       marginTop: getAdjustedHeight(45),
     },
     historicalTopicsContainer: {
@@ -41,7 +41,7 @@ export const getStyles = (theme: AppTheme) =>
 
     text: {
       textAlign: "center",
-      marginBottom: 5,
+      marginBottom: getAdjustedHeight(5),
     },
 
     imageBackgroundStyle: {

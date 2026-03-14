@@ -29,6 +29,12 @@ type ColorScheme = {
   gradientStart: string;
   gradientMid: string;
   gradientEnd: string;
+  parchmentTint: string;
+  parchmentDivider: string;
+  parchmentFrost: string;
+  parchmentBorderLight: string;
+  darkTint: string;
+  cardShadow: string;
   chromeBg: string;
   onImage: string;
   transparent: string;
@@ -78,6 +84,14 @@ export const lightColors: ColorScheme = {
   gradientStart: "#D4B894",
   gradientMid: "#EAD8C2",
   gradientEnd: "#C9A881",
+
+  // Parchment overlays (same both themes — parchment images don't change)
+  parchmentTint: "rgba(0, 0, 0, 0.06)",
+  parchmentDivider: "rgba(0, 0, 0, 0.12)",
+  parchmentFrost: "rgba(255, 255, 255, 0.35)",
+  parchmentBorderLight: "rgba(0, 0, 0, 0.1)",
+  darkTint: "transparent",
+  cardShadow: "rgba(62, 45, 3, 0.12)",
 
   // Chrome & image overlays
   chromeBg: "#7A5C46",
@@ -131,6 +145,14 @@ export const darkColors: ColorScheme = {
   gradientStart: "#5A4635",
   gradientMid: "#6B5643",
   gradientEnd: "#513E30",
+
+  // Parchment overlays
+  parchmentTint: "rgba(0, 0, 0, 0.06)",
+  parchmentDivider: "rgba(0, 0, 0, 0.12)",
+  parchmentFrost: "rgba(255, 255, 255, 0.25)",
+  parchmentBorderLight: "rgba(0, 0, 0, 0.1)",
+  darkTint: "rgba(15, 10, 5, 0.2)",
+  cardShadow: "rgba(62, 45, 3, 0.2)",
 
   // Chrome & image overlays — stay dark regardless of theme
   chromeBg: "#15100C",

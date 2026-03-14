@@ -3,11 +3,11 @@ import { Pressable, View, StyleProp, ViewStyle } from "react-native";
 
 import { MaterialIcons } from "@expo/vector-icons";
 
-import { useAppTheme } from "@/src/hooks";
+import { useAppTheme, useStyles } from "@/src/hooks";
 
 import { AppText } from "../text";
 
-import { styles } from "./styles";
+import { getStyles } from "./styles";
 
 type IconButtonProps = {
   iconName: keyof typeof MaterialIcons.glyphMap;
@@ -29,6 +29,7 @@ const IconButton: React.FC<IconButtonProps> = ({
   accessibilityLabel,
 }) => {
   const { colors } = useAppTheme();
+  const styles = useStyles(getStyles);
   return (
     <Pressable
       onPress={onPress}

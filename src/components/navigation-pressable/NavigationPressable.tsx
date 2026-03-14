@@ -73,7 +73,7 @@ const getStyles = (theme: AppTheme) =>
       borderWidth: 1,
       borderColor: theme.colors.border,
       borderRadius: theme.borderRadius.lg,
-      boxShadow: "0px 2px 5.9px 0px rgba(62, 45, 3, 0.12)",
+      boxShadow: `0px 2px 5.9px 0px ${theme.colors.cardShadow}`,
 
       paddingVertical: getAdjustedHeight(12),
       paddingHorizontal: getAdjustedWidth(16),
@@ -87,7 +87,7 @@ const getStyles = (theme: AppTheme) =>
     imgAndTextWrapper: {
       flexDirection: "row",
       alignItems: "center",
-      gap: 12,
+      gap: theme.spacing.x3,
     },
 
     crownWrapper: {

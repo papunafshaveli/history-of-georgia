@@ -55,3 +55,7 @@ android-service-account-key/
 
 #plan
 bigChanges.md
+
+#ClaudeCode
+CLAUDE.md
+.claude/

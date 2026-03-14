@@ -53,4 +53,11 @@ export const getStyles = (theme: AppTheme) =>
       textAlign: "center",
       marginTop: "30%",
     },
+
+    safeArea: {
+      flex: 1,
+    },
+    darkOpacity: {
+      opacity: 0.7,
+    },
   });

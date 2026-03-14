@@ -14,7 +14,7 @@ export const getStyles = (theme: AppTheme) =>
 
     section: {
       width: "100%",
-      backgroundColor: "rgba(0, 0, 0, 0.06)",
+      backgroundColor: theme.colors.parchmentTint,
       borderRadius: theme.borderRadius.md,
       paddingVertical: getAdjustedHeight(12),
       paddingHorizontal: getAdjustedWidth(14),
@@ -22,13 +22,13 @@ export const getStyles = (theme: AppTheme) =>
 
     divider: {
       height: StyleSheet.hairlineWidth,
-      backgroundColor: "rgba(0, 0, 0, 0.12)",
+      backgroundColor: theme.colors.parchmentDivider,
       marginVertical: getAdjustedHeight(10),
     },
 
     themeSection: {
       width: "100%",
-      backgroundColor: "rgba(0, 0, 0, 0.06)",
+      backgroundColor: theme.colors.parchmentTint,
       borderRadius: theme.borderRadius.md,
       paddingVertical: getAdjustedHeight(14),
       paddingHorizontal: getAdjustedWidth(14),
@@ -48,9 +48,9 @@ export const getStyles = (theme: AppTheme) =>
       paddingHorizontal: getAdjustedWidth(12),
       paddingVertical: getAdjustedHeight(6),
       borderRadius: theme.borderRadius.sm,
-      backgroundColor: "rgba(255, 255, 255, 0.35)",
+      backgroundColor: theme.colors.parchmentFrost,
       borderWidth: 1,
-      borderColor: "rgba(0, 0, 0, 0.1)",
+      borderColor: theme.colors.parchmentBorderLight,
     },
     themeOptionActive: {
       backgroundColor: theme.colors.primary,

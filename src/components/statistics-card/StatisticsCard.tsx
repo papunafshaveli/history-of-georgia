@@ -63,9 +63,9 @@ const getStyles = (theme: AppTheme) =>
       paddingHorizontal: getAdjustedWidth(12),
     },
     iconCircle: {
-      width: 40,
-      height: 40,
-      borderRadius: 20,
+      width: getAdjustedWidth(40),
+      height: getAdjustedWidth(40),
+      borderRadius: theme.borderRadius.lg,
       borderWidth: 1.5,
       borderColor: theme.colors.bronzeDark,
       alignItems: "center",

@@ -96,7 +96,7 @@ const StatsScreen = () => {
       </View>
 
       {history.length === 0 ? (
-        <View style={{ flex: 1, justifyContent: "center" }}>
+        <View style={styles.emptyStateContainer}>
           <EmptyState
             title={t.stats_no_games_title}
             description={t.stats_no_games_desc}
