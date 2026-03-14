@@ -15,7 +15,7 @@ import { CustomHeader } from "@/src/components";
 import type { AppTheme } from "@/src/theme";
 import { ScreenName, TabParamList } from "@/src/types";
 
-import { useAppTheme, useTranslation } from "../hooks";
+import { useAppTheme, useThemeMode, useTranslation } from "../hooks";
 import { getAdjustedHeight } from "../helpers";
 
 const Tab = createBottomTabNavigator<TabParamList>();
@@ -25,27 +25,13 @@ type TabNavigationProps = {
   toggleSettingsModal: () => void;
 };
 
-const getStyles = (theme: AppTheme) =>
-  StyleSheet.create({
-    tabBar: {
-      backgroundColor: theme.colors.headerBg,
-      height: getAdjustedHeight(90),
-      borderTopColor: theme.colors.headerBg,
-      borderTopWidth: 0,
-    },
-    tabBarLabel: {
-      fontSize: 14,
-      fontWeight: "bold",
-      fontFamily: theme.fonts.accent,
-    },
-  });
-
 const TabNavigation: React.FC<TabNavigationProps> = ({
   toggleRulesModal,
   toggleSettingsModal,
 }) => {
   const t = useTranslation();
   const theme = useAppTheme();
+  const { isThemeDark } = useThemeMode();
 
   const styles = useMemo(() => getStyles(theme), [theme]);
 
@@ -94,8 +80,12 @@ const TabNavigation: React.FC<TabNavigationProps> = ({
   return (
     <Tab.Navigator
       screenOptions={{
-        tabBarActiveTintColor: theme.colors.coffee,
-        tabBarInactiveTintColor: theme.colors.coffeeDark,
+        tabBarActiveTintColor: isThemeDark
+          ? theme.colors.bronzeLight
+          : theme.colors.parchment,
+        tabBarInactiveTintColor: isThemeDark
+          ? theme.colors.uiMuted
+          : theme.colors.parchmentAlt,
         tabBarStyle: styles.tabBar,
         tabBarLabelStyle: styles.tabBarLabel,
         tabBarLabelPosition: "below-icon",
@@ -122,3 +112,18 @@ const TabNavigation: React.FC<TabNavigationProps> = ({
 };
 
 export default TabNavigation;
+
+const getStyles = (theme: AppTheme) =>
+  StyleSheet.create({
+    tabBar: {
+      backgroundColor: theme.colors.chromeBg,
+      height: getAdjustedHeight(90),
+      borderTopColor: theme.colors.chromeBg,
+      borderTopWidth: 1,
+    },
+    tabBarLabel: {
+      fontSize: 14,
+      fontWeight: "bold",
+      fontFamily: theme.fonts.serif,
+    },
+  });

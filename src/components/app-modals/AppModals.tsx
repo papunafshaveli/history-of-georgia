@@ -37,7 +37,7 @@ const AppModals: React.FC<AppModalsProps> = ({
 
   const ethernetRenderComponent = (
     <AppText
-      fontFamily="primary"
+      fontFamily="script"
       type="display"
       color={colors.accent}
       style={styles.ethernetText}

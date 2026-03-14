@@ -2,7 +2,14 @@ import React from "react";
 import { View, StyleSheet } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 
-import { useAppTheme, usePlaySound, useSettings, useStyles, useTranslation } from "@/src/hooks";
+import {
+  useAppTheme,
+  usePlaySound,
+  useSettings,
+  useStyles,
+  useThemeMode,
+  useTranslation,
+} from "@/src/hooks";
 import { ClickSound } from "@/src/assets";
 import {
   getAdjustedHeight,
@@ -29,9 +36,11 @@ const CustomHeader: React.FC<CustomHeaderProps> = ({
   const t = useTranslation();
   const { playSound } = usePlaySound();
   const { isMuted, isVibrationOff } = useSettings();
+  const { isThemeDark } = useThemeMode();
 
   const styles = useStyles(getStyles);
   const { colors } = useAppTheme();
+  const iconColor = isThemeDark ? colors.bronzeLight : colors.parchment;
 
   const handleLeftBtnPress = () => {
     if (!isVibrationOff) {
@@ -54,14 +63,14 @@ const CustomHeader: React.FC<CustomHeaderProps> = ({
       <View style={styles.contentContainer}>
         <IconButton
           iconName={leftBtnIconName}
-          color={colors.coffeeLight}
+          color={iconColor}
           size={24}
           onPress={handleLeftBtnPress}
           accessibilityLabel={t.common_parameters}
         />
         <IconButton
           iconName={rightBtnIconName}
-          color={colors.coffeeLight}
+          color={iconColor}
           size={24}
           onPress={handleRightBtnPress}
           accessibilityLabel={t.common_rules}
@@ -76,7 +85,7 @@ export default CustomHeader;
 const getStyles = (theme: AppTheme) =>
   StyleSheet.create({
     headerContainer: {
-      backgroundColor: theme.colors.headerBg,
+      backgroundColor: theme.colors.chromeBg,
       height: getAdjustedHeight(80),
       justifyContent: "flex-end",
       zIndex: theme.zIndex.header,

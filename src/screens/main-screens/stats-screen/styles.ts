@@ -40,7 +40,7 @@ export const getStyles = (theme: AppTheme) =>
       backgroundColor: theme.colors.surface,
       borderRadius: 10,
       borderWidth: 1,
-      borderColor: theme.colors.coffeeLight,
+      borderColor: theme.colors.bronzeLight,
       paddingVertical: getAdjustedHeight(12),
       paddingHorizontal: getAdjustedWidth(14),
       marginBottom: getAdjustedHeight(8),

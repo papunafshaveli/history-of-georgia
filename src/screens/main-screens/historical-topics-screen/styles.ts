@@ -29,14 +29,14 @@ export const getStyles = (theme: AppTheme) =>
     gridItem: {
       width: "48%",
       aspectRatio: 1,
-      backgroundColor: theme.colors.coffee,
+      backgroundColor: theme.colors.bronze,
       marginBottom: getAdjustedHeight(16),
       justifyContent: "center",
       alignItems: "center",
       borderRadius: theme.borderRadius.md,
       overflow: "hidden",
       borderWidth: 2,
-      borderColor: theme.colors.coffee,
+      borderColor: theme.colors.bronze,
     },
 
     text: {

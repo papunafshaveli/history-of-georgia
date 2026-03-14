@@ -60,10 +60,10 @@ const StatsScreen = () => {
   return (
     <SafeAreaView edges={[]} style={styles.container}>
       <AppText
-        fontFamily="accent"
+        fontFamily="serif"
         fontWeight="bold"
         type="title"
-        color={colors.coffeeDark}
+        color={colors.bronzeDark}
         style={styles.title}
       >
         {t.stats_title}
@@ -83,13 +83,13 @@ const StatsScreen = () => {
         <MaterialCommunityIcons
           name="history"
           size={20}
-          color={colors.coffeeDark}
+          color={colors.bronzeDark}
         />
         <AppText
-          fontFamily="accent"
+          fontFamily="serif"
           fontWeight="bold"
           type="subHeadline"
-          color={colors.coffeeDark}
+          color={colors.bronzeDark}
         >
           {t.stats_recent_games}
         </AppText>
@@ -113,24 +113,24 @@ const StatsScreen = () => {
                 <MaterialCommunityIcons
                   name="calendar-outline"
                   size={16}
-                  color={colors.muted}
+                  color={colors.uiMuted}
                 />
-                <AppText fontSize={13} color={colors.muted}>
+                <AppText fontSize={17} color={colors.uiMuted}>
                   {formatDate("DD/MM/YYYY", game.date)}
                 </AppText>
               </View>
               <View style={styles.historyRight}>
                 <AppText
-                  fontFamily="display"
+                  fontFamily="serif"
                   type="subHeadline"
-                  color={colors.coffeeDark}
+                  color={colors.bronzeDark}
                 >
                   {game.score}
                 </AppText>
                 <AppText
-                  fontFamily="display"
+                  fontFamily="serif"
                   type="body"
-                  color={colors.coffeeMedium}
+                  color={colors.bronzeMid}
                 >
                   /{game.questionsAnswered}
                 </AppText>
@@ -142,7 +142,7 @@ const StatsScreen = () => {
                   <MaterialCommunityIcons
                     name="share-variant"
                     size={18}
-                    color={colors.coffeeMedium}
+                    color={colors.bronzeMid}
                   />
                 </Pressable>
               </View>
