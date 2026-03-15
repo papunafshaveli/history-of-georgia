@@ -5,11 +5,13 @@ import {
   orderBy,
   startAt,
   limit,
+  where,
+  QueryConstraint,
 } from "firebase/firestore";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { db } from "@/firebase";
 
-import { QuizQuestion } from "@/src/types/quizQuestion";
+import { Difficulty, QuizQuestion } from "@/src/types/quizQuestion";
 
 const CACHE_KEY = "cachedQuestions";
 const MAX_CACHED = 50;
@@ -42,22 +44,32 @@ const getRandomCachedQuestion = async (): Promise<QuizQuestion | null> => {
   }
 };
 
-export const fetchRandomQuestion = async (): Promise<QuizQuestion | null> => {
+export const fetchRandomQuestion = async (
+  difficulty?: Difficulty,
+): Promise<QuizQuestion | null> => {
   try {
     const random = Math.random();
 
     const questionsRef = collection(db, "tickets");
-    const q = query(
-      questionsRef,
-      orderBy("randomField"),
-      startAt(random),
-      limit(1)
-    );
+
+    const constraints: QueryConstraint[] = [];
+    if (difficulty) {
+      constraints.push(where("difficulty", "==", difficulty));
+    }
+    constraints.push(orderBy("randomField"), startAt(random), limit(1));
+
+    const q = query(questionsRef, ...constraints);
 
     let snapshot = await getDocs(q);
 
     if (snapshot.empty) {
-      const fallbackQ = query(questionsRef, orderBy("randomField"), limit(1));
+      const fallbackConstraints: QueryConstraint[] = [];
+      if (difficulty) {
+        fallbackConstraints.push(where("difficulty", "==", difficulty));
+      }
+      fallbackConstraints.push(orderBy("randomField"), limit(1));
+
+      const fallbackQ = query(questionsRef, ...fallbackConstraints);
       snapshot = await getDocs(fallbackQ);
     }
 
@@ -79,8 +91,10 @@ export const fetchRandomQuestion = async (): Promise<QuizQuestion | null> => {
     }
 
     return null;
-  } catch {
-    // Network error — fall back to cached questions
+  } catch (error) {
+    if (__DEV__) {
+      console.error("fetchRandomQuestion error:", error);
+    }
     return getRandomCachedQuestion();
   }
 };

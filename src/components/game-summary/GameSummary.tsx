@@ -88,7 +88,10 @@ const GameSummary: React.FC<GameSummaryProps> = ({
 
   const handleNavigateToStats = () => {
     onCloseSummary();
-    navigation.navigate("tabs", { screen: ScreenName.STATS_SCREEN });
+    navigation.reset({
+      index: 0,
+      routes: [{ name: "tabs", params: { screen: ScreenName.STATS_SCREEN } }],
+    });
   };
 
   const scoreFeedback = useMemo(() => {

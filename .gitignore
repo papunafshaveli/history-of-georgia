@@ -44,6 +44,9 @@ app-example
 .data.json
 data.json
 
+#compiled upload script
+upload.js
+
 
 #android service key
 .history-of-georgia-43551-a94b0030ba5f-android-key.json
