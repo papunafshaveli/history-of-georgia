@@ -33,7 +33,7 @@ const GameHeader: React.FC<GameHeaderProps> = ({
         ))}
       </View>
       <AppText
-        type="headline"
+        type="title"
         fontFamily="script"
         style={styles.answersTextAndCount}
       >

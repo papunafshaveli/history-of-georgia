@@ -70,5 +70,11 @@
   "common_theme": "თემა",
   "theme_light": "ნათელი",
   "theme_dark": "მუქი",
-  "theme_system": "სისტემის"
+  "theme_system": "სისტემის",
+
+  "difficulty_all": "ყველა",
+  "difficulty_easy": "მარტივი",
+  "difficulty_medium": "საშუალო",
+  "difficulty_hard": "რთული",
+  "difficulty_title": "სირთულე"
 }

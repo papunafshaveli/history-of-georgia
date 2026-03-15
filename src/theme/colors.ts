@@ -38,6 +38,10 @@ type ColorScheme = {
   chromeBg: string;
   onImage: string;
   transparent: string;
+  ringBand: string;
+  ringEdge: string;
+  ringActive: string;
+  ringTextActive: string;
 };
 
 export const lightColors: ColorScheme = {
@@ -99,6 +103,12 @@ export const lightColors: ColorScheme = {
 
   // Transparent
   transparent: "transparent",
+
+  // Difficulty ring
+  ringBand: "#8A6B50",
+  ringEdge: "#5C4030",
+  ringActive: "#A8855F",
+  ringTextActive: "#F5D9A8",
 };
 
 export const darkColors: ColorScheme = {
@@ -160,4 +170,10 @@ export const darkColors: ColorScheme = {
 
   // Transparent
   transparent: "transparent",
+
+  // Difficulty ring
+  ringBand: "#3A2C20",
+  ringEdge: "#1A1410",
+  ringActive: "#5A4535",
+  ringTextActive: "#F5D9A8",
 };
