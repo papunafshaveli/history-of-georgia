@@ -44,8 +44,9 @@ app-example
 .data.json
 data.json
 
-#compiled upload script
+#compiled js output
 upload.js
+firebase.js
 
 
 #android service key
