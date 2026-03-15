@@ -24,7 +24,10 @@ const CustomSplashScreen = () => {
     SplashScreen.hideAsync();
 
     const timer = setTimeout(() => {
-      navigation.navigate("tabs");
+      navigation.reset({
+        index: 0,
+        routes: [{ name: "tabs" }],
+      });
     }, SPLASH_SCREEN_MIN_DURATION_MS);
 
     return () => clearTimeout(timer);

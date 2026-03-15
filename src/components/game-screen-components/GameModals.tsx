@@ -74,7 +74,6 @@ const GameModals: React.FC<GameModalsProps> = ({
       <Modal
         isVisible={modals.summary}
         headerTitle={t.game_your_result}
-        onClose={onClose.closeSummaryModal}
         renderComponent={
           <GameSummary
             score={modals.correctAnswers}

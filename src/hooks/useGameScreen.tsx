@@ -1,7 +1,12 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { NavigationProp, useNavigation } from "@react-navigation/native";
+import {
+  NavigationProp,
+  RouteProp,
+  useNavigation,
+  useRoute,
+} from "@react-navigation/native";
 
-import { GameState } from "@/src/types/quizQuestion";
+import { Difficulty, GameState } from "@/src/types/quizQuestion";
 import { RootStackParamList, ScreenName } from "@/src/types";
 import {
   INITIAL_STATE,
@@ -22,6 +27,8 @@ const MAX_DUPLICATE_RETRIES = 3;
 
 export const useGameScreen = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+  const route = useRoute<RouteProp<RootStackParamList, "game-screen">>();
+  const difficulty: Difficulty | undefined = route.params?.difficulty;
 
   const { isMuted, isVibrationOff } = useSettings();
   const [gameState, setGameState] = useState<GameState>(INITIAL_STATE);
@@ -39,6 +46,7 @@ export const useGameScreen = () => {
         score: gameState.stats.correctAnswers,
         questionsAnswered: gameState.stats.questionsAnswered,
         date: new Date().toISOString(),
+        difficulty,
       });
       const timeout = setTimeout(() => {
         setGameState((prev) => ({
@@ -61,7 +69,7 @@ export const useGameScreen = () => {
     let retries = 0;
 
     while (retries < MAX_DUPLICATE_RETRIES) {
-      question = await fetchRandomQuestion();
+      question = await fetchRandomQuestion(difficulty);
 
       if (!question) break;
 
@@ -83,7 +91,7 @@ export const useGameScreen = () => {
         status: { ...prev.status, isLoading: false, hasError: true },
       }));
     }
-  }, []);
+  }, [difficulty]);
 
   useEffect(() => {
     logEvent(AnalyticsEvent.GAME_START);
@@ -157,8 +165,14 @@ export const useGameScreen = () => {
       modals: { ...prev.modals, exit: false, summary: false },
     }));
 
-    navigation.navigate("tabs", {
-      screen: ScreenName.START_GAME_SCREEN,
+    navigation.reset({
+      index: 0,
+      routes: [
+        {
+          name: "tabs",
+          params: { screen: ScreenName.START_GAME_SCREEN },
+        },
+      ],
     });
   }, [navigation]);
 
