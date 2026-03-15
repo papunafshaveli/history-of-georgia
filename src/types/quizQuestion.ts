@@ -1,3 +1,5 @@
+export type Difficulty = "easy" | "medium" | "hard";
+
 export type QuizQuestion = {
   id: number;
   question: string;
@@ -5,6 +7,7 @@ export type QuizQuestion = {
   correctAnswer: string;
   hint: string;
   randomField: number;
+  difficulty?: Difficulty;
 };
 
 export type GameState = {

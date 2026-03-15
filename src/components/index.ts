@@ -18,3 +18,4 @@ export { default as EmptyState } from "./empty-state/EmptyState";
 export { default as ErrorBoundary } from "./error-boundary/ErrorBoundary";
 export { default as StatisticsCard } from "./statistics-card/StatisticsCard";
 export { AppText } from "./text";
+export { default as DifficultyRing } from "./difficulty-ring/DifficultyRing";

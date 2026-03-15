@@ -1,9 +1,12 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
+import { Difficulty } from "@/src/types/quizQuestion";
+
 export type GameResult = {
   score: number;
   questionsAnswered: number;
   date: string;
+  difficulty?: Difficulty;
 };
 
 const HISTORY_KEY = "gameHistory";

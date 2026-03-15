@@ -70,5 +70,11 @@
   "common_theme": "Theme",
   "theme_light": "Light",
   "theme_dark": "Dark",
-  "theme_system": "System"
+  "theme_system": "System",
+
+  "difficulty_all": "All",
+  "difficulty_easy": "Easy",
+  "difficulty_medium": "Medium",
+  "difficulty_hard": "Hard",
+  "difficulty_title": "Difficulty"
 }

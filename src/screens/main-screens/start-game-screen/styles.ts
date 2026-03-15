@@ -2,6 +2,9 @@ import { StyleSheet } from "react-native";
 
 import type { AppTheme } from "@/src/theme";
 import { getAdjustedHeight } from "@/src/helpers";
+import { RING_INNER_DIAMETER } from "@/src/components/difficulty-ring/styles";
+
+const SHIELD_SIZE = RING_INNER_DIAMETER - getAdjustedHeight(8);
 
 export const getStyles = (theme: AppTheme) =>
   StyleSheet.create({
@@ -28,8 +31,8 @@ export const getStyles = (theme: AppTheme) =>
       height: "100%",
     },
     startGameBtn: {
-      width: getAdjustedHeight(300),
-      height: getAdjustedHeight(300),
+      width: SHIELD_SIZE,
+      height: SHIELD_SIZE,
       alignItems: "center",
       justifyContent: "center",
       borderRadius: "50%",
@@ -37,8 +40,8 @@ export const getStyles = (theme: AppTheme) =>
       ...theme.shadows.default,
     },
     shieldBackContainer: {
-      width: getAdjustedHeight(300),
-      height: getAdjustedHeight(300),
+      width: SHIELD_SIZE,
+      height: SHIELD_SIZE,
       borderRadius: "50%",
       alignItems: "center",
       justifyContent: "center",
