@@ -35,6 +35,7 @@ npx tsc upload.ts --esModuleInterop --resolveJsonModule --skipLibCheck && node u
 ```
 
 **What the script does:**
+
 - **Existing docs** — updates `question`, `options`, `correctAnswer`, `hint`, and `difficulty` (if present). Never touches `randomField` (used for random ordering queries).
 - **New docs** — inserts with all fields + a generated `randomField`.
 - Safe to re-run: existing docs are updated in-place, not replaced.
@@ -95,3 +96,34 @@ eas submit --platform ios --profile production
 ```
 eas update
 ```
+
+## Deploy Cloud Functions
+
+Install dependencies (first time only):
+
+```
+cd functions && npm install
+```
+
+Deploy:
+
+```
+cd functions && npm run deploy
+
+# Or if firebase CLI is not installed globally:
+npx firebase-tools deploy --only functions
+```
+
+## Send a push notification
+
+Add a document to Firestore → `notifications` collection:
+
+```json
+{
+  "title": "your title",
+  "body": "your message",
+  "status": "pending"
+}
+```
+
+The Cloud Function picks it up automatically and sends to all users. Status updates to `"sent"` when done.

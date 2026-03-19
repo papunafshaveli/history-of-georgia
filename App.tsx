@@ -41,7 +41,7 @@ const FONT_MAP = {
 } as const;
 
 const App: React.FC = () => {
-  useNotifications(false);
+  useNotifications();
 
   const fontsLoaded = useCustomFonts(FONT_MAP);
 
