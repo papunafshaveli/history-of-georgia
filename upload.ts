@@ -22,13 +22,17 @@ async function uploadData() {
 
   for (const doc1 of data as QuizQuestion[]) {
     if (docIds.includes(doc1.id)) {
+      const updateData: Record<string, unknown> = {
+        question: doc1.question,
+        options: doc1.options,
+        correctAnswer: doc1.correctAnswer,
+        hint: doc1.hint,
+      };
       if (doc1.difficulty) {
-        await db
-          .collection("tickets")
-          .doc(String(doc1.id))
-          .update({ difficulty: doc1.difficulty });
-        updatedCount++;
+        updateData.difficulty = doc1.difficulty;
       }
+      await db.collection("tickets").doc(String(doc1.id)).update(updateData);
+      updatedCount++;
       continue;
     }
 
@@ -40,7 +44,7 @@ async function uploadData() {
     newCount++;
   }
 
-  console.log(`Done: ${newCount} new, ${updatedCount} difficulty updated`);
+  console.log(`Done: ${newCount} new, ${updatedCount} updated`);
 }
 
 uploadData();

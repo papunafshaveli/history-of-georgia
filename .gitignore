@@ -43,6 +43,7 @@ app-example
 #questions data
 .data.json
 data.json
+data_old.json
 
 #compiled js output
 upload.js

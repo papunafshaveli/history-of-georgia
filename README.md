@@ -28,9 +28,16 @@ npm test
 
 ## Upload data
 
+Place your questions in `data.json` (gitignored) at the root, then run:
+
 ```
 npx tsc upload.ts --esModuleInterop --resolveJsonModule --skipLibCheck && node upload.js
 ```
+
+**What the script does:**
+- **Existing docs** — updates `question`, `options`, `correctAnswer`, `hint`, and `difficulty` (if present). Never touches `randomField` (used for random ordering queries).
+- **New docs** — inserts with all fields + a generated `randomField`.
+- Safe to re-run: existing docs are updated in-place, not replaced.
 
 ## Install latest node
 
