@@ -48,6 +48,9 @@
   "sound_turn_on": "Turn on sound",
   "sound_turn_off": "Turn off sound",
 
+  "notifications_turn_on": "Turn on notifications",
+  "notifications_turn_off": "Turn off notifications",
+
   "notification_title": "Remember Georgian history...",
   "notification_desc": "How well do you know Georgian history?",
 

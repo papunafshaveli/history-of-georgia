@@ -48,6 +48,9 @@
   "sound_turn_on": "ხმის ჩართვა",
   "sound_turn_off": "ხმის გამორთვა",
 
+  "notifications_turn_on": "შეტყობინებების ჩართვა",
+  "notifications_turn_off": "შეტყობინებების გამორთვა",
+
   "notification_title": "გაიხსენე საქართველოს ისტორია...",
   "notification_desc": "რამდენად კარგად იცი საქართველოს ისტორია?",
 
