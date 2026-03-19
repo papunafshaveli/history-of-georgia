@@ -24,27 +24,53 @@ const THEME_OPTIONS = [
 const AppSettings: React.FC = () => {
   const t = useTranslation();
   const { colors } = useAppTheme();
-  const { isMuted, isVibrationOff, setIsMuted, setIsVibrationOff } =
-    useSettings();
+  const {
+    isMuted,
+    isVibrationOff,
+    isPushEnabled,
+    setIsMuted,
+    setIsVibrationOff,
+    setIsPushEnabled,
+  } = useSettings();
   const { themeMode, setThemeMode } = useThemeMode();
 
   const styles = useStyles(getStyles);
+
+  const vibrationLabel = isVibrationOff
+    ? t.vibration_turn_on
+    : t.vibration_turn_off;
+  const soundLabel = isMuted ? t.sound_turn_on : t.sound_turn_off;
+  const pushLabel = isPushEnabled
+    ? t.notifications_turn_off
+    : t.notifications_turn_on;
+
+  const handleVibrationToggle = () => setIsVibrationOff(!isVibrationOff);
+  const handleSoundToggle = () => setIsMuted(!isMuted);
+  const handlePushToggle = () => setIsPushEnabled(!isPushEnabled);
+  const handleThemePress = (mode: ThemeMode) => () => setThemeMode(mode);
 
   return (
     <View style={styles.container}>
       <View style={styles.section}>
         <SettingToggle
           iconName="vibrate"
-          label={isVibrationOff ? t.vibration_turn_on : t.vibration_turn_off}
+          label={vibrationLabel}
           value={!isVibrationOff}
-          onValueChange={() => setIsVibrationOff(!isVibrationOff)}
+          onValueChange={handleVibrationToggle}
         />
         <View style={styles.divider} />
         <SettingToggle
           iconName="volume-high"
-          label={isMuted ? t.sound_turn_on : t.sound_turn_off}
+          label={soundLabel}
           value={!isMuted}
-          onValueChange={() => setIsMuted(!isMuted)}
+          onValueChange={handleSoundToggle}
+        />
+        <View style={styles.divider} />
+        <SettingToggle
+          iconName="bell"
+          label={pushLabel}
+          value={isPushEnabled}
+          onValueChange={handlePushToggle}
         />
       </View>
 
@@ -65,7 +91,7 @@ const AppSettings: React.FC = () => {
             return (
               <Pressable
                 key={mode}
-                onPress={() => setThemeMode(mode)}
+                onPress={handleThemePress(mode)}
                 accessibilityRole="button"
                 accessibilityLabel={t[key]}
                 style={[
