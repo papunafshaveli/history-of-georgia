@@ -54,6 +54,7 @@ const GameFooter: React.FC<GameFooterProps> = ({
         accessibilityRole="button"
         accessibilityLabel={`${t.common_hint} (${hintsCount})`}
         accessibilityState={{ disabled: isDisabled }}
+        style={styles.hintPressable}
       >
         <GradientWrapper style={styles.helpGradient} colors={hintWrapperColor}>
           <View style={styles.helpIconAdnText}>
