@@ -57,14 +57,19 @@ export const getStyles = (theme: AppTheme) =>
       justifyContent: "center",
     },
 
+    hintPressable: {
+      flex: 1,
+      marginHorizontal: theme.spacing.x2,
+    },
+
     helpGradient: {
       borderWidth: 1.5,
       borderColor: theme.colors.bronzeMid,
       borderRadius: theme.borderRadius.sm,
       height: getAdjustedHeight(50),
+      width: "100%",
       alignItems: "center",
       justifyContent: "center",
-
       paddingHorizontal: theme.spacing.x5,
     },
 

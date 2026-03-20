@@ -55,7 +55,7 @@ eas build -p android --profile preview
 
 ## Ios local build
 
-<!-- increase: version, runtimeVersion, ios buildNumber, android versionCode ... Now Go on...-->
+<!-- Before prod build: increase version and runtimeVersion in app.config.ts (buildNumber and versionCode are auto-incremented by EAS) -->
 
 ```
 eas build -p ios --profile preview
@@ -94,7 +94,7 @@ eas submit --platform ios --profile production
 ## OTA update
 
 ```
-eas update
+eas update --branch production --message "your message"
 ```
 
 ## Deploy Cloud Functions
