@@ -134,6 +134,23 @@ const DifficultyRing: React.FC<DifficultyRingProps> = ({
         const offsetY = Math.sin(rad) * labelRadius;
         const rotation = getLabelRotation(angleDeg);
 
+        const pressableStyles = [
+          styles.labelPressable,
+          isSideLabel && styles.labelPressableVertical,
+          {
+            transform: [
+              { translateX: offsetX },
+              { translateY: offsetY },
+              { rotate: rotation ?? "0deg" },
+            ],
+          },
+        ];
+        const textFont = isActive ? "sans" : "serif";
+
+        const textType = isActive ? "headline" : "subHeadline";
+
+        const textColor = isActive ? colors.ringTextActive : colors.bronzeLight;
+
         return (
           <View
             key={key}
@@ -144,22 +161,12 @@ const DifficultyRing: React.FC<DifficultyRingProps> = ({
               onPress={handlePress(value)}
               accessibilityRole="button"
               accessibilityLabel={t[key]}
-              style={[
-                styles.labelPressable,
-                isSideLabel && styles.labelPressableVertical,
-                {
-                  transform: [
-                    { translateX: offsetX },
-                    { translateY: offsetY },
-                    { rotate: rotation ?? "0deg" },
-                  ],
-                },
-              ]}
+              style={pressableStyles}
             >
               <AppText
-                color={isActive ? colors.ringTextActive : colors.bronzeLight}
-                fontFamily="serif"
-                type="subHeadline"
+                color={textColor}
+                fontFamily={textFont}
+                type={textType}
                 style={styles.labelText}
               >
                 {t[key]}
