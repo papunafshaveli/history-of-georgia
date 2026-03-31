@@ -10,7 +10,12 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
 import { NavigationProp } from "@react-navigation/native";
 
-import { AppText, EmptyState, NavigationPressable, SearchInput } from "@/src/components";
+import {
+  AppText,
+  EmptyState,
+  NavigationPressable,
+  SearchInput,
+} from "@/src/components";
 import { RootStackParamList, ScreenName } from "@/src/types";
 import {
   PUBLIC_FIGURES,
@@ -18,7 +23,12 @@ import {
 } from "@/src/constants";
 import type { AppTheme } from "@/src/theme";
 import { ClickSound, Ink } from "@/src/assets";
-import { useAppTheme, usePlaySound, useSettings, useTranslation } from "@/src/hooks";
+import {
+  useAppTheme,
+  usePlaySound,
+  useSettings,
+  useTranslation,
+} from "@/src/hooks";
 import { getAdjustedHeight, vibrateImpact } from "@/src/helpers";
 
 const MIN_AMOUNT_TO_SHOW_INPUT = 3;
