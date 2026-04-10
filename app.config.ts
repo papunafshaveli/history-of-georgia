@@ -5,12 +5,14 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   name: "საქართველოს ისტორია",
   slug: "history-of-georgia",
   version: "1.1.0",
-  runtimeVersion: "1.1.0",
+  runtimeVersion: "2.0.0",
   orientation: "portrait",
   icon: "./src/assets/images/hofGeLogo.png",
   scheme: "myapp",
   userInterfaceStyle: "automatic",
-  newArchEnabled: true,
+  experiments: {
+    reactCompiler: true,
+  },
   ios: {
     buildNumber: "1.1.0",
     supportsTablet: false,
@@ -50,6 +52,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     "expo-font",
     "expo-notifications",
     "expo-audio",
+    "expo-asset",
   ],
   extra: {
     eas: {

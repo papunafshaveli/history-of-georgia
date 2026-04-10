@@ -1,14 +1,22 @@
 import { useEffect } from "react";
 
-import * as Notifications from "expo-notifications";
+import Constants from "expo-constants";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-import { registerForNotifications } from "@/src/helpers/notifications";
-
 const PUSH_ENABLED_KEY = "settings:isPushEnabled";
+const IS_EXPO_GO = Constants.executionEnvironment === "storeClient";
 
 export const useNotifications = () => {
   useEffect(() => {
+    if (IS_EXPO_GO) return;
+
+    const Notifications =
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      require("expo-notifications") as typeof import("expo-notifications");
+    const { registerForNotifications } =
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      require("@/src/helpers/notifications") as typeof import("@/src/helpers/notifications");
+
     Notifications.setNotificationHandler({
       handleNotification: async () => ({
         shouldShowAlert: true,

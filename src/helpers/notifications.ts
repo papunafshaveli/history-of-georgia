@@ -9,10 +9,11 @@ import { doc, setDoc, deleteDoc, serverTimestamp } from "firebase/firestore";
 import { db } from "@/firebase";
 
 const PUSH_TOKEN_KEY = "settings:pushToken";
+const IS_EXPO_GO = Constants.executionEnvironment === "storeClient";
 
 export const registerForNotifications = async (): Promise<void> => {
   try {
-    if (!Device.isDevice) return;
+    if (!Device.isDevice || IS_EXPO_GO) return;
 
     const { status: existingStatus } =
       await Notifications.getPermissionsAsync();
