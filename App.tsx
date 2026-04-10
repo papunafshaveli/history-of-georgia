@@ -89,9 +89,7 @@ const App: React.FC = () => {
     <ErrorBoundary>
       <LanguageProvider>
         <SettingsProvider>
-          <ThemeModeContext.Provider
-            value={{ themeMode, isThemeDark, setThemeMode }}
-          >
+          <ThemeModeContext value={{ themeMode, isThemeDark, setThemeMode }}>
             <ThemeProvider theme={theme}>
               <SafeAreaProvider>
                 <View style={containerStyle}>
@@ -119,7 +117,7 @@ const App: React.FC = () => {
                 </View>
               </SafeAreaProvider>
             </ThemeProvider>
-          </ThemeModeContext.Provider>
+          </ThemeModeContext>
         </SettingsProvider>
       </LanguageProvider>
     </ErrorBoundary>

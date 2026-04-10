@@ -1,10 +1,7 @@
 import React, { createContext, useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import Constants from "expo-constants";
 import { SettingsContextType } from "../types";
-import {
-  registerForNotifications,
-  unregisterNotifications,
-} from "../helpers/notifications";
 
 const STORAGE_KEYS = {
   IS_MUTED: "settings:isMuted",
@@ -59,6 +56,10 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({
   const setIsPushEnabled = (value: boolean) => {
     setIsPushEnabledState(value);
     AsyncStorage.setItem(STORAGE_KEYS.IS_PUSH_ENABLED, JSON.stringify(value));
+    if (Constants.executionEnvironment === "storeClient") return;
+    const { registerForNotifications, unregisterNotifications } =
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      require("../helpers/notifications") as typeof import("../helpers/notifications");
     if (value) {
       registerForNotifications();
     } else {
@@ -69,7 +70,7 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({
   if (!isLoaded) return null;
 
   return (
-    <SettingsContext.Provider
+    <SettingsContext
       value={{
         isMuted,
         isVibrationOff,
@@ -80,6 +81,6 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({
       }}
     >
       {children}
-    </SettingsContext.Provider>
+    </SettingsContext>
   );
 };

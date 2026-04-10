@@ -9,5 +9,5 @@ export const ThemeProvider: React.FC<{
   theme: AppTheme;
   children: React.ReactNode;
 }> = ({ theme, children }) => (
-  <ThemeContext.Provider value={theme}>{children}</ThemeContext.Provider>
+  <ThemeContext value={theme}>{children}</ThemeContext>
 );

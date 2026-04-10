@@ -40,11 +40,13 @@ npx tsc upload.ts --esModuleInterop --resolveJsonModule --skipLibCheck && node u
 - **New docs** — inserts with all fields + a generated `randomField`.
 - Safe to re-run: existing docs are updated in-place, not replaced.
 
-## Install latest node
+## Node version
+
+This project requires Node >= 20.19.4. If using nvm:
 
 ```
-nvm install --lts
-nvm use node
+nvm install 20.19.4
+nvm use
 ```
 
 ## Android local build

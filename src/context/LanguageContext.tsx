@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, ReactNode } from "react";
+import React, { createContext, use, useState, ReactNode } from "react";
 
 import en from "@/src/locales/en.json";
 import ka from "@/src/locales/ka.json";
@@ -28,14 +28,14 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
   const t = translations[language];
 
   return (
-    <LanguageContext.Provider value={{ language, setLanguage, t }}>
+    <LanguageContext value={{ language, setLanguage, t }}>
       {children}
-    </LanguageContext.Provider>
+    </LanguageContext>
   );
 };
 
 export const useLanguage = (): LanguageContextProps => {
-  const context = useContext(LanguageContext);
+  const context = use(LanguageContext);
   if (!context) {
     throw new Error("useLanguage must be used within a LanguageProvider");
   }
