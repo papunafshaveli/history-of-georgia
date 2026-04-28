@@ -2,6 +2,7 @@ import { ActivityIndicator, ImageBackground } from "react-native";
 import React from "react";
 
 import { QuestionBackground } from "@/src/assets";
+import { RECOGNIZED_PREFIX_KEYS } from "@/src/constants";
 import { useAppTheme, useStyles, useTranslation } from "@/src/hooks";
 
 import { AppText } from "../text";
@@ -20,10 +21,14 @@ const QuestionDisplay: React.FC<QuestionDisplayProps> = ({
   const t = useTranslation();
   const { colors } = useAppTheme();
   const styles = useStyles(getStyles);
-  const associationText = t.common_association;
-  const startsWithAssociationText = question?.startsWith(associationText);
 
-  const withoutAssociationText = question?.slice(associationText.length);
+  const matchedPrefix = RECOGNIZED_PREFIX_KEYS.map((key) => t[key]).find(
+    (prefix) => question?.startsWith(prefix)
+  );
+
+  const remainderAfterPrefix = matchedPrefix
+    ? question?.slice(matchedPrefix.length)
+    : undefined;
 
   return (
     <ImageBackground
@@ -40,17 +45,17 @@ const QuestionDisplay: React.FC<QuestionDisplayProps> = ({
           color={colors.onImage}
           style={styles.questionText}
         >
-          {startsWithAssociationText ? (
+          {matchedPrefix ? (
             <>
               <AppText
                 fontFamily="script"
                 type="title"
                 color={colors.primary}
               >
-                {associationText}
+                {matchedPrefix}
               </AppText>
               <AppText fontFamily="script" type="title" color={colors.onImage}>
-                {withoutAssociationText}
+                {remainderAfterPrefix}
               </AppText>
             </>
           ) : (
