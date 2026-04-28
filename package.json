@@ -9,7 +9,8 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "test": "jest --watchAll",
-    "lint": "expo lint"
+    "lint": "expo lint",
+    "merge-drafts": "node ./scripts/merge-drafts.js"
   },
   "jest": {
     "preset": "jest-expo"
