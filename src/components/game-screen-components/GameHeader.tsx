@@ -1,7 +1,7 @@
 import React from "react";
 import { View, Image } from "react-native";
 
-import { useAppTheme, useStyles, useTranslation } from "@/src/hooks";
+import { useStyles, useTranslation } from "@/src/hooks";
 
 import { AppText } from "../text";
 
@@ -20,10 +20,8 @@ const GameHeader: React.FC<GameHeaderProps> = ({
 }) => {
   const t = useTranslation();
   const styles = useStyles(getStyles);
-  const { colors } = useAppTheme();
 
-  const correctAnswerCountColor =
-    correctAnswersCount > 0 ? colors.correctBorder : colors.text;
+  const scoreText = `${t.common_correct_answer} ${correctAnswersCount}/${questionsCount}`;
 
   return (
     <>
@@ -33,22 +31,12 @@ const GameHeader: React.FC<GameHeaderProps> = ({
         ))}
       </View>
       <AppText
-        type="title"
-        fontFamily="script"
+        type="headline"
+        fontFamily="serif"
         style={styles.answersTextAndCount}
+        numberOfLines={1}
       >
-        {t.common_correct_answer}{" "}
-        <AppText
-          color={correctAnswerCountColor}
-          type="title"
-          fontFamily="script"
-        >
-          {correctAnswersCount}
-        </AppText>
-        /
-        <AppText type="title" fontFamily="script">
-          {questionsCount}
-        </AppText>
+        {scoreText}
       </AppText>
     </>
   );
