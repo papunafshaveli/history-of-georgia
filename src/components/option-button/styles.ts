@@ -15,6 +15,8 @@ export const getStyles = (theme: AppTheme) =>
       alignItems: "center",
       justifyContent: "center",
 
+      paddingHorizontal: theme.spacing.x3,
+
       backgroundColor: theme.colors.surfaceAlt,
     },
     correctOption: {

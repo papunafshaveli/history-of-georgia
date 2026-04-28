@@ -17,6 +17,7 @@ export const getStyles = (theme: AppTheme) =>
     },
     answersTextAndCount: {
       marginTop: getAdjustedHeight(12),
+      textAlign: "center",
     },
     imageBackgroundWrapper: {
       width: "100%",

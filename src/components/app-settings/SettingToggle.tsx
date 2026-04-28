@@ -37,7 +37,13 @@ const SettingToggle: React.FC<SettingToggleProps> = ({
           size={ICON_SIZE}
           color={colors.onImage}
         />
-        <AppText type="title" fontFamily="script" color={colors.onImage}>
+        <AppText
+          type="title"
+          fontFamily="script"
+          color={colors.onImage}
+          style={styles.label}
+          numberOfLines={1}
+        >
           {label}
         </AppText>
       </View>
@@ -65,8 +71,13 @@ const getStyles = (theme: AppTheme) =>
       justifyContent: "space-between",
     },
     rowLeft: {
+      flex: 1,
       flexDirection: "row",
       alignItems: "center",
       gap: theme.spacing.x3,
+      paddingRight: theme.spacing.x3,
+    },
+    label: {
+      flexShrink: 1,
     },
   });
