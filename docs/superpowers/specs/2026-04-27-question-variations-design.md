@@ -118,6 +118,24 @@ When the player answers a `ჩამოთვლილთაგან ერთ�
 
 If playtesting surfaces real confusion, the fallback is to ship only `ჩამოთვლილთაგან ერთი სწორია:` and skip `ჩამოთვლილთაგან ერთი მცდარია:`. Decision deferred until after Phase 1.
 
+## Status update — Statement-judgment deferred (2026-04-28)
+
+**Statement-judgment is on hold pending UI work.** During Phase 1 device testing, 33-character Georgian option strings (e.g., `"თამარი იყო გიორგი მესამის ქალიშვილი"`) **truncated on Android Pixel 9 emulator** — the last word was cut off in the fixed-height `OptionButton` (`getAdjustedHeight(45)`, single line). iOS rendered the same strings without visible truncation. The variation as designed cannot ship safely across both platforms until either:
+
+- `OptionButton` grows with content (rejected earlier in this design as a design-context break), or
+- Statements are reduced to telegraphic ~20-char "topic — detail" form, which compromises the variation's distinctive cognitive task.
+
+The 5 drafted `ერთი სწორია:` questions for batch 7c were discarded (not merged). Batch 7d (`ერთი მცდარია:`) was not authored.
+
+**What stayed in the codebase to keep this cheap to revisit:**
+- The 3 translation keys (`common_pick_different`, `common_truth`, `common_falsehood`) in both locale files.
+- All four entries in `src/constants/questionPrefixes.ts` `RECOGNIZED_PREFIX_KEYS`.
+- The generalized `QuestionDisplay.tsx` prefix-iteration logic.
+
+When the UI question gets revisited, statement-judgment is one authoring batch away from re-activation.
+
+**Phase 1 final scope:** 17 reviewed questions across 2 variation types — 9 NOT-type (IDs 1515–1523) + 8 chronological (IDs 1524–1531).
+
 ## Scope & Targets
 
 ### Phase 1 — Validation batch (~30 questions)
