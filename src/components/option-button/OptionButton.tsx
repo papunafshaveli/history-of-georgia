@@ -54,7 +54,14 @@ const OptionButton: React.FC<OptionButtonProps> = ({
       {isLoading ? (
         <ActivityIndicator size="small" color={colors.bronzeMid} />
       ) : (
-        <AppText type="headline" fontFamily="script" style={styles.optionText}>
+        <AppText
+          type="headline"
+          fontFamily="script"
+          style={styles.optionText}
+          numberOfLines={1}
+          adjustsFontSizeToFit
+          minimumFontScale={0.7}
+        >
           {option}
         </AppText>
       )}
