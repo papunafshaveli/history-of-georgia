@@ -94,8 +94,17 @@ function main() {
     process.exit(1);
   }
 
+  // Existing data.json contains a small number of outlier IDs in the
+  // hundreds of thousands / millions (likely from earlier batch imports).
+  // Treat any ID above this cutoff as an outlier and ignore it when
+  // computing the next sequential ID, so new questions stay in the
+  // contiguous numeric range.
+  const SEQUENTIAL_ID_CUTOFF = 50000;
   const maxId = data.reduce(
-    (max, q) => (typeof q.id === "number" && q.id > max ? q.id : max),
+    (max, q) =>
+      typeof q.id === "number" && q.id <= SEQUENTIAL_ID_CUTOFF && q.id > max
+        ? q.id
+        : max,
     0
   );
   let nextId = maxId + 1;
