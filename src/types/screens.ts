@@ -4,7 +4,7 @@ import { Difficulty } from "./quizQuestion";
 export type TabParamList = {
   "start-game-screen": undefined;
   "historical-topics-screen": undefined;
-  "stats-screen": undefined;
+  "leaderboard-screen": undefined;
 };
 
 export type RootStackParamList = {

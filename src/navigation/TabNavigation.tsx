@@ -9,7 +9,7 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 import StartGameScreen from "@/src/screens/main-screens/start-game-screen/StartGameScreen";
 import HistoricalTopicsScreen from "@/src/screens/main-screens/historical-topics-screen/HistoricalTopicsScreen";
-import StatsScreen from "@/src/screens/main-screens/stats-screen/StatsScreen";
+import LeaderboardScreen from "@/src/screens/main-screens/leaderboard-screen/LeaderboardScreen";
 
 import { CustomHeader } from "@/src/components";
 import type { AppTheme } from "@/src/theme";
@@ -69,11 +69,15 @@ const TabNavigation: React.FC<TabNavigationProps> = ({
     ),
   };
 
-  const statsOptions: BottomTabNavigationOptions = {
+  const leaderboardOptions: BottomTabNavigationOptions = {
     ...commonOptions,
-    tabBarLabel: t.stats_title,
-    tabBarIcon: ({ color, size }) => (
-      <MaterialCommunityIcons name="chart-bar" size={size} color={color} />
+    tabBarLabel: t.tab_leaderboard,
+    tabBarIcon: ({ color, size, focused }) => (
+      <MaterialCommunityIcons
+        name={focused ? "trophy-variant" : "trophy-variant-outline"}
+        size={size}
+        color={color}
+      />
     ),
   };
 
@@ -103,9 +107,9 @@ const TabNavigation: React.FC<TabNavigationProps> = ({
         options={historicalTopicsOptions}
       />
       <Tab.Screen
-        name={ScreenName.STATS_SCREEN}
-        component={StatsScreen}
-        options={statsOptions}
+        name={ScreenName.LEADERBOARD_SCREEN}
+        component={LeaderboardScreen}
+        options={leaderboardOptions}
       />
     </Tab.Navigator>
   );

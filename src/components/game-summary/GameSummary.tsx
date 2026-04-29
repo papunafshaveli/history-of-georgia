@@ -90,7 +90,9 @@ const GameSummary: React.FC<GameSummaryProps> = ({
     onCloseSummary();
     navigation.reset({
       index: 0,
-      routes: [{ name: "tabs", params: { screen: ScreenName.STATS_SCREEN } }],
+      routes: [
+        { name: "tabs", params: { screen: ScreenName.LEADERBOARD_SCREEN } },
+      ],
     });
   };
 

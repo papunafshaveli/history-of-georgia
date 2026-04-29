@@ -56,7 +56,7 @@ export const lightColors: ColorScheme = {
   surfaceAlt: "#EFE1D1",
   surfaceRaised: "#FFFCF6",
   surfaceSunken: "#E8D7C5",
-  overlay: "rgba(17, 12, 7, 0.55)",
+  overlay: "rgba(17, 12, 7, 0.78)",
   overlayLight: "rgba(17, 12, 7, 0.2)",
 
   // Answer feedback
@@ -123,7 +123,7 @@ export const darkColors: ColorScheme = {
   surfaceAlt: "#30261D",
   surfaceRaised: "#382C22",
   surfaceSunken: "#1B1510",
-  overlay: "rgba(0, 0, 0, 0.7)",
+  overlay: "rgba(0, 0, 0, 0.88)",
   overlayLight: "rgba(0, 0, 0, 0.35)",
 
   // Answer feedback

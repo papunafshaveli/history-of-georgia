@@ -871,6 +871,35 @@ The drosha project carries three project-local Claude skills relevant to this wo
 
 If we want them available locally during implementation, copy them under `/Users/macbookpro/Desktop/my personal projects/history-of-georgia/.claude/skills/` (gitignored per the project's "keep Claude tooling out of the repo" convention). This is optional — the implementation can proceed without them by referencing drosha's source directly.
 
+## Design debt — Leaderboard UI is unfinished (2026-04-29)
+
+**Status:** ⚠️ Functional but **visually unsatisfactory.** Logged as known debt.
+
+The Leaderboard tab UI shipped in Phase 3 (parchment-imagery cards, bronze ribbon tab switcher, Crown-decorated podium, stamp-pattern buttons) was iterated through two redesign passes during the implementation session and rejected by the user both times. The wiring works — anonymous auth, Firestore reads, tabs, navigation, sign-in stub all function — but the visual fidelity does not match the rest of the app's parchment-and-bronze design language.
+
+**Specifically deferred:**
+
+- `LeaderboardScreen` overall composition (header anchor, section rhythm, divider treatment)
+- `YourCard` (anonymous CTA + signed-in variants) layout, hierarchy, typography sizing
+- `LeaderboardTabs` ribbon style (active-state contrast, hover/press affordances)
+- `LeaderboardPodium` card composition (currently each card is a parchment-bg `ImageBackground` with a bronze ribbon strip and 3px–4px bronze border; needs designer eye)
+- `LeaderboardRow` layout proportions and self-row treatment
+- `SignInModal` stub layout (this one is closer to acceptable, but still draft)
+- Empty-state panel composition
+
+**Why deferred:** Code-only redesign loops without visual feedback from a designer aren't converging. The user reviewed two passes, both rejected. Continuing to iterate via Claude in this thread is unproductive.
+
+**Path forward:** A dedicated design pass — either by a designer producing Figma mockups for the leaderboard surfaces and then porting them back, or by sit-down screenshotting + iterative tweaking with the user (multiple short cycles, not single batch-redesign). Track this work as a follow-up once Phase 4 (OAuth) and Phase 5 (force-update + milestone + settings) ship.
+
+**Engineering invariants to preserve through any redesign:**
+
+- All cards / panels stay `ImageBackground` (parchment) — never flat Views
+- `isThemeDark` darkTint must overlay every parchment surface for legibility
+- Buttons use the 3px-bronze-border stamp pattern (no exceptions, anywhere in the app)
+- Translation keys already exist (~25 new keys); redesign reuses them
+- `LeaderboardTab` enum and `useLeaderboard` / `useUserStats` hook contracts stay stable
+- `tintColor` only on `<Image>`, never `<ImageBackground>` (caught and fixed during the second pass)
+
 ## Open follow-ups
 
 - Final Georgian wording for `milestone_title` (`ახალი რეკორდი!` is a working draft).
