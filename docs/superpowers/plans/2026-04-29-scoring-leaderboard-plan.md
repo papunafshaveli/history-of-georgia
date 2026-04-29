@@ -259,6 +259,14 @@ Renders the SignInModal trigger.
 
 ---
 
+## Design-debt note — Leaderboard UI
+
+**Status:** ⚠️ Functional but visually unsatisfactory.
+
+Two redesign passes were run during Phase 3 (functional first-pass, then a parchment-imagery polish pass). Both were rejected by the user. The screen wiring works — auth, tab swap, Firestore reads, sign-in stub modal all function — but the visual fidelity needs a real designer review before this ships to users. Tracked in spec under "Design debt — Leaderboard UI is unfinished (2026-04-29)". Do not iterate further from this conversation; revisit once OAuth + force-update land, with proper designer input (Figma mockups or live designer-driven iteration).
+
+---
+
 ## Phase 4 — OAuth + ConfirmNameModal
 
 **Goal:** Google and Apple sign-in actually work. After sign-in, name confirmation modal appears. User then shows up on the leaderboard.

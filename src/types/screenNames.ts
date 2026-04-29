@@ -4,7 +4,7 @@ export enum ScreenName {
   GAME_SCREEN = "game-screen",
 
   HISTORICAL_TOPICS_SCREEN = "historical-topics-screen",
-  STATS_SCREEN = "stats-screen",
+  LEADERBOARD_SCREEN = "leaderboard-screen",
 
   RULERS_SCREEN = "rulers-screen",
   BATTLES_SCREENS = "battles-screen",
