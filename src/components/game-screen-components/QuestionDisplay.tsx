@@ -23,7 +23,7 @@ const QuestionDisplay: React.FC<QuestionDisplayProps> = ({
   const styles = useStyles(getStyles);
 
   const matchedPrefix = RECOGNIZED_PREFIX_KEYS.map((key) => t[key]).find(
-    (prefix) => question?.startsWith(prefix)
+    (prefix) => question?.startsWith(prefix),
   );
 
   const remainderAfterPrefix = matchedPrefix
@@ -47,11 +47,7 @@ const QuestionDisplay: React.FC<QuestionDisplayProps> = ({
         >
           {matchedPrefix ? (
             <>
-              <AppText
-                fontFamily="script"
-                type="title"
-                color={colors.primary}
-              >
+              <AppText fontFamily="script" type="title" color={colors.primary}>
                 {matchedPrefix}
               </AppText>
               <AppText fontFamily="script" type="title" color={colors.onImage}>

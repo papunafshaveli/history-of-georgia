@@ -11,11 +11,11 @@ Enrich the existing 1,514-question quiz pool with three new variation types that
 
 Three variation types, with Statement-judgment having two sub-modes (true / false):
 
-| Variation | Player task | Prefix highlight |
-|---|---|---|
-| **NOT-type** | Pick the option that doesn't belong to a stated category | `აირჩიე განსხვავებული:` |
-| **Chronological** | Pick the earliest / latest event among 4 | None — plain question |
-| **Statement-judgment** | Pick the one true (or one false) statement among 4 | `ჩამოთვლილთაგან ერთი სწორია:` / `ჩამოთვლილთაგან ერთი მცდარია:` |
+| Variation              | Player task                                              | Prefix highlight                                               |
+| ---------------------- | -------------------------------------------------------- | -------------------------------------------------------------- |
+| **NOT-type**           | Pick the option that doesn't belong to a stated category | `აირჩიე განსხვავებული:`                                        |
+| **Chronological**      | Pick the earliest / latest event among 4                 | None — plain question                                          |
+| **Statement-judgment** | Pick the one true (or one false) statement among 4       | `ჩამოთვლილთაგან ერთი სწორია:` / `ჩამოთვლილთაგან ერთი მცდარია:` |
 
 All variations use the same 4-option layout, same scoring, same hint mechanism, and the same `QuizQuestion` shape. The existing `ასოციაცია:` pattern (159 questions) is preserved as-is.
 
@@ -39,7 +39,9 @@ Adding a future variation type = one new translation key + one entry in this lis
 **Zero schema changes.** Each new question is a normal `QuizQuestion`:
 
 ```typescript
-{ id, question, options, correctAnswer, hint, difficulty, randomField }
+{
+  (id, question, options, correctAnswer, hint, difficulty, randomField);
+}
 ```
 
 Variation type is conveyed entirely through the question text prefix. `upload.ts`, the Firestore `tickets` collection, and the existing 1,514 questions are untouched.
@@ -48,11 +50,11 @@ Variation type is conveyed entirely through the question text prefix. `upload.ts
 
 Three new keys, added to both `src/locales/ka.json` and `src/locales/en.json`:
 
-| Key | ka.json (Georgian) | en.json (English) |
-|---|---|---|
-| `common_pick_different` | `აირჩიე განსხვავებული:` | `Pick the different one:` |
-| `common_truth` | `ჩამოთვლილთაგან ერთი სწორია:` | `One of the following is correct:` |
-| `common_falsehood` | `ჩამოთვლილთაგან ერთი მცდარია:` | `One of the following is false:` |
+| Key                     | ka.json (Georgian)             | en.json (English)                  |
+| ----------------------- | ------------------------------ | ---------------------------------- |
+| `common_pick_different` | `აირჩიე განსხვავებული:`        | `Pick the different one:`          |
+| `common_truth`          | `ჩამოთვლილთაგან ერთი სწორია:`  | `One of the following is correct:` |
+| `common_falsehood`      | `ჩამოთვლილთაგან ერთი მცდარია:` | `One of the following is false:`   |
 
 ## Authoring Conventions
 
@@ -71,6 +73,7 @@ Three new keys, added to both `src/locales/ka.json` and `src/locales/en.json`:
 - **Hint:** what defines the category, or what makes the odd one different.
 
 **Example:**
+
 - `question`: `აირჩიე განსხვავებული: ბაგრატიონთა დინასტიის წარმომადგენლები`
 - `options`: `["დავით აღმაშენებელი", "თამარი", "გიორგი ბრწყინვალე", "შოთა რუსთაველი"]`
 - `correctAnswer`: `შოთა რუსთაველი`
@@ -87,6 +90,7 @@ Three new keys, added to both `src/locales/ka.json` and `src/locales/en.json`:
 - **Hint:** narrow the time window without naming the answer.
 
 **Example (medium):**
+
 - `question`: `ჩამოთვლილთაგან, რომელი მოხდა ყველაზე ადრე?`
 - `options`: `["დიდგორის ბრძოლა", "ბასიანის ბრძოლა", "შამქორის ბრძოლა", "ბოლნისის ტაძრის აშენება"]`
 - `correctAnswer`: `ბოლნისის ტაძრის აშენება`
@@ -103,6 +107,7 @@ Three new keys, added to both `src/locales/ka.json` and `src/locales/en.json`:
 - **Hint:** points toward the truth without naming it.
 
 **Example (`ჩამოთვლილთაგან ერთი სწორია:`):**
+
 - `question`: `ჩამოთვლილთაგან ერთი სწორია:`
 - `options`:
   - `თამარი იყო გიორგი მესამის ქალიშვილი` (correct)
@@ -128,6 +133,7 @@ If playtesting surfaces real confusion, the fallback is to ship only `ჩამ�
 The 5 drafted `ერთი სწორია:` questions for batch 7c were discarded (not merged). Batch 7d (`ერთი მცდარია:`) was not authored.
 
 **What stayed in the codebase to keep this cheap to revisit:**
+
 - The 3 translation keys (`common_pick_different`, `common_truth`, `common_falsehood`) in both locale files.
 - All four entries in `src/constants/questionPrefixes.ts` `RECOGNIZED_PREFIX_KEYS`.
 - The generalized `QuestionDisplay.tsx` prefix-iteration logic.
@@ -142,23 +148,23 @@ When the UI question gets revisited, statement-judgment is one authoring batch a
 
 Goal: lock in tone, prefix wording, difficulty calibration, and Georgian phrasing on a small sample before producing volume.
 
-| Variation | Phase 1 count |
-|---|---|
-| NOT-type | 10 |
-| Chronological | 10 |
-| Statement → true | 5 |
-| Statement → false | 5 |
+| Variation         | Phase 1 count |
+| ----------------- | ------------- |
+| NOT-type          | 10            |
+| Chronological     | 10            |
+| Statement → true  | 5             |
+| Statement → false | 5             |
 
 ### Phase 2 — Scale-up
 
 Targets, not commitments. Actual count depends on quality bar during review.
 
-| Variation | Target | Source |
-|---|---|---|
-| NOT-type | 50–100 | Curated authoring around historical categories |
-| Chronological | 100–150 | Mined from 186 existing date-anchored questions + manual additions |
-| Statement → true | 80–120 | Any factual subject in the existing pool |
-| Statement → false | 80–120 | Same — inverted |
+| Variation         | Target  | Source                                                             |
+| ----------------- | ------- | ------------------------------------------------------------------ |
+| NOT-type          | 50–100  | Curated authoring around historical categories                     |
+| Chronological     | 100–150 | Mined from 186 existing date-anchored questions + manual additions |
+| Statement → true  | 80–120  | Any factual subject in the existing pool                           |
+| Statement → false | 80–120  | Same — inverted                                                    |
 
 ## Authoring Workflow
 

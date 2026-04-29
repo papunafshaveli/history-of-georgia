@@ -46,7 +46,7 @@ function validateDraft(entry, index) {
   }
   if (!VALID_DIFFICULTIES.has(entry.difficulty)) {
     errors.push(
-      `${ref}: "difficulty" must be one of easy | medium | hard (got ${JSON.stringify(entry.difficulty)})`
+      `${ref}: "difficulty" must be one of easy | medium | hard (got ${JSON.stringify(entry.difficulty)})`,
     );
   }
   if ("id" in entry) {
@@ -105,7 +105,7 @@ function main() {
       typeof q.id === "number" && q.id <= SEQUENTIAL_ID_CUTOFF && q.id > max
         ? q.id
         : max,
-    0
+    0,
   );
   let nextId = maxId + 1;
 
@@ -121,7 +121,7 @@ function main() {
   writeJson(DRAFT_PATH, []);
 
   console.log(
-    `Merged ${merged.length} new question(s). Rejected ${rejectedCount}. Next available id: ${nextId}.`
+    `Merged ${merged.length} new question(s). Rejected ${rejectedCount}. Next available id: ${nextId}.`,
   );
 }
 
