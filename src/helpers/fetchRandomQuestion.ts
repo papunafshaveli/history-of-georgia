@@ -84,6 +84,7 @@ export const fetchRandomQuestion = async (
         correctAnswer: data.correctAnswer,
         hint: data.hint,
         randomField: data.randomField,
+        difficulty: data.difficulty,
       };
 
       cacheQuestion(question);

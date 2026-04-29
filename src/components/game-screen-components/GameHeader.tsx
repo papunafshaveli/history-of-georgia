@@ -9,19 +9,14 @@ import { getStyles } from "./styles";
 
 type GameHeaderProps = {
   crowns: number[];
-  correctAnswersCount: number;
-  questionsCount: number;
+  score: number;
 };
 
-const GameHeader: React.FC<GameHeaderProps> = ({
-  crowns,
-  correctAnswersCount,
-  questionsCount,
-}) => {
+const GameHeader: React.FC<GameHeaderProps> = ({ crowns, score }) => {
   const t = useTranslation();
   const styles = useStyles(getStyles);
 
-  const scoreText = `${t.common_correct_answer} ${correctAnswersCount}/${questionsCount}`;
+  const scoreText = `${t.common_score}: ${score}`;
 
   return (
     <>
