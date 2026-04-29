@@ -12,6 +12,17 @@ const Rules = () => {
   const t = useTranslation();
   const { colors } = useAppTheme();
   const styles = useStyles(getStyles);
+
+  const bullets = [
+    t.rules_lives,
+    t.rules_hints,
+    t.rules_scoring_intro,
+    `   ${t.rules_scoring_easy}`,
+    `   ${t.rules_scoring_medium}`,
+    `   ${t.rules_scoring_hard}`,
+    t.rules_scoring_outro,
+  ];
+
   return (
     <View style={styles.container}>
       <ImageBackground
@@ -21,24 +32,25 @@ const Rules = () => {
         imageStyle={styles.imageBackground}
       />
       <View style={styles.rulesTextWrapper}>
-        <>
+        <AppText
+          color={colors.onImage}
+          type="display"
+          fontFamily="script"
+          style={styles.alignCenter}
+        >
+          {t.rules_title}
+        </AppText>
+        {bullets.map((line, index) => (
           <AppText
+            key={index}
             color={colors.onImage}
-            type="display"
-            fontFamily="script"
+            type="subHeadline"
+            fontFamily="serif"
             style={styles.alignCenter}
           >
-            {t.rules_title}
+            {line}
           </AppText>
-          <AppText
-            color={colors.onImage}
-            type="title"
-            fontFamily="script"
-            style={styles.alignCenter}
-          >
-            {t.rules_description}
-          </AppText>
-        </>
+        ))}
       </View>
       <View />
     </View>

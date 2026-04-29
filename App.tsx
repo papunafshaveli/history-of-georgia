@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useEffect, useMemo } from "react";
 import { BackHandler, StatusBar, View } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import {
@@ -19,12 +19,16 @@ import {
   useCustomFonts,
   useModalState,
   useNotifications,
+  usePendingResultsReplay,
 } from "@/src/hooks";
 import { AppModals, ErrorBoundary, Loading } from "@/src/components";
 
+import { AuthProvider } from "@/src/context/AuthProvider";
 import { SettingsProvider } from "@/src/context/SettingsContext";
 
 import { AppNavigation } from "@/src/navigation/AppNavigation";
+
+import { runMigrations } from "@/src/migrations";
 
 import {
   ThemeProvider,
@@ -39,6 +43,14 @@ const FONT_MAP = {
   "helvetica-main": Helvetica,
   "nino-elite": BPGNinoEliteUltra,
 } as const;
+
+const BootEffects: React.FC = () => {
+  useEffect(() => {
+    runMigrations();
+  }, []);
+  usePendingResultsReplay();
+  return null;
+};
 
 const App: React.FC = () => {
   useNotifications();
@@ -88,37 +100,40 @@ const App: React.FC = () => {
   return (
     <ErrorBoundary>
       <LanguageProvider>
-        <SettingsProvider>
-          <ThemeModeContext value={{ themeMode, isThemeDark, setThemeMode }}>
-            <ThemeProvider theme={theme}>
-              <SafeAreaProvider>
-                <View style={containerStyle}>
-                  <StatusBar
-                    hidden
-                    barStyle={isThemeDark ? "light-content" : "dark-content"}
-                    backgroundColor={theme.colors.background}
-                  />
-                  <NavigationContainer theme={navigationTheme}>
-                    <AppNavigation
-                      toggleRulesModal={toggleRulesModal}
-                      toggleSettingsModal={toggleSettingsModal}
+        <AuthProvider>
+          <BootEffects />
+          <SettingsProvider>
+            <ThemeModeContext value={{ themeMode, isThemeDark, setThemeMode }}>
+              <ThemeProvider theme={theme}>
+                <SafeAreaProvider>
+                  <View style={containerStyle}>
+                    <StatusBar
+                      hidden
+                      barStyle={isThemeDark ? "light-content" : "dark-content"}
+                      backgroundColor={theme.colors.background}
                     />
-                  </NavigationContainer>
-                  <AppModals
-                    isRulesModalVisible={isRulesModalVisible}
-                    toggleRulesModal={toggleRulesModal}
-                    isSettingsModalVisible={isSettingsModalVisible}
-                    toggleSettingsModal={toggleSettingsModal}
-                    isExitModalVisible={isExitModalVisible}
-                    toggleExitModal={toggleExitModal}
-                    handleExitApp={BackHandler.exitApp}
-                    isEthernetModalVisible={isEthernetModalVisible}
-                  />
-                </View>
-              </SafeAreaProvider>
-            </ThemeProvider>
-          </ThemeModeContext>
-        </SettingsProvider>
+                    <NavigationContainer theme={navigationTheme}>
+                      <AppNavigation
+                        toggleRulesModal={toggleRulesModal}
+                        toggleSettingsModal={toggleSettingsModal}
+                      />
+                    </NavigationContainer>
+                    <AppModals
+                      isRulesModalVisible={isRulesModalVisible}
+                      toggleRulesModal={toggleRulesModal}
+                      isSettingsModalVisible={isSettingsModalVisible}
+                      toggleSettingsModal={toggleSettingsModal}
+                      isExitModalVisible={isExitModalVisible}
+                      toggleExitModal={toggleExitModal}
+                      handleExitApp={BackHandler.exitApp}
+                      isEthernetModalVisible={isEthernetModalVisible}
+                    />
+                  </View>
+                </SafeAreaProvider>
+              </ThemeProvider>
+            </ThemeModeContext>
+          </SettingsProvider>
+        </AuthProvider>
       </LanguageProvider>
     </ErrorBoundary>
   );

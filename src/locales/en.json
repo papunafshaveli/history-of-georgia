@@ -44,6 +44,15 @@
 
   "rules_title": "The rules are very simple:",
   "rules_description": "You have the right to make 5 mistakes and can use help 5 times. Make it your goal to improve your record!",
+  "rules_lives": "• You have 5 mistakes allowed",
+  "rules_hints": "• You can use a hint 5 times",
+  "rules_scoring_intro": "• Points scale with difficulty:",
+  "rules_scoring_easy": "– Easy — +5 points",
+  "rules_scoring_medium": "– Medium — +10 points",
+  "rules_scoring_hard": "– Hard — +20 points",
+  "rules_scoring_outro": "• Climb the leaderboard!",
+
+  "common_score": "Score",
 
   "vibration_turn_on": "Turn on vibration",
   "vibration_turn_off": "Turn off vibration",
