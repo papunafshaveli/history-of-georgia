@@ -1,8 +1,65 @@
 # Scoring Rework + Online Leaderboard — Implementation Plan
 
 **Spec:** `docs/superpowers/specs/2026-04-29-scoring-leaderboard-design.md`
-**Date:** 2026-04-29
+**Date:** 2026-04-29 (amended 2026-04-30)
 **Target release:** 2.0.0 native build
+
+---
+
+## ⏯ Current state — start here when resuming
+
+**Branch:** `Add-question-variations`
+**Last commit:** `d7a6e4c` — "Phase 3: leaderboard tab — functional, design debt logged" (pushed)
+**Working tree:** uncommitted Phase 3 work in flight; will be partially discarded for the pivot (see below)
+
+### What is committed and working
+
+- **Phase 1** (commit `aaaae49`): anonymous Firebase Auth, `users/{uid}` doc auto-create, persistence, `AuthProvider`, `useAuth`. **No further work needed unless real OAuth lands (Phase 4).**
+- **Phase 2** (commit `aaaae49`): difficulty-weighted scoring (+5/+10/+20), atomic Firestore transaction with idempotent guard + lazy weekly reset, `pendingResults` queue + replay on auth/network resolve, legacy-stats one-time AsyncStorage wipe migration, `GameHeader` shows `Score: N`, Rules screen carries the scoring breakdown.
+- **Phase 3 baseline** (commit `d7a6e4c`): the third tab was renamed `Leaderboard`; `users` collection wiring, `useLeaderboard` + `useUserStats` hooks, `firestore-leaderboard` service, parchment-imagery components — design rejected, debt logged.
+- **Firestore rules** for `users` / `game_results` / `app_config` deployed to production (existing `tickets` / `push_tokens` / `notifications` rules preserved verbatim).
+- **Composite indexes** for both leaderboard queries deployed.
+- **Translation keys** for ~38 strings across `en.json` and `ka.json`.
+- **Memory** updates pinning the user's preferences (no Co-Authored-By, prefer enums, UI polish discipline, no modal-as-router for sign-in, design-context, etc.) — auto-loaded by every new session.
+
+### What is uncommitted (in flight at conversation pause)
+
+The 2026-04-30 follow-up session reworked Phase 3 several times based on screenshot review. Current uncommitted work is **partially salvageable for the pivot**:
+
+- ✅ **Salvage:** `useRecentGames` rewired to local AsyncStorage (`src/services/local-recent-games.ts` + `src/hooks/useRecentGames.ts`); `addLocalRecentGame` call on game-end; sign-in inline buttons (Google + Apple, no modal); cache invalidation on game-end success.
+- 🔁 **Rework:** `LeaderboardScreen.tsx` currently does auth-conditional content with recent games inline — needs to be split (recent games move to a restored `StatsScreen.tsx`; Leaderboard becomes anonymous-buttons-only or signed-in-list-only).
+- 🗑 **Discard / revert:** the parchment Crown / podium / fixed-title / divider work in current `LeaderboardScreen.tsx` and `styles.ts` — most of it doesn't fit the new structure.
+
+### What the pivot demands (next concrete steps)
+
+The brainstorming on 2026-04-30 reversed the original Q9. New tab structure: **4 tabs, Home → Topics → Leaderboard → Stats**. See spec section "Tab structure pivot (2026-04-30) — supersedes Q9" for full design.
+
+Concrete coding steps:
+
+1. **Re-add `ScreenName.STATS_SCREEN`** in `src/types/screenNames.ts` (alongside `LEADERBOARD_SCREEN`).
+2. **Update `TabParamList`** in `src/types/screens.ts` to include both `stats-screen` and `leaderboard-screen`.
+3. **Restore `src/screens/main-screens/stats-screen/StatsScreen.tsx`** as the 4th tab, but rewire data:
+   - 4 cards via `useUserStats` (Firestore `users/{uid}` doc): Total Games, Best Score, Average Score, Total Questions — keep old MaterialCommunityIcons (`sword-cross`, `trophy`, `chart-line`, `help-circle-outline`).
+   - Recent-games list via existing `useRecentGames` (local AsyncStorage). Layout: title + 4 cards + section header **fixed**, only the list scrolls.
+4. **Slim down `LeaderboardScreen.tsx`** — remove the recent-games section; clean two-state branch:
+   - Anonymous → just inline Google + Apple sign-in stamp buttons (no modal).
+   - Signed-in → small "Your rank: #N" caption (only if user is in top 20) + Weekly/All-Time tabs + scrolling top-20 list.
+5. **Update `TabNavigation.tsx`** — register both screens in this exact order: Home → Topics → Leaderboard → Stats.
+6. **Update `GameSummary.tsx`** — post-game "View stats" route reverts to `STATS_SCREEN`.
+7. **`screens/main-screens/index.ts`** — re-export both `StatsScreen` and `LeaderboardScreen`.
+8. **Remove `RecentGamesList.tsx`** from leaderboard-screen folder; either move to `src/components/recent-games-list/` (if shared) or inline its content into the restored `StatsScreen.tsx` (single consumer).
+
+After step 8: TS + lint clean, smoke-test on dev client (`npm start` → press `s` then `i`), commit + push as Phase 3 pivot, then resume the rest of the plan starting at Phase 4.
+
+### Phases 4–8 are unchanged
+
+OAuth wiring, force-update gate, milestone modal, Settings → Account, migration cleanup, test pass, EAS release — see Phase 4–8 sections below; the pivot doesn't touch those.
+
+### Where the visual design debt stands
+
+Logged in spec section "Design debt — Leaderboard UI is unfinished (2026-04-29)". Stats screen reuses the original `StatsScreen.tsx` design which the user explicitly liked, so that's not in design debt. Leaderboard tab visuals still need a designer pass after Phase 4+5 land.
+
+---
 
 This plan executes the spec in 8 phases. Each phase is small enough to land + verify independently. Between phases, we pause: run the dev client, smoke-test the changed surface, fix any regressions, then move on. This avoids landing 40 files at once.
 
@@ -256,6 +313,22 @@ Renders the SignInModal trigger.
 - Anonymous user opens tab → "Your card" is the locked CTA, tabs + podium + list still render below (might be empty for week tab, has only the test player on all-time).
 - Pull-to-refresh works. Cache works (re-open tab within 30min → no Firestore call in console).
 - **Pause** — confirm before Phase 4.
+
+---
+
+## Pivot 2026-04-30 — separate Stats + Leaderboard tabs
+
+The original Phase 3 ("Leaderboard inside Stats tab") has been reversed. New structure: 4 bottom tabs — Home, Topics, **Leaderboard** (3rd), **Stats** (4th). See spec section "Tab structure pivot (2026-04-30) — supersedes Q9" for full details.
+
+The Phase 3 work in flight (auth-conditional Leaderboard, recent-games via local AsyncStorage, inline sign-in buttons, fixed title, etc.) is partially salvageable but needs the new shape:
+
+- **Restore** `src/screens/main-screens/stats-screen/StatsScreen.tsx` as the 4th tab; rewire data from local `gameHistory` → `useUserStats` for the 4 cards, `useRecentGames` (AsyncStorage) for the list. Keep the old visual design exactly.
+- **Slim** `LeaderboardScreen` — drop the recent-games section (moved to Stats); cleanly split into anonymous-state (sign-in buttons only) and signed-in-state (rank caption + Weekly/All-Time tabs + top-20 list).
+- **Re-add** `ScreenName.STATS_SCREEN` and the `stats-screen` route in `TabParamList`.
+- **TabNavigation** registers both screens; tab order Home → Topics → Leaderboard → Stats.
+- **GameSummary** post-game navigation reverts to `STATS_SCREEN`.
+
+All Phase 1+2 work (anonymous auth, scoring rework, Firestore writes, rules) and the hooks/services built on 2026-04-29 (`useUserStats`, `useLeaderboard`, `useRecentGames`, `addLocalRecentGame`, etc.) survive unchanged. The pivot is purely shell-level (tabs + screen composition), not infrastructure.
 
 ---
 
