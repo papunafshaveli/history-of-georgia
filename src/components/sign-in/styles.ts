@@ -61,4 +61,53 @@ export const getStyles = (theme: AppTheme) =>
       justifyContent: "center",
       backgroundColor: theme.colors.surface,
     },
+
+    confirmContainer: {
+      flex: 1,
+      paddingVertical: theme.spacing.x2,
+      gap: theme.spacing.x3,
+    },
+    confirmCaption: {
+      textAlign: "center",
+      lineHeight: 24,
+    },
+    nameInput: {
+      borderWidth: 2,
+      borderColor: theme.colors.bronze,
+      borderRadius: theme.borderRadius.md,
+      backgroundColor: theme.colors.parchment,
+      paddingVertical: theme.spacing.x3,
+      paddingHorizontal: theme.spacing.x4,
+      fontSize: 18,
+      fontFamily: theme.fonts.serif,
+      color: theme.colors.bronzeDark,
+      textAlign: "center",
+    },
+    validationRow: {
+      minHeight: getAdjustedHeight(20),
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    validationText: {
+      textAlign: "center",
+    },
+    saveButton: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      width: "100%",
+      paddingVertical: theme.spacing.x3,
+      paddingHorizontal: theme.spacing.x4,
+      borderRadius: theme.borderRadius.lg,
+      borderWidth: 3,
+      borderColor: theme.colors.bronze,
+      backgroundColor: theme.colors.parchment,
+      ...theme.shadows.default,
+    },
+    saveButtonPressed: {
+      transform: [{ scale: 0.98 }],
+    },
+    saveButtonDisabled: {
+      opacity: 0.5,
+    },
   });

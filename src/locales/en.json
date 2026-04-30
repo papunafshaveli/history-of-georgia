@@ -91,6 +91,11 @@
   "signin_failure_toast": "Couldn't sign in, please try again",
   "signin_coming_soon": "Sign-in arrives in the next update",
 
+  "name_modal_title": "Pick your name",
+  "name_modal_caption": "This name will appear on the leaderboard.",
+  "name_modal_save": "Save",
+  "name_validation_length": "Name must be 2 to 24 characters",
+
   "vibration_turn_on": "Turn on vibration",
   "vibration_turn_off": "Turn off vibration",
 
