@@ -91,6 +91,11 @@
   "signin_failure_toast": "ვერ მოხერხდა, სცადე თავიდან",
   "signin_coming_soon": "შესვლა შემდეგ განახლებაში გამოჩნდება",
 
+  "name_modal_title": "აირჩიე სახელი",
+  "name_modal_caption": "ეს სახელი გამოჩნდება ლიდერბორდზე.",
+  "name_modal_save": "შენახვა",
+  "name_validation_length": "სახელი უნდა იყოს 2-დან 24 სიმბოლომდე",
+
   "vibration_turn_on": "ვიბრაციის ჩართვა",
   "vibration_turn_off": "ვიბრაციის გამორთვა",
 

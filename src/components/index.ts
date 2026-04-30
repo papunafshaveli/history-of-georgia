@@ -20,3 +20,4 @@ export { default as StatisticsCard } from "./statistics-card/StatisticsCard";
 export { AppText } from "./text";
 export { default as DifficultyRing } from "./difficulty-ring/DifficultyRing";
 export { default as SignInModal } from "./sign-in/SignInModal";
+export { default as ConfirmNameModal } from "./sign-in/ConfirmNameModal";

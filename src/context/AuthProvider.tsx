@@ -33,13 +33,31 @@ import {
   updateProviderProfile,
 } from "@/src/services/firestore-user";
 
+export type SignInResult = {
+  /**
+   * True when the OAuth credential was just linked to the previously
+   * anonymous user. Consumers use this to gate one-time UX (e.g. opening
+   * ConfirmNameModal). False when we fell back to signInWithCredential
+   * because the credential already belonged to another UID, or when the
+   * user cancelled the OAuth flow.
+   */
+  wasFirstLink: boolean;
+  /**
+   * Display name resolved from the OAuth provider (Google `name`, Apple
+   * `fullName`) or the existing Firebase user record. Null when neither
+   * source provided one. Pre-fills `ConfirmNameModal` so the user sees
+   * their provider name as the starting point.
+   */
+  displayName: string | null;
+};
+
 type AuthContextValue = {
   user: User | null;
   uid: string | null;
   isAnonymous: boolean;
   isAuthenticating: boolean;
-  signInWithGoogle: () => Promise<void>;
-  signInWithApple: () => Promise<void>;
+  signInWithGoogle: () => Promise<SignInResult>;
+  signInWithApple: () => Promise<SignInResult>;
   signOut: () => Promise<void>;
   updateDisplayName: (name: string) => Promise<void>;
   bumpAuthVersion: () => void;
@@ -152,13 +170,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     };
   }, [bumpAuthVersion]);
 
-  const signInWithGoogle = useCallback(async () => {
+  const signInWithGoogle = useCallback(async (): Promise<SignInResult> => {
     try {
       await GoogleSignin.hasPlayServices();
       const response = await GoogleSignin.signIn();
 
       if (!isSuccessResponse(response)) {
-        return;
+        return { wasFirstLink: false, displayName: null };
       }
 
       const { idToken, user: providerUser } = response.data;
@@ -170,9 +188,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const current = auth.currentUser;
 
       let signedIn;
+      let wasFirstLink = false;
       if (current) {
         try {
           signedIn = await linkWithCredential(current, credential);
+          wasFirstLink = true;
         } catch (err) {
           if (hasErrorCode(err, "auth/credential-already-in-use")) {
             signedIn = await signInWithCredential(auth, credential);
@@ -195,20 +215,22 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         displayName: resolvedDisplayName,
         photoURL: resolvedPhotoURL,
       });
+
+      return { wasFirstLink, displayName: resolvedDisplayName };
     } catch (err) {
       if (
         isErrorWithCode(err) &&
         (err.code === statusCodes.SIGN_IN_CANCELLED ||
           err.code === statusCodes.IN_PROGRESS)
       ) {
-        return;
+        return { wasFirstLink: false, displayName: null };
       }
       logger.warn("[AuthProvider] signInWithGoogle failed:", err);
       throw err;
     }
   }, [bumpAuthVersion]);
 
-  const signInWithApple = useCallback(async () => {
+  const signInWithApple = useCallback(async (): Promise<SignInResult> => {
     try {
       if (!(await AppleAuthentication.isAvailableAsync())) {
         throw new Error(
@@ -243,9 +265,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       const current = auth.currentUser;
       let signedIn;
+      let wasFirstLink = false;
       if (current) {
         try {
           signedIn = await linkWithCredential(current, credential);
+          wasFirstLink = true;
         } catch (err) {
           if (hasErrorCode(err, "auth/credential-already-in-use")) {
             signedIn = await signInWithCredential(auth, credential);
@@ -270,12 +294,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         displayName: resolvedDisplayName,
         photoURL: signedIn.user.photoURL ?? null,
       });
+
+      return { wasFirstLink, displayName: resolvedDisplayName };
     } catch (err) {
       if (
         hasErrorCode(err, "ERR_REQUEST_CANCELED") ||
         hasErrorCode(err, "ERR_REQUEST_CANCELLED")
       ) {
-        return;
+        return { wasFirstLink: false, displayName: null };
       }
       logger.warn("[AuthProvider] signInWithApple failed:", err);
       throw err;

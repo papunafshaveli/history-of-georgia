@@ -11,7 +11,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useFocusEffect } from "@react-navigation/native";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 
-import { AppText, EmptyState, Loading } from "@/src/components";
+import { AppText, ConfirmNameModal, EmptyState, Loading } from "@/src/components";
 import {
   useAppTheme,
   useAuth,
@@ -110,26 +110,47 @@ const LeaderboardScreen: React.FC = () => {
   const [activeTab, setActiveTab] = useState<LeaderboardTab>(
     LeaderboardTab.WEEKLY,
   );
+  const [confirmNameOpen, setConfirmNameOpen] = useState(false);
+  const [confirmNameInitial, setConfirmNameInitial] = useState<string | null>(
+    null,
+  );
 
   const { entries, isLoading, isRefreshing, refresh } = useLeaderboard({
     tab: activeTab,
   });
 
+  const openConfirmNameIfFirstLink = useCallback(
+    (result: { wasFirstLink: boolean; displayName: string | null }) => {
+      if (result.wasFirstLink) {
+        setConfirmNameInitial(result.displayName);
+        setConfirmNameOpen(true);
+      }
+    },
+    [],
+  );
+
   const handleGooglePress = useCallback(async () => {
     try {
-      await signInWithGoogle();
+      const result = await signInWithGoogle();
+      openConfirmNameIfFirstLink(result);
     } catch {
       showComingSoonToast(t.signin_coming_soon);
     }
-  }, [signInWithGoogle, t.signin_coming_soon]);
+  }, [signInWithGoogle, openConfirmNameIfFirstLink, t.signin_coming_soon]);
 
   const handleApplePress = useCallback(async () => {
     try {
-      await signInWithApple();
+      const result = await signInWithApple();
+      openConfirmNameIfFirstLink(result);
     } catch {
       showComingSoonToast(t.signin_coming_soon);
     }
-  }, [signInWithApple, t.signin_coming_soon]);
+  }, [signInWithApple, openConfirmNameIfFirstLink, t.signin_coming_soon]);
+
+  const handleConfirmNameSaved = useCallback(() => {
+    setConfirmNameOpen(false);
+    setConfirmNameInitial(null);
+  }, []);
 
   useFocusEffect(
     useCallback(() => {
@@ -227,6 +248,12 @@ const LeaderboardScreen: React.FC = () => {
           )}
         </ScrollView>
       )}
+
+      <ConfirmNameModal
+        isVisible={confirmNameOpen}
+        initialName={confirmNameInitial}
+        onSaved={handleConfirmNameSaved}
+      />
     </SafeAreaView>
   );
 };
