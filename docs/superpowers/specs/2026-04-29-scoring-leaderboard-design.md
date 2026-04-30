@@ -1,8 +1,10 @@
 # Scoring Rework + Online Leaderboard — Design
 
-**Status:** Draft for review
-**Date:** 2026-04-29
+**Status:** Draft — amended 2026-04-30 (Q9 reversed; tab structure pivoted)
+**Original date:** 2026-04-29
 **Target release:** 2.0.0 native build (already pending; see CLAUDE.md "Release status")
+
+> **Pivot 2026-04-30 — see "Tab structure pivot" section below.** The original Q9 decision (B — leaderboard inside the Stats tab) has been reversed. The app now has **four bottom tabs**: Home, Topics, Leaderboard (3rd), Stats (4th). Earlier sections of this spec that assume "leaderboard lives inside Stats" should be read in light of the pivot section, which is the canonical structure as of today.
 
 ## Goal
 
@@ -899,6 +901,115 @@ The Leaderboard tab UI shipped in Phase 3 (parchment-imagery cards, bronze ribbo
 - Translation keys already exist (~25 new keys); redesign reuses them
 - `LeaderboardTab` enum and `useLeaderboard` / `useUserStats` hook contracts stay stable
 - `tintColor` only on `<Image>`, never `<ImageBackground>` (caught and fixed during the second pass)
+
+## Tab structure pivot (2026-04-30) — supersedes Q9
+
+**Decision reversal.** Q9 originally chose option B ("leaderboard inside the Stats tab"). After implementing it through Phase 3 and reviewing on-device, the user requested a separate Leaderboard tab and a restored Stats tab. This section is the canonical tab structure going forward; everywhere earlier in the spec that says "Leaderboard lives inside Stats" is **superseded** here.
+
+### Bottom tab structure
+
+Four tabs, in this order:
+
+```
+[ Home ]   [ Topics ]   [ Leaderboard 🏆 ]   [ Stats 📊 ]
+```
+
+`ScreenName.STATS_SCREEN` is re-added (it had been removed in the original Phase 3 implementation). `ScreenName.LEADERBOARD_SCREEN` stays. `TabParamList` carries both `stats-screen` and `leaderboard-screen` keys.
+
+### Stats tab (4th, route `stats-screen`)
+
+Same visual language as the original `StatsScreen.tsx` that the user explicitly liked, with data sources rewired to the new schema. Layout: title + 4 cards + section header are **fixed**; only the recent-games list scrolls.
+
+```
+─────────────  fixed  ─────────────
+   სტატისტიკა
+
+   ┌───────────────┬───────────────┐
+   │ ⚔ Total Games │ 🏆 Best Score │   (old icons, new point-based values)
+   ├───────────────┼───────────────┤
+   │ 📈 Avg Score  │ ❓ Total Qs   │
+   └───────────────┴───────────────┘
+
+   🕒  ბოლო თამაშები
+─────────────  scrolls  ───────────
+   📅 30/04/2026   12 / 15  🔗
+   📅 30/04/2026    6 / 6   🔗
+   ...
+```
+
+| Card | Icon (Material Community) | Source |
+| --- | --- | --- |
+| Total Games | `sword-cross` | `users.gamesPlayed` |
+| Best Score | `trophy` | `users.bestSingleGameScore` (points) |
+| Average Score | `chart-line` | `Math.round(users.totalPoints / users.gamesPlayed)` |
+| Total Questions | `help-circle-outline` | `users.totalQuestions` |
+
+Recent-games list uses the existing `useRecentGames` hook backed by AsyncStorage `recentGames` (built 2026-04-29). Each row: date pill (`DD/MM/YYYY`), `correctCount / totalQuestions`, share icon. Same row design as the legacy screen.
+
+### Leaderboard tab (3rd, route `leaderboard-screen`)
+
+Two states: anonymous and signed-in.
+
+#### Anonymous
+
+```
+─────────────  fixed  ─────────────
+       ლიდერბორდი
+
+   [ G  Sign in with Google ]
+   [ 🍎 Sign in with Apple ]   (iOS only)
+```
+
+Two stamp-pattern buttons inline (no modal). Each button calls `signInWithGoogle` / `signInWithApple` from `useAuth` directly. Phase 4 wires real OAuth into those methods; in Phase 3 they're stubs that toast "coming soon" on Android.
+
+#### Signed-in
+
+```
+─────────────  fixed  ─────────────
+       ლიდერბორდი
+   შენი ადგილი: #47           (only shown if rank exists in current tab)
+   [ ამ კვირის ] [ ყველა დროის ]
+─────────────  scrolls  ───────────
+   #1   [SD]  Sandro      180
+   #2   [GG]  Giorgi      150
+   ...
+   #20  ...
+```
+
+Top 20 fetched via existing `useLeaderboard` hook (per-tab, 30-min AsyncStorage cache). The "Your rank: #N" caption is computed client-side: if the current user's UID appears in the top-20 entries, display their rank; otherwise, fetch the user's rank via a separate query — **deferred** for v1 (out of scope; we just hide the caption when the user is outside top 20). User experience: signed-in players outside top 20 see no caption, just the tabs and list. Acceptable for v1.
+
+### Components reused / restored / changed
+
+| File | Action |
+| --- | --- |
+| `src/screens/main-screens/stats-screen/StatsScreen.tsx` | **Restore** as 4th tab; rewire data from local `gameHistory` → `useUserStats` (Firestore `users/{uid}`) for cards, `useRecentGames` for the list |
+| `src/screens/main-screens/stats-screen/styles.ts` | Keep as-is (already matches the design the user liked) |
+| `src/screens/main-screens/leaderboard-screen/LeaderboardScreen.tsx` | **Slim down** — drop the recent-games section (moved to Stats); split into clean anonymous-vs-signed-in branches |
+| `src/screens/main-screens/leaderboard-screen/RecentGamesList.tsx` | **Move** to `src/components/recent-games-list/` (or inline in StatsScreen); single consumer now |
+| `src/types/screenNames.ts` | Re-add `STATS_SCREEN = "stats-screen"` |
+| `src/types/screens.ts` | `TabParamList` gets both `stats-screen` and `leaderboard-screen` |
+| `src/navigation/TabNavigation.tsx` | Register 4 tabs in order: Home, Topics, Leaderboard, Stats |
+| `src/components/game-summary/GameSummary.tsx` | Post-game "View stats" route points to `STATS_SCREEN` (back to original) |
+| `src/screens/main-screens/index.ts` | Re-export both screens |
+| `src/locales/{en,ka}.json` | Re-add `stats_title`, `stats_total_games`, etc. (the keys still exist; just confirm they map correctly to the new card values) |
+
+### What survives unchanged from original spec
+
+- All of Phase 1 + Phase 2 (anonymous Auth, scoring rework, Firestore writes, rules, indexes, force-update gate, Apple/Google nutrition labels, etc.) — already committed
+- All hooks built today: `useUserStats`, `useLeaderboard`, `useRecentGames`, `usePendingResultsReplay`
+- All services: `firestore-user`, `firestore-game-result`, `firestore-leaderboard`, `local-recent-games`, `pending-results`
+- Translation keys for leaderboard / sign-in / scoring (already added)
+- `addLocalRecentGame` call on game-end success — preserved as-is
+- `saveGameAndUpdateStats` Firestore transaction — preserved as-is
+
+### Out of scope for this pivot
+
+- Rank-of-current-user query for outside-top-20 case (caption stays hidden in v1)
+- Visual polish on the Leaderboard tab (still under design debt)
+- Settings → Account section (still Phase 5)
+- Force-update gate (still Phase 5)
+- Milestone modal (still Phase 5)
+- Real OAuth wiring (still Phase 4)
 
 ## Open follow-ups
 
