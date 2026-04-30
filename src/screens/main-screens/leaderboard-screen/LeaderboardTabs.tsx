@@ -1,9 +1,8 @@
 import React, { useCallback } from "react";
-import { ImageBackground, Pressable, View } from "react-native";
+import { Pressable, View } from "react-native";
 
 import { AppText } from "@/src/components";
-import { QuestionBackground } from "@/src/assets";
-import { useAppTheme, useStyles, useThemeMode, useTranslation } from "@/src/hooks";
+import { useAppTheme, useStyles, useTranslation } from "@/src/hooks";
 import { LeaderboardTab } from "@/src/types";
 
 import { getStyles } from "./styles";
@@ -19,7 +18,6 @@ const LeaderboardTabs: React.FC<LeaderboardTabsProps> = ({
 }) => {
   const t = useTranslation();
   const { colors } = useAppTheme();
-  const { isThemeDark } = useThemeMode();
   const styles = useStyles(getStyles);
 
   const handleTabPress = useCallback(
@@ -27,7 +25,7 @@ const LeaderboardTabs: React.FC<LeaderboardTabsProps> = ({
     [onChangeTab],
   );
 
-  const buttonPressedStyle = useCallback(
+  const buttonStyleFor = useCallback(
     (isActive: boolean) =>
       ({ pressed }: { pressed: boolean }) => {
         const base = isActive
@@ -45,31 +43,24 @@ const LeaderboardTabs: React.FC<LeaderboardTabsProps> = ({
 
   return (
     <View style={styles.tabsRibbonWrapper}>
-      <ImageBackground
-        source={QuestionBackground}
-        resizeMode="stretch"
-        style={styles.tabsRibbonImage}
-      >
-        {isThemeDark ? <View style={styles.darkTint} /> : null}
-        {tabs.map(({ key, label }) => {
-          const isActive = key === activeTab;
-          const labelColor = isActive ? colors.surface : colors.bronzeDark;
-          return (
-            <Pressable
-              key={key}
-              accessibilityRole="tab"
-              accessibilityState={{ selected: isActive }}
-              accessibilityLabel={label}
-              style={buttonPressedStyle(isActive)}
-              onPress={handleTabPress(key)}
-            >
-              <AppText type="subHeadline" fontFamily="serif" color={labelColor}>
-                {label}
-              </AppText>
-            </Pressable>
-          );
-        })}
-      </ImageBackground>
+      {tabs.map(({ key, label }) => {
+        const isActive = key === activeTab;
+        const labelColor = isActive ? colors.surface : colors.bronzeDark;
+        return (
+          <Pressable
+            key={key}
+            accessibilityRole="tab"
+            accessibilityState={{ selected: isActive }}
+            accessibilityLabel={label}
+            style={buttonStyleFor(isActive)}
+            onPress={handleTabPress(key)}
+          >
+            <AppText type="subHeadline" fontFamily="serif" color={labelColor}>
+              {label}
+            </AppText>
+          </Pressable>
+        );
+      })}
     </View>
   );
 };

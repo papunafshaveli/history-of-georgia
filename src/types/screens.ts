@@ -5,6 +5,7 @@ export type TabParamList = {
   "start-game-screen": undefined;
   "historical-topics-screen": undefined;
   "leaderboard-screen": undefined;
+  "stats-screen": undefined;
 };
 
 export type RootStackParamList = {

@@ -10,6 +10,7 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import StartGameScreen from "@/src/screens/main-screens/start-game-screen/StartGameScreen";
 import HistoricalTopicsScreen from "@/src/screens/main-screens/historical-topics-screen/HistoricalTopicsScreen";
 import LeaderboardScreen from "@/src/screens/main-screens/leaderboard-screen/LeaderboardScreen";
+import StatsScreen from "@/src/screens/main-screens/stats-screen/StatsScreen";
 
 import { CustomHeader } from "@/src/components";
 import type { AppTheme } from "@/src/theme";
@@ -81,6 +82,14 @@ const TabNavigation: React.FC<TabNavigationProps> = ({
     ),
   };
 
+  const statsOptions: BottomTabNavigationOptions = {
+    ...commonOptions,
+    tabBarLabel: t.tab_stats,
+    tabBarIcon: ({ color, size }) => (
+      <MaterialCommunityIcons name="chart-line" size={size} color={color} />
+    ),
+  };
+
   return (
     <Tab.Navigator
       screenOptions={{
@@ -110,6 +119,11 @@ const TabNavigation: React.FC<TabNavigationProps> = ({
         name={ScreenName.LEADERBOARD_SCREEN}
         component={LeaderboardScreen}
         options={leaderboardOptions}
+      />
+      <Tab.Screen
+        name={ScreenName.STATS_SCREEN}
+        component={StatsScreen}
+        options={statsOptions}
       />
     </Tab.Navigator>
   );

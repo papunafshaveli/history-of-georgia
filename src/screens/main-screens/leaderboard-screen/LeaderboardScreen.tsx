@@ -1,75 +1,81 @@
 import React, { useCallback, useMemo, useState } from "react";
 import {
-  FlatList,
-  Image,
-  ImageBackground,
+  Platform,
+  Pressable,
   RefreshControl,
+  ScrollView,
+  ToastAndroid,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useFocusEffect } from "@react-navigation/native";
+import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 
-import { AppText, Loading, SignInModal } from "@/src/components";
-import { BodyRoll, HeaderRoll, Ink, StartScreenBack } from "@/src/assets";
+import { AppText, EmptyState, Loading } from "@/src/components";
 import {
   useAppTheme,
   useAuth,
   useLeaderboard,
   useStyles,
-  useThemeMode,
   useTranslation,
-  useUserStats,
 } from "@/src/hooks";
-import { LeaderboardTab, type LeaderboardEntry } from "@/src/types";
+import { LeaderboardTab } from "@/src/types";
 
-import LeaderboardPodium from "./LeaderboardPodium";
 import LeaderboardRow from "./LeaderboardRow";
 import LeaderboardTabs from "./LeaderboardTabs";
-import YourCard from "./YourCard";
 
 import { getStyles } from "./styles";
 
-const ListSeparator: React.FC = () => {
-  const styles = useStyles(getStyles);
-  return <View style={styles.listSeparator} />;
+const showComingSoonToast = (message: string) => {
+  if (Platform.OS === "android") {
+    ToastAndroid.show(message, ToastAndroid.SHORT);
+  }
 };
 
-const LoadingState: React.FC = () => {
-  const styles = useStyles(getStyles);
-  return (
-    <View style={styles.loadingState}>
-      <Loading />
-    </View>
-  );
+type ProviderButtonProps = {
+  label: string;
+  iconName: keyof typeof MaterialCommunityIcons.glyphMap | "logo-apple";
+  onPress: () => void;
 };
 
-type LeaderboardEmptyPanelProps = {
-  title: string;
-};
-
-const LeaderboardEmptyPanel: React.FC<LeaderboardEmptyPanelProps> = ({
-  title,
+const ProviderButton: React.FC<ProviderButtonProps> = ({
+  label,
+  iconName,
+  onPress,
 }) => {
   const { colors } = useAppTheme();
-  const { isThemeDark } = useThemeMode();
   const styles = useStyles(getStyles);
+
+  const buttonStyle = useCallback(
+    ({ pressed }: { pressed: boolean }) =>
+      pressed
+        ? [styles.signInButton, styles.signInButtonPressed]
+        : styles.signInButton,
+    [styles],
+  );
+
+  const isApple = iconName === "logo-apple";
+
   return (
-    <ImageBackground
-      source={BodyRoll}
-      resizeMode="stretch"
-      style={styles.emptyPanel}
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      style={buttonStyle}
+      onPress={onPress}
     >
-      {isThemeDark ? <View style={styles.darkTint} /> : null}
-      <View style={styles.emptyPanelInner}>
-        <AppText
-          type="title"
-          fontFamily="script"
-          color={colors.onImage}
-          style={styles.emptyPanelTitle}
-        >
-          {title}
-        </AppText>
-      </View>
-    </ImageBackground>
+      {isApple ? (
+        <Ionicons name="logo-apple" size={22} color={colors.bronzeDark} />
+      ) : (
+        <MaterialCommunityIcons
+          name={iconName as keyof typeof MaterialCommunityIcons.glyphMap}
+          size={22}
+          color={colors.bronzeDark}
+        />
+      )}
+      <AppText type="subHeadline" fontFamily="serif" color={colors.bronzeDark}>
+        {label}
+      </AppText>
+    </Pressable>
   );
 };
 
@@ -79,109 +85,148 @@ type ScreenTitleProps = {
 
 const ScreenTitle: React.FC<ScreenTitleProps> = ({ title }) => {
   const { colors } = useAppTheme();
-  const { isThemeDark } = useThemeMode();
   const styles = useStyles(getStyles);
   return (
-    <View>
-      <ImageBackground
-        source={HeaderRoll}
-        resizeMode="stretch"
-        style={styles.titleHeader}
+    <View style={styles.titleBlock}>
+      <AppText
+        type="title"
+        fontFamily="script"
+        color={colors.bronzeDark}
+        style={styles.titleText}
       >
-        {isThemeDark ? <View style={styles.darkTint} /> : null}
-        <AppText type="title" fontFamily="script" color={colors.onImage}>
-          {title}
-        </AppText>
-      </ImageBackground>
-      <Image
-        source={Ink}
-        resizeMode="contain"
-        style={styles.titleFlourishUnder}
-      />
+        {title}
+      </AppText>
+      <View style={styles.titleDivider} />
     </View>
   );
 };
 
 const LeaderboardScreen: React.FC = () => {
   const t = useTranslation();
+  const { colors } = useAppTheme();
   const styles = useStyles(getStyles);
-  const { isAnonymous, uid } = useAuth();
-  const { stats } = useUserStats();
+  const { isAnonymous, uid, signInWithGoogle, signInWithApple } = useAuth();
 
   const [activeTab, setActiveTab] = useState<LeaderboardTab>(
     LeaderboardTab.WEEKLY,
   );
-  const [isSignInVisible, setIsSignInVisible] = useState(false);
 
   const { entries, isLoading, isRefreshing, refresh } = useLeaderboard({
     tab: activeTab,
   });
 
-  const topThree = useMemo(() => entries.slice(0, 3), [entries]);
-  const tail = useMemo(() => entries.slice(3), [entries]);
+  const handleGooglePress = useCallback(async () => {
+    try {
+      await signInWithGoogle();
+    } catch {
+      showComingSoonToast(t.signin_coming_soon);
+    }
+  }, [signInWithGoogle, t.signin_coming_soon]);
 
-  const myRank = useMemo(() => {
-    if (!stats || isAnonymous) return null;
-    const inTopList = entries.find((e) => e.uid === uid);
-    return inTopList ? inTopList.rank : null;
-  }, [stats, isAnonymous, entries, uid]);
+  const handleApplePress = useCallback(async () => {
+    try {
+      await signInWithApple();
+    } catch {
+      showComingSoonToast(t.signin_coming_soon);
+    }
+  }, [signInWithApple, t.signin_coming_soon]);
 
-  const openSignIn = useCallback(() => setIsSignInVisible(true), []);
-  const closeSignIn = useCallback(() => setIsSignInVisible(false), []);
-
-  const renderRow = useCallback(
-    ({ item }: { item: LeaderboardEntry }) => (
-      <LeaderboardRow entry={item} isSelf={item.uid === uid} />
-    ),
-    [uid],
+  useFocusEffect(
+    useCallback(() => {
+      refresh();
+    }, [refresh]),
   );
 
-  const keyExtractor = useCallback((item: LeaderboardEntry) => item.uid, []);
+  const showApple = Platform.OS === "ios";
 
-  const isEmpty = !isLoading && entries.length === 0;
+  const ownRank = useMemo<number | null>(() => {
+    if (!uid) return null;
+    const self = entries.find((entry) => entry.uid === uid);
+    return self ? self.rank : null;
+  }, [entries, uid]);
+
+  const ownRankCaption = useMemo(() => {
+    if (ownRank === null) return null;
+    return t.leaderboard_your_rank.replace("{rank}", String(ownRank));
+  }, [ownRank, t.leaderboard_your_rank]);
+
+  const isLeaderboardEmpty = !isLoading && entries.length === 0;
   const emptyTitle =
     activeTab === LeaderboardTab.WEEKLY
-      ? t.leaderboard_empty_week
-      : t.leaderboard_empty_alltime;
+      ? t.leaderboard_empty_week_title
+      : t.leaderboard_empty_alltime_title;
+  const emptyDesc =
+    activeTab === LeaderboardTab.WEEKLY
+      ? t.leaderboard_empty_week_desc
+      : t.leaderboard_empty_alltime_desc;
 
   return (
     <SafeAreaView edges={[]} style={styles.safeArea}>
-      <ImageBackground
-        source={StartScreenBack}
-        resizeMode="cover"
-        style={styles.screenBackground}
-        imageStyle={styles.screenBackgroundImage}
-      >
-        <FlatList
-          data={tail}
-          keyExtractor={keyExtractor}
-          renderItem={renderRow}
+      <View style={styles.fixedTitleContainer}>
+        <ScreenTitle title={t.leaderboard_title} />
+      </View>
+
+      {isAnonymous ? (
+        <ScrollView
           contentContainerStyle={styles.scrollContent}
-          ItemSeparatorComponent={ListSeparator}
           refreshControl={
             <RefreshControl refreshing={isRefreshing} onRefresh={refresh} />
           }
-          ListHeaderComponent={
-            <>
-              <ScreenTitle title={t.leaderboard_title} />
-              <YourCard
-                isAnonymous={isAnonymous}
-                activeTab={activeTab}
-                rank={myRank}
-                onPressSignIn={openSignIn}
+        >
+          <View style={styles.providersStack}>
+            <ProviderButton
+              label={t.signin_button_google}
+              iconName="google"
+              onPress={handleGooglePress}
+            />
+            {showApple ? (
+              <ProviderButton
+                label={t.signin_button_apple}
+                iconName="logo-apple"
+                onPress={handleApplePress}
               />
-              <LeaderboardTabs activeTab={activeTab} onChangeTab={setActiveTab} />
-              {!isLoading && entries.length > 0 ? (
-                <LeaderboardPodium topThree={topThree} />
-              ) : null}
-              {isEmpty ? <LeaderboardEmptyPanel title={emptyTitle} /> : null}
-            </>
+            ) : null}
+          </View>
+        </ScrollView>
+      ) : (
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          refreshControl={
+            <RefreshControl refreshing={isRefreshing} onRefresh={refresh} />
           }
-          ListEmptyComponent={isLoading ? <LoadingState /> : null}
-        />
+        >
+          {ownRankCaption ? (
+            <AppText
+              type="subHeadline"
+              fontFamily="serif"
+              color={colors.bronzeDark}
+              style={styles.titleText}
+            >
+              {ownRankCaption}
+            </AppText>
+          ) : null}
 
-        <SignInModal isVisible={isSignInVisible} onClose={closeSignIn} />
-      </ImageBackground>
+          <LeaderboardTabs activeTab={activeTab} onChangeTab={setActiveTab} />
+
+          {isLoading && entries.length === 0 ? (
+            <View style={styles.loadingState}>
+              <Loading />
+            </View>
+          ) : isLeaderboardEmpty ? (
+            <EmptyState title={emptyTitle} description={emptyDesc} />
+          ) : (
+            <View style={styles.leaderboardListWrapper}>
+              {entries.map((entry) => (
+                <LeaderboardRow
+                  key={entry.uid}
+                  entry={entry}
+                  isSelf={entry.uid === uid}
+                />
+              ))}
+            </View>
+          )}
+        </ScrollView>
+      )}
     </SafeAreaView>
   );
 };
