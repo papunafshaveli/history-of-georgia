@@ -23,7 +23,10 @@ import {
   saveGameAndUpdateStats,
   type GameEndPayload,
 } from "@/src/services/firestore-game-result";
+import { addLocalRecentGame } from "@/src/services/local-recent-games";
 import { enqueuePendingResult } from "@/src/services/pending-results";
+import { invalidateLeaderboardCache } from "@/src/hooks/useLeaderboard";
+import { invalidateUserStatsCache } from "@/src/hooks/useUserStats";
 import { uuid } from "@/src/utils/uuid";
 
 import { fetchRandomQuestion, vibrateImpact } from "../helpers";
@@ -68,23 +71,41 @@ export const useGameScreen = () => {
     });
 
     const persist = async () => {
+      const resultId = uuid();
+      const createdAtMs = Date.now();
+
+      // Save to local storage immediately so the user sees the game in
+      // "ბოლო თამაშები" the next time they open the leaderboard tab —
+      // independent of network, auth, or Firestore success.
+      await addLocalRecentGame({
+        resultId,
+        score: payload.score,
+        correctCount: payload.correctCount,
+        totalQuestions: payload.totalQuestions,
+        selectedDifficulty: payload.selectedDifficulty,
+        createdAtMs,
+      });
+
       if (!uid) {
         await enqueuePendingResult({
-          resultId: uuid(),
+          resultId,
           payload,
-          gameEndedAt: new Date().toISOString(),
+          gameEndedAt: new Date(createdAtMs).toISOString(),
         });
         return;
       }
-      const resultId = uuid();
       try {
         await saveGameAndUpdateStats(uid, resultId, payload);
+        await Promise.all([
+          invalidateUserStatsCache(uid),
+          invalidateLeaderboardCache(),
+        ]);
       } catch (error) {
         if (error instanceof GameResultTransientError) {
           await enqueuePendingResult({
             resultId,
             payload,
-            gameEndedAt: new Date().toISOString(),
+            gameEndedAt: new Date(createdAtMs).toISOString(),
           });
           return;
         }

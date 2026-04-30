@@ -2,6 +2,7 @@ export * from "./useAuth";
 export * from "./useBackHandler";
 export * from "./useLeaderboard";
 export * from "./usePendingResultsReplay";
+export * from "./useRecentGames";
 export * from "./useUserStats";
 export * from "./useCustomFonts";
 export * from "./useGameScreen";

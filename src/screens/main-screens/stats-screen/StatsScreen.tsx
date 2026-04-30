@@ -1,19 +1,26 @@
-import React, { useCallback, useState } from "react";
-import { View, ScrollView, Share, Pressable } from "react-native";
+import React, { useCallback, useMemo } from "react";
+import { Pressable, ScrollView, Share, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useFocusEffect } from "@react-navigation/native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 
-import { useStyles, useAppTheme, useTranslation } from "@/src/hooks";
-import {
-  getGameHistory,
-  getStats,
-  GameResult,
-  formatDate,
-} from "@/src/helpers";
 import { AppText, EmptyState, StatisticsCard } from "@/src/components";
+import { formatDate } from "@/src/helpers";
+import {
+  useAppTheme,
+  useRecentGames,
+  useStyles,
+  useTranslation,
+  useUserStats,
+} from "@/src/hooks";
 
 import { getStyles } from "./styles";
+
+type StatsCardField =
+  | "totalGames"
+  | "bestScore"
+  | "averageScore"
+  | "totalQuestions";
 
 const STATS_CARDS = [
   {
@@ -21,7 +28,11 @@ const STATS_CARDS = [
     field: "totalGames",
     descKey: "stats_total_games",
   },
-  { iconName: "trophy", field: "bestScore", descKey: "stats_best_score" },
+  {
+    iconName: "trophy",
+    field: "bestScore",
+    descKey: "stats_best_score",
+  },
   {
     iconName: "chart-line",
     field: "averageScore",
@@ -38,24 +49,42 @@ const StatsScreen = () => {
   const t = useTranslation();
   const styles = useStyles(getStyles);
   const { colors } = useAppTheme();
-  const [history, setHistory] = useState<GameResult[]>([]);
 
-  const handleShare = async (score: number) => {
-    const message = t.game_share_message.replace("{score}", String(score));
-    try {
-      await Share.share({ message });
-    } catch {
-      // Share cancelled or failed
-    }
-  };
+  const { stats, refresh: refreshStats } = useUserStats();
+  const { games, refresh: refreshRecent } = useRecentGames();
 
   useFocusEffect(
     useCallback(() => {
-      getGameHistory().then(setHistory);
-    }, []),
+      refreshStats();
+      refreshRecent();
+    }, [refreshStats, refreshRecent]),
   );
 
-  const stats = getStats(history);
+  const cardValues = useMemo<Record<StatsCardField, number>>(() => {
+    const gamesPlayed = stats?.gamesPlayed ?? 0;
+    const totalPoints = stats?.totalPoints ?? 0;
+    return {
+      totalGames: gamesPlayed,
+      bestScore: stats?.bestSingleGameScore ?? 0,
+      averageScore:
+        gamesPlayed > 0 ? Math.round(totalPoints / gamesPlayed) : 0,
+      totalQuestions: stats?.totalQuestions ?? 0,
+    };
+  }, [stats]);
+
+  const handleShare = useCallback(
+    (score: number) => async () => {
+      const message = t.game_share_message.replace("{score}", String(score));
+      try {
+        await Share.share({ message });
+      } catch {
+        // Share cancelled or failed
+      }
+    },
+    [t.game_share_message],
+  );
+
+  const hasRecentGames = games.length > 0;
 
   return (
     <SafeAreaView edges={[]} style={styles.container}>
@@ -68,12 +97,13 @@ const StatsScreen = () => {
       >
         {t.stats_title}
       </AppText>
+
       <View style={styles.statsGrid}>
         {STATS_CARDS.map(({ iconName, field, descKey }) => (
           <StatisticsCard
             key={field}
             iconName={iconName}
-            title={stats[field]}
+            title={cardValues[field]}
             description={t[descKey]}
           />
         ))}
@@ -95,20 +125,13 @@ const StatsScreen = () => {
         </AppText>
       </View>
 
-      {history.length === 0 ? (
-        <View style={styles.emptyStateContainer}>
-          <EmptyState
-            title={t.stats_no_games_title}
-            description={t.stats_no_games_desc}
-          />
-        </View>
-      ) : (
+      {hasRecentGames ? (
         <ScrollView
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.scrollContent}
         >
-          {history.map((game, index) => (
-            <View key={index} style={styles.historyItem}>
+          {games.map((game) => (
+            <View key={game.resultId} style={styles.historyItem}>
               <View style={styles.historyLeft}>
                 <MaterialCommunityIcons
                   name="calendar-outline"
@@ -116,7 +139,7 @@ const StatsScreen = () => {
                   color={colors.uiMuted}
                 />
                 <AppText fontSize={17} color={colors.uiMuted}>
-                  {formatDate("DD/MM/YYYY", game.date)}
+                  {formatDate("DD/MM/YYYY", game.createdAtMs)}
                 </AppText>
               </View>
               <View style={styles.historyRight}>
@@ -125,17 +148,17 @@ const StatsScreen = () => {
                   type="subHeadline"
                   color={colors.bronzeDark}
                 >
-                  {game.score}
+                  {game.correctCount}
                 </AppText>
                 <AppText
                   fontFamily="serif"
                   type="body"
                   color={colors.bronzeMid}
                 >
-                  /{game.questionsAnswered}
+                  {`/${game.totalQuestions}`}
                 </AppText>
                 <Pressable
-                  onPress={() => handleShare(game.score)}
+                  onPress={handleShare(game.score)}
                   style={styles.shareButton}
                   accessibilityLabel="Share score"
                 >
@@ -149,6 +172,13 @@ const StatsScreen = () => {
             </View>
           ))}
         </ScrollView>
+      ) : (
+        <View style={styles.emptyStateContainer}>
+          <EmptyState
+            title={t.stats_no_games_title}
+            description={t.stats_no_games_desc}
+          />
+        </View>
       )}
     </SafeAreaView>
   );
