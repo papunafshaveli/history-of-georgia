@@ -2,7 +2,7 @@
 
 ## Setup
 
-Create a `.env` file in the root with your Firebase credentials:
+Create a `.env` file in the root with your Firebase credentials and Google OAuth client IDs:
 
 ```
 EXPO_PUBLIC_FIREBASE_API_KEY=...
@@ -12,7 +12,11 @@ EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET=...
 EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=...
 EXPO_PUBLIC_FIREBASE_APP_ID=...
 EXPO_PUBLIC_FIREBASE_MEASUREMENT_ID=...
+EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID=...        # Firebase Console → Auth → Google provider → Web client ID
+EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID=...        # GoogleService-Info.plist → CLIENT_ID
 ```
+
+The Google client IDs are needed for the in-app Google sign-in flow (Phase 4 of the scoring + leaderboard rollout). Apple sign-in needs no env var — it goes through the native `expo-apple-authentication` SDK and Apple's authorization server.
 
 ## Start app
 
@@ -62,6 +66,24 @@ eas build -p android --profile preview
 ```
 eas build -p ios --profile preview
 ```
+
+## Ios dev client on simulator (local)
+
+When you change native modules (e.g. adding Google Sign-In, Apple Authentication), you need a fresh dev client. Locally:
+
+```
+RCT_USE_PREBUILT_RNCORE=0 RCT_USE_RN_DEP=0 npx expo run:ios
+```
+
+The two `RCT_USE_*` env vars disable React Native 0.83's prebuilt-pod path, which currently has a broken podspec (`Missing required attribute 'source'`). Disabling them forces a from-source compile. First build takes ~15 min; subsequent JS-only changes hot-reload in seconds.
+
+If `pod install` succeeds but Xcode hangs for >20 min on `Pods-Hermes-engine`, kill the build (`Ctrl+C`, then `rm -rf ios`) and use the EAS dev-client path instead:
+
+```
+eas build --profile development-simulator --platform ios
+```
+
+The `development-simulator` profile (defined in `eas.json`) builds an unsigned `.app` for the iOS Simulator — no Apple device-provisioning needed. Use the plain `development` profile only when you need a signed IPA for a physical iPhone.
 
 ## Android prod build
 

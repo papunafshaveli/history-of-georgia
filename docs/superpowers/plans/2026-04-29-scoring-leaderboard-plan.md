@@ -9,51 +9,36 @@
 ## ⏯ Current state — start here when resuming
 
 **Branch:** `Add-question-variations`
-**Last commit:** `d7a6e4c` — "Phase 3: leaderboard tab — functional, design debt logged" (pushed)
-**Working tree:** uncommitted Phase 3 work in flight; will be partially discarded for the pivot (see below)
+**Last commit:** `9924a2b` — "Phase 3 pivot: separate Stats + Leaderboard tabs" (pushed)
+**Working tree:** Phase 4 OAuth code committed locally? **No** — `AuthProvider.tsx` rewrite is uncommitted; `.env` + `app.config.ts` config edits are uncommitted.
 
 ### What is committed and working
 
-- **Phase 1** (commit `aaaae49`): anonymous Firebase Auth, `users/{uid}` doc auto-create, persistence, `AuthProvider`, `useAuth`. **No further work needed unless real OAuth lands (Phase 4).**
+- **Phase 1** (commit `aaaae49`): anonymous Firebase Auth, `users/{uid}` doc auto-create, persistence, `AuthProvider`, `useAuth`. Anonymous provider enabled in Firebase Console 2026-04-30.
 - **Phase 2** (commit `aaaae49`): difficulty-weighted scoring (+5/+10/+20), atomic Firestore transaction with idempotent guard + lazy weekly reset, `pendingResults` queue + replay on auth/network resolve, legacy-stats one-time AsyncStorage wipe migration, `GameHeader` shows `Score: N`, Rules screen carries the scoring breakdown.
 - **Phase 3 baseline** (commit `d7a6e4c`): the third tab was renamed `Leaderboard`; `users` collection wiring, `useLeaderboard` + `useUserStats` hooks, `firestore-leaderboard` service, parchment-imagery components — design rejected, debt logged.
+- **Phase 3 pivot** (commit `9924a2b`): 4-tab structure landed (Home → Topics → Leaderboard → Stats); `StatsScreen.tsx` restored with `useUserStats` + `useRecentGames` data sources; `LeaderboardScreen.tsx` slimmed (anonymous → inline Google + Apple buttons; signed-in → tabs + top-20 list); `RecentGamesList.tsx` deleted; `getRecentGames` Firestore helper deleted; `tab_stats` + `leaderboard_your_rank` translation keys added.
 - **Firestore rules** for `users` / `game_results` / `app_config` deployed to production (existing `tickets` / `push_tokens` / `notifications` rules preserved verbatim).
 - **Composite indexes** for both leaderboard queries deployed.
-- **Translation keys** for ~38 strings across `en.json` and `ka.json`.
-- **Memory** updates pinning the user's preferences (no Co-Authored-By, prefer enums, UI polish discipline, no modal-as-router for sign-in, design-context, etc.) — auto-loaded by every new session.
 
-### What is uncommitted (in flight at conversation pause)
+### Phase 4 progress (2026-04-30, in flight, uncommitted)
 
-The 2026-04-30 follow-up session reworked Phase 3 several times based on screenshot review. Current uncommitted work is **partially salvageable for the pivot**:
-
-- ✅ **Salvage:** `useRecentGames` rewired to local AsyncStorage (`src/services/local-recent-games.ts` + `src/hooks/useRecentGames.ts`); `addLocalRecentGame` call on game-end; sign-in inline buttons (Google + Apple, no modal); cache invalidation on game-end success.
-- 🔁 **Rework:** `LeaderboardScreen.tsx` currently does auth-conditional content with recent games inline — needs to be split (recent games move to a restored `StatsScreen.tsx`; Leaderboard becomes anonymous-buttons-only or signed-in-list-only).
-- 🗑 **Discard / revert:** the parchment Crown / podium / fixed-title / divider work in current `LeaderboardScreen.tsx` and `styles.ts` — most of it doesn't fit the new structure.
-
-### What the pivot demands (next concrete steps)
-
-The brainstorming on 2026-04-30 reversed the original Q9. New tab structure: **4 tabs, Home → Topics → Leaderboard → Stats**. See spec section "Tab structure pivot (2026-04-30) — supersedes Q9" for full design.
-
-Concrete coding steps:
-
-1. **Re-add `ScreenName.STATS_SCREEN`** in `src/types/screenNames.ts` (alongside `LEADERBOARD_SCREEN`).
-2. **Update `TabParamList`** in `src/types/screens.ts` to include both `stats-screen` and `leaderboard-screen`.
-3. **Restore `src/screens/main-screens/stats-screen/StatsScreen.tsx`** as the 4th tab, but rewire data:
-   - 4 cards via `useUserStats` (Firestore `users/{uid}` doc): Total Games, Best Score, Average Score, Total Questions — keep old MaterialCommunityIcons (`sword-cross`, `trophy`, `chart-line`, `help-circle-outline`).
-   - Recent-games list via existing `useRecentGames` (local AsyncStorage). Layout: title + 4 cards + section header **fixed**, only the list scrolls.
-4. **Slim down `LeaderboardScreen.tsx`** — remove the recent-games section; clean two-state branch:
-   - Anonymous → just inline Google + Apple sign-in stamp buttons (no modal).
-   - Signed-in → small "Your rank: #N" caption (only if user is in top 20) + Weekly/All-Time tabs + scrolling top-20 list.
-5. **Update `TabNavigation.tsx`** — register both screens in this exact order: Home → Topics → Leaderboard → Stats.
-6. **Update `GameSummary.tsx`** — post-game "View stats" route reverts to `STATS_SCREEN`.
-7. **`screens/main-screens/index.ts`** — re-export both `StatsScreen` and `LeaderboardScreen`.
-8. **Remove `RecentGamesList.tsx`** from leaderboard-screen folder; either move to `src/components/recent-games-list/` (if shared) or inline its content into the restored `StatsScreen.tsx` (single consumer).
-
-After step 8: TS + lint clean, smoke-test on dev client (`npm start` → press `s` then `i`), commit + push as Phase 3 pivot, then resume the rest of the plan starting at Phase 4.
-
-### Phases 4–8 are unchanged
-
-OAuth wiring, force-update gate, milestone modal, Settings → Account, migration cleanup, test pass, EAS release — see Phase 4–8 sections below; the pivot doesn't touch those.
+- ✅ **Step 1 — Firebase Console:** Anonymous + Google + Apple providers enabled in `history-of-georgia-43551`. Apple provider configured with Service ID + Team ID + Key ID + private key.
+- ✅ **Step 2 — Google client IDs captured:**
+  - `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID` = `394970199474-kpvjiq9ts0ldm2sbdvh57nn0i2m668hu.apps.googleusercontent.com`
+  - `EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID` = `394970199474-rsfg2j50nef71sjirltumcb9j7tvtmej.apps.googleusercontent.com`
+  - Reversed iOS client ID (in `app.config.ts` Google plugin `iosUrlScheme`) = `com.googleusercontent.apps.394970199474-rsfg2j50nef71sjirltumcb9j7tvtmej`
+- ✅ **Step 3 — Apple Developer artifacts created:**
+  - App ID `com.papunafshaveli.historyofgeorgia` has "Sign In with Apple" capability enabled
+  - Services ID `com.papunafshaveli.historyofgeorgia.signin` registered with Firebase domain `history-of-georgia-43551.firebaseapp.com` + return URL `https://history-of-georgia-43551.firebaseapp.com/__/auth/handler`
+  - Apple Team ID: `M39YBKH9L5`
+  - Apple Key ID: `3C2L469ZH5`
+  - Private Key file: `~/Desktop/hofge-2024/auth/AuthKey_3C2L469ZH5.p8` (one-time download; do not lose)
+- ✅ **Step 4 — env vars + plugin config wired:** `.env` updated with both Google client IDs; `app.config.ts` Google plugin switched to array form with `iosUrlScheme`.
+- ✅ **Step 5 — `signInWithGoogle` implemented in `AuthProvider.tsx`:** `GoogleSignin.configure` in useEffect; `hasPlayServices` → `signIn` → `GoogleAuthProvider.credential` → `linkWithCredential` (anon → Google) with `signInWithCredential` fallback on `auth/credential-already-in-use`; `bumpAuthVersion` after success; `updateProviderProfile(uid, { displayName, photoURL })` syncs to `users/{uid}`.
+- ✅ **Step 6 — `signInWithApple` implemented:** `expo-crypto` raw-nonce + SHA256 hash; `AppleAuthentication.signInAsync({ requestedScopes: [FULL_NAME, EMAIL], nonce: hashedNonce })`; `OAuthProvider("apple.com").credential({ idToken, rawNonce })`; same `linkWithCredential` flow as Google. `fullName` captured synchronously on first sign-in (Apple never returns it again).
+- 🟡 **Step 7 — `ConfirmNameModal`:** not started.
+- 🟡 **Step 8 — verify on dev client:** **blocked.** Local `npx expo run:ios` failed (RN 0.83 prebuilt podspec invalid; even with `RCT_USE_PREBUILT_RNCORE=0 RCT_USE_RN_DEP=0` the from-source build hung on `Pods-Hermes-engine` for 20+ minutes). Falling back to `eas build --profile development --platform ios`. Awaiting EAS build before any sign-in flow can be tested end-to-end.
 
 ### Where the visual design debt stands
 
