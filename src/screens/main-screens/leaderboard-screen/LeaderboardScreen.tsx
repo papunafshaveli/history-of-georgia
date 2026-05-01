@@ -26,7 +26,7 @@ import LeaderboardTabs from "./LeaderboardTabs";
 
 import { getStyles } from "./styles";
 
-const showComingSoonToast = (message: string) => {
+const showSignInFailureToast = (message: string) => {
   if (Platform.OS === "android") {
     ToastAndroid.show(message, ToastAndroid.SHORT);
   }
@@ -134,18 +134,18 @@ const LeaderboardScreen: React.FC = () => {
       const result = await signInWithGoogle();
       openConfirmNameIfFirstLink(result);
     } catch {
-      showComingSoonToast(t.signin_coming_soon);
+      showSignInFailureToast(t.signin_failure_toast);
     }
-  }, [signInWithGoogle, openConfirmNameIfFirstLink, t.signin_coming_soon]);
+  }, [signInWithGoogle, openConfirmNameIfFirstLink, t.signin_failure_toast]);
 
   const handleApplePress = useCallback(async () => {
     try {
       const result = await signInWithApple();
       openConfirmNameIfFirstLink(result);
     } catch {
-      showComingSoonToast(t.signin_coming_soon);
+      showSignInFailureToast(t.signin_failure_toast);
     }
-  }, [signInWithApple, openConfirmNameIfFirstLink, t.signin_coming_soon]);
+  }, [signInWithApple, openConfirmNameIfFirstLink, t.signin_failure_toast]);
 
   const handleConfirmNameSaved = useCallback(() => {
     setConfirmNameOpen(false);

@@ -14,7 +14,7 @@ type GameModalsProps = {
     settings: boolean;
     hint: boolean;
     summary: boolean;
-    correctAnswers: number;
+    score: number;
   };
   onClose: {
     toggleExitModal: () => void;
@@ -76,7 +76,7 @@ const GameModals: React.FC<GameModalsProps> = ({
         headerTitle={t.game_your_result}
         renderComponent={
           <GameSummary
-            score={modals.correctAnswers}
+            score={modals.score}
             onRestartBtnPress={onRestart}
             onCloseSummary={onClose.closeSummaryModal}
           />
