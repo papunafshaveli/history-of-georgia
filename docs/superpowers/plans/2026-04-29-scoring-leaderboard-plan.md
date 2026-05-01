@@ -9,8 +9,8 @@
 ## ⏯ Current state — start here when resuming
 
 **Branch:** `Add-question-variations`
-**Last commit:** `9924a2b` — "Phase 3 pivot: separate Stats + Leaderboard tabs" (pushed)
-**Working tree:** Phase 4 OAuth code committed locally? **No** — `AuthProvider.tsx` rewrite is uncommitted; `.env` + `app.config.ts` config edits are uncommitted.
+**Last commit:** `6476527` — "Regenerate package-lock.json from scratch to surface nested deps" (pushed)
+**Working tree:** clean — Phase 4 code is fully committed; pending only on-device verification.
 
 ### What is committed and working
 
@@ -21,9 +21,9 @@
 - **Firestore rules** for `users` / `game_results` / `app_config` deployed to production (existing `tickets` / `push_tokens` / `notifications` rules preserved verbatim).
 - **Composite indexes** for both leaderboard queries deployed.
 
-### Phase 4 progress (2026-04-30, in flight, uncommitted)
+### Phase 4 progress (2026-04-30)
 
-- ✅ **Step 1 — Firebase Console:** Anonymous + Google + Apple providers enabled in `history-of-georgia-43551`. Apple provider configured with Service ID + Team ID + Key ID + private key.
+- ✅ **Step 1 — Firebase Console** (committed in 3a7025d): Anonymous + Google + Apple providers enabled in `history-of-georgia-43551`. Apple provider configured with Service ID + Team ID + Key ID + private key. Android app registered with EAS dev keystore SHA-1 `70:CF:C5:76:7C:E9:64:82:DC:5D:5F:88:B7:6C:B2:37:8F:75:B4:A4`.
 - ✅ **Step 2 — Google client IDs captured:**
   - `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID` = `394970199474-kpvjiq9ts0ldm2sbdvh57nn0i2m668hu.apps.googleusercontent.com`
   - `EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID` = `394970199474-rsfg2j50nef71sjirltumcb9j7tvtmej.apps.googleusercontent.com`
@@ -34,11 +34,12 @@
   - Apple Team ID: `M39YBKH9L5`
   - Apple Key ID: `3C2L469ZH5`
   - Private Key file: `~/Desktop/hofge-2024/auth/AuthKey_3C2L469ZH5.p8` (one-time download; do not lose)
-- ✅ **Step 4 — env vars + plugin config wired:** `.env` updated with both Google client IDs; `app.config.ts` Google plugin switched to array form with `iosUrlScheme`.
-- ✅ **Step 5 — `signInWithGoogle` implemented in `AuthProvider.tsx`:** `GoogleSignin.configure` in useEffect; `hasPlayServices` → `signIn` → `GoogleAuthProvider.credential` → `linkWithCredential` (anon → Google) with `signInWithCredential` fallback on `auth/credential-already-in-use`; `bumpAuthVersion` after success; `updateProviderProfile(uid, { displayName, photoURL })` syncs to `users/{uid}`.
-- ✅ **Step 6 — `signInWithApple` implemented:** `expo-crypto` raw-nonce + SHA256 hash; `AppleAuthentication.signInAsync({ requestedScopes: [FULL_NAME, EMAIL], nonce: hashedNonce })`; `OAuthProvider("apple.com").credential({ idToken, rawNonce })`; same `linkWithCredential` flow as Google. `fullName` captured synchronously on first sign-in (Apple never returns it again).
-- 🟡 **Step 7 — `ConfirmNameModal`:** not started.
-- 🟡 **Step 8 — verify on dev client:** **blocked.** Local `npx expo run:ios` failed (RN 0.83 prebuilt podspec invalid; even with `RCT_USE_PREBUILT_RNCORE=0 RCT_USE_RN_DEP=0` the from-source build hung on `Pods-Hermes-engine` for 20+ minutes). Falling back to `eas build --profile development --platform ios`. Awaiting EAS build before any sign-in flow can be tested end-to-end.
+- ✅ **Step 4 — env vars + plugin config wired** (committed in 3a7025d): `.env` updated with both Google client IDs; `app.config.ts` Google plugin switched to array form with `iosUrlScheme`; `eas.json` gets a `development-simulator` profile.
+- ✅ **Step 5 — `signInWithGoogle` implemented in `AuthProvider.tsx`** (committed in 3a7025d, refined in 8cd145e): `GoogleSignin.configure` in useEffect; `hasPlayServices` → `signIn` → `GoogleAuthProvider.credential` → `linkWithCredential` (anon → Google) with `signInWithCredential` fallback on `auth/credential-already-in-use`; `bumpAuthVersion` after success; `updateProviderProfile(uid, { displayName, photoURL })` syncs to `users/{uid}`. Now returns `{ wasFirstLink, displayName }`.
+- ✅ **Step 6 — `signInWithApple` implemented** (committed in 3a7025d, refined in 8cd145e): `expo-crypto` raw-nonce + SHA256 hash; `AppleAuthentication.signInAsync({ requestedScopes: [FULL_NAME, EMAIL], nonce: hashedNonce })`; `OAuthProvider("apple.com").credential({ idToken, rawNonce })`; same `linkWithCredential` flow as Google. `fullName` captured synchronously on first sign-in (Apple never returns it again). Now returns `{ wasFirstLink, displayName }`.
+- ✅ **Step 7 — `ConfirmNameModal`** (committed in 8cd145e): non-dismissible parchment-scroll modal with pre-filled `TextInput`, 2–24 char validation, Save calls `updateDisplayName`. Mounts in `LeaderboardScreen`; opens only when sign-in returned `wasFirstLink: true` (returning users via `signInWithCredential` fallback skip it).
+- ✅ **Step 8 — dev-client verification (build artifact)**: Android dev client built via `eas build --profile development --platform android` and installed on the Android emulator (2026-04-30 ~23:30). Lockfile regeneration (commit `6476527`) was the unblocker — EAS's `npm ci` was failing with "Missing @react-native-async-storage/async-storage@2.1.0 from lock file" because the previous lockfile didn't enumerate the nested 1.24.0 copies that npm pulls in to satisfy `@firebase/auth`'s `^1.18.1` peer.
+- 🟡 **Step 8 — end-to-end sign-in verification**: not yet run. Tomorrow's task — open the dev client on the emulator, walk through Google sign-in, ConfirmNameModal, leaderboard appearance, sign-out → fresh anon, sign back in → no modal. Apple sign-in cannot be tested on Android (correctly hidden by `Platform.OS === "ios"` gate); deferred until iOS dev-client build (iOS quota resets in a few hours).
 
 ### Where the visual design debt stands
 
