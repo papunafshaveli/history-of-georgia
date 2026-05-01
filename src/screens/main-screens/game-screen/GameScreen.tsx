@@ -89,7 +89,7 @@ const GameScreen = () => {
         <GameModals
           modals={{
             ...gameState.modals,
-            correctAnswers: gameState.stats.correctAnswers,
+            score: gameState.score,
           }}
           onClose={modalHandlers}
           onExit={actions.handleExit}
