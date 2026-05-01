@@ -17,11 +17,17 @@ import {
 import {
   useBackHandler,
   useCustomFonts,
+  useForceUpdateGate,
   useModalState,
   useNotifications,
   usePendingResultsReplay,
 } from "@/src/hooks";
-import { AppModals, ErrorBoundary, Loading } from "@/src/components";
+import {
+  AppModals,
+  ErrorBoundary,
+  ForceUpdateModal,
+  Loading,
+} from "@/src/components";
 
 import { AuthProvider } from "@/src/context/AuthProvider";
 import { SettingsProvider } from "@/src/context/SettingsContext";
@@ -50,6 +56,11 @@ const BootEffects: React.FC = () => {
   }, []);
   usePendingResultsReplay();
   return null;
+};
+
+const ForceUpdateGate: React.FC = () => {
+  const { isBlocked } = useForceUpdateGate();
+  return <ForceUpdateModal isVisible={isBlocked} />;
 };
 
 const App: React.FC = () => {
@@ -128,6 +139,7 @@ const App: React.FC = () => {
                       handleExitApp={BackHandler.exitApp}
                       isEthernetModalVisible={isEthernetModalVisible}
                     />
+                    <ForceUpdateGate />
                   </View>
                 </SafeAreaProvider>
               </ThemeProvider>

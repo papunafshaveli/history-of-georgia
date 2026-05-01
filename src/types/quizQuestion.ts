@@ -31,5 +31,6 @@ export type GameState = {
     settings: boolean;
     hint: boolean;
     summary: boolean;
+    milestone: boolean;
   };
 };
