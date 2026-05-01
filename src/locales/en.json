@@ -96,6 +96,20 @@
   "name_modal_save": "Save",
   "name_validation_length": "Name must be 2 to 24 characters",
 
+  "settings_signout_button": "Sign out",
+  "settings_signout_confirm_title": "Sign out?",
+  "settings_signout_confirm_body": "Your score will no longer appear on the leaderboard from this device.",
+  "settings_signout_confirm_cancel": "Cancel",
+
+  "milestone_title": "New record!",
+  "milestone_body": "You scored {score} points — your best yet.",
+  "milestone_subbody": "Sign in and claim your place on the leaderboard.",
+  "milestone_skip_button": "View my result",
+
+  "force_update_title": "Update required",
+  "force_update_body": "A new version is required to keep playing. Please update from the store.",
+  "force_update_button": "Update now",
+
   "vibration_turn_on": "Turn on vibration",
   "vibration_turn_off": "Turn off vibration",
 

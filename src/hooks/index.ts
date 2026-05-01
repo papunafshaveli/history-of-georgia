@@ -1,4 +1,5 @@
 export * from "./useAuth";
+export * from "./useForceUpdateGate";
 export * from "./useBackHandler";
 export * from "./useLeaderboard";
 export * from "./usePendingResultsReplay";

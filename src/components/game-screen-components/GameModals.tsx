@@ -7,6 +7,7 @@ import AppSettings from "../app-settings/AppSettings";
 import Modal from "../modal/Modal";
 import GameSummary from "../game-summary/GameSummary";
 import Hint from "../hint/Hint";
+import MilestoneNudgeModal from "../sign-in/MilestoneNudgeModal";
 
 type GameModalsProps = {
   modals: {
@@ -14,6 +15,7 @@ type GameModalsProps = {
     settings: boolean;
     hint: boolean;
     summary: boolean;
+    milestone: boolean;
     score: number;
   };
   onClose: {
@@ -21,6 +23,7 @@ type GameModalsProps = {
     toggleSettingsModal: () => void;
     toggleHintModal: () => void;
     closeSummaryModal: () => void;
+    dismissMilestone: () => void;
   };
   onExit: () => void;
   onRestart: () => void;
@@ -81,6 +84,13 @@ const GameModals: React.FC<GameModalsProps> = ({
             onCloseSummary={onClose.closeSummaryModal}
           />
         }
+      />
+
+      <MilestoneNudgeModal
+        isVisible={modals.milestone}
+        score={modals.score}
+        onSignedIn={onClose.dismissMilestone}
+        onSkip={onClose.dismissMilestone}
       />
     </>
   );

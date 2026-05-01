@@ -22,5 +22,6 @@ export const INITIAL_STATE: GameState = {
     settings: false,
     hint: false,
     summary: false,
+    milestone: false,
   },
 };

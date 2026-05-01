@@ -9,8 +9,8 @@
 ## ⏯ Current state — start here when resuming
 
 **Branch:** `Add-question-variations`
-**Last commit:** `6476527` — "Regenerate package-lock.json from scratch to surface nested deps" (pushed)
-**Working tree:** clean — Phase 4 code is fully committed; pending only on-device verification.
+**Last commit:** `a2727a7` — "Phase 4 verification fixes — Firestore rule + score-prop + GameSummary" (pushed)
+**Working tree:** clean. Phase 4 verified end-to-end on Android emulator (2026-05-01); next: Phase 5 implementation.
 
 ### What is committed and working
 
@@ -39,11 +39,59 @@
 - ✅ **Step 6 — `signInWithApple` implemented** (committed in 3a7025d, refined in 8cd145e): `expo-crypto` raw-nonce + SHA256 hash; `AppleAuthentication.signInAsync({ requestedScopes: [FULL_NAME, EMAIL], nonce: hashedNonce })`; `OAuthProvider("apple.com").credential({ idToken, rawNonce })`; same `linkWithCredential` flow as Google. `fullName` captured synchronously on first sign-in (Apple never returns it again). Now returns `{ wasFirstLink, displayName }`.
 - ✅ **Step 7 — `ConfirmNameModal`** (committed in 8cd145e): non-dismissible parchment-scroll modal with pre-filled `TextInput`, 2–24 char validation, Save calls `updateDisplayName`. Mounts in `LeaderboardScreen`; opens only when sign-in returned `wasFirstLink: true` (returning users via `signInWithCredential` fallback skip it).
 - ✅ **Step 8 — dev-client verification (build artifact)**: Android dev client built via `eas build --profile development --platform android` and installed on the Android emulator (2026-04-30 ~23:30). Lockfile regeneration (commit `6476527`) was the unblocker — EAS's `npm ci` was failing with "Missing @react-native-async-storage/async-storage@2.1.0 from lock file" because the previous lockfile didn't enumerate the nested 1.24.0 copies that npm pulls in to satisfy `@firebase/auth`'s `^1.18.1` peer.
-- 🟡 **Step 8 — end-to-end sign-in verification**: not yet run. Tomorrow's task — open the dev client on the emulator, walk through Google sign-in, ConfirmNameModal, leaderboard appearance, sign-out → fresh anon, sign back in → no modal. Apple sign-in cannot be tested on Android (correctly hidden by `Platform.OS === "ios"` gate); deferred until iOS dev-client build (iOS quota resets in a few hours).
+- ✅ **Step 8 — end-to-end sign-in verification (Android, 2026-05-01)**: walked through every required path. Three issues surfaced and were fixed (commit `a2727a7`):
+  1. Emulator network was missing DNS (`net.dns1` / `net.dns2` empty). Fixed by relaunching the AVD with `-dns-server 8.8.8.8,1.1.1.1` flag — `adb reboot` and Wi-Fi toggles didn't help; only the relaunch with explicit DNS did.
+  2. EAS dev keystore SHA-1 (`78:CF:C5:76:7C:E9:64:82:DC:5D:58:B0:B7:8C:B2:37:BF:75:BA:A4`) was different from the "default" keystore SHA-1 we registered yesterday. Both now registered in Firebase Android app config.
+  3. Firestore rule `match /game_results/{id} { allow read: ... }` couldn't evaluate against non-existent docs because `resource.data.userId` is null when the doc doesn't exist. Updated to `(resource == null || request.auth.uid == resource.data.userId)` so transactions can do their idempotency `transaction.get(resultRef)` check. Rule deployed via Firebase Console.
+
+  Verification matrix (Android only):
+  - ✅ Anonymous sign-in on first launch
+  - ✅ Tapping Google → OAuth flow → `linkWithCredential` succeeds → `wasFirstLink: true`
+  - ✅ ConfirmNameModal opens, pre-fills with Google name, saves displayName to `users/{uid}`
+  - ✅ User appears on All-Time + Weekly leaderboard with rank caption
+  - ✅ Stats screen reads live `users/{uid}` data after game-end transaction succeeds
+  - ✅ GameSummary best-score displays from Firestore (`bestSingleGameScore`), not legacy AsyncStorage
+  - ✅ GameSummary big-circle headline shows points (after `score`-prop fix), not the legacy `correctAnswers` count
+  - ✅ Sign-out via `adb shell pm clear` + sign back in with same Google account → `signInWithCredential` fallback runs → `wasFirstLink: false` → ConfirmNameModal does NOT re-open. Original UID restored with all stats intact.
+  - 🟡 Apple Sign In on iOS dev client → DEFERRED. Bundled with Phase 5 verification on the iOS build to save an EAS credit.
+
+  Side observation: every `pm clear` (or fresh anonymous sign-in followed by Google upgrade where the Google account is already linked elsewhere) creates an orphaned anonymous `users/{uid}` doc. Acceptable for v1; pruning is a v1.1 cleanup script (see "Deferred follow-ups" below).
 
 ### Where the visual design debt stands
 
 Logged in spec section "Design debt — Leaderboard UI is unfinished (2026-04-29)". Stats screen reuses the original `StatsScreen.tsx` design which the user explicitly liked, so that's not in design debt. Leaderboard tab visuals still need a designer pass after Phase 4+5 land.
+
+### Deferred follow-ups (must not be lost)
+
+These items are intentionally deferred but **must** ship before 2.0.0 goes to production:
+
+1. **iOS dev-client build + Apple Sign In verification.**
+   Run `eas build --profile development --platform ios`, **select iPhone 11 Pro at the device prompt** (not MacBook Pro — that mistake cost a credit on 2026-04-30). Install the IPA on the iPhone via the EAS link, reconnect Metro, walk through:
+   - Anonymous → Apple sign-in upgrade via `linkWithCredential`
+   - Apple's `result.fullName` arrives synchronously on the **first** sign-in for that Apple ID + bundle ID; verify it lands in `users/{uid}.displayName` (Apple never returns it again on subsequent sign-ins, and we depend on capturing it once).
+   - ConfirmNameModal opens, pre-filled with the Apple-formatted name.
+   - Sign out → sign back in with same Apple ID → no modal (returning user).
+   - Apple-on-Android gating still hides the button (verify on the same iOS dev client running on a phone — confirms the gate is iOS-only, not "Apple available everywhere").
+   Bundle this with Phase 5 verification on the iOS build to save an EAS credit.
+
+2. **Orphaned anonymous `users/{uid}` cleanup.**
+   Every fresh anon → Google upgrade that hits `auth/credential-already-in-use` (returning user, different anon UID this time) leaves the just-issued anon UID's `users/{uid}` doc behind with zeroed stats and no displayName. They never appear on the leaderboard (filtered by `displayName != null`), but they pollute the collection. Per spec these accumulate slowly; v1.1 fix is a Cloud Function:
+   ```
+   exports.pruneOrphanedAnonUsers = functions.pubsub
+     .schedule("every 168 hours")
+     .onRun(async () => {
+       const snap = await admin.firestore().collection("users")
+         .where("displayName", "==", null)
+         .where("gamesPlayed", "==", 0)
+         .where("createdAt", "<", Timestamp.fromDate(new Date(Date.now() - 14 * 24 * 60 * 60 * 1000)))
+         .limit(500)
+         .get();
+       const batch = admin.firestore().batch();
+       snap.docs.forEach((d) => batch.delete(d.ref));
+       await batch.commit();
+     });
+   ```
+   Lives in `functions/` (already deployed for push notifications). Schedule weekly. Rule: only deletes anon docs older than 14 days with zero games — preserves the just-launched-app users who haven't played yet.
 
 ---
 

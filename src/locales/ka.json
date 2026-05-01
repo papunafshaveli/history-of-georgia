@@ -96,6 +96,20 @@
   "name_modal_save": "შენახვა",
   "name_validation_length": "სახელი უნდა იყოს 2-დან 24 სიმბოლომდე",
 
+  "settings_signout_button": "გასვლა",
+  "settings_signout_confirm_title": "გასვლა?",
+  "settings_signout_confirm_body": "შენი ქულა აღარ გამოჩნდება ლიდერბორდზე ამ ტელეფონიდან.",
+  "settings_signout_confirm_cancel": "გაუქმება",
+
+  "milestone_title": "ახალი რეკორდი!",
+  "milestone_body": "მოაგროვე {score} ქულა — შენი საუკეთესო შედეგი ჯერჯერობით.",
+  "milestone_subbody": "შემოდი და დაიკავე ადგილი ლიდერბორდზე.",
+  "milestone_skip_button": "ნახე ჩემი შედეგი",
+
+  "force_update_title": "განახლება საჭიროა",
+  "force_update_body": "სათამაშოდ საჭიროა აპლიკაციის განახლება. გთხოვ განახლება მაღაზიიდან.",
+  "force_update_button": "განაახლე",
+
   "vibration_turn_on": "ვიბრაციის ჩართვა",
   "vibration_turn_off": "ვიბრაციის გამორთვა",
 
