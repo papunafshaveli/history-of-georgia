@@ -135,24 +135,100 @@ These items are intentionally deferred but **must** ship before 2.0.0 goes to pr
    - **Specific Apple gotchas to avoid:** offering only deactivation (rejected); requiring email support contact (rejected); linking out to a web page (rejected); making deletion "unnecessarily difficult" with excessive confirmation hoops (rejected); not revoking Sign in with Apple tokens server-side (rejected).
    - **Effort:** ~2 days (1 client + 1 server + half-day testing).
 
-5. **Orphaned anonymous `users/{uid}` cleanup.**
-   Every fresh anon → Google upgrade that hits `auth/credential-already-in-use` (returning user, different anon UID this time) leaves the just-issued anon UID's `users/{uid}` doc behind with zeroed stats and no displayName. They never appear on the leaderboard (filtered by `displayName != null`), but they pollute the collection. Per spec these accumulate slowly; v1.1 fix is a Cloud Function:
+5. **Inactive-user cleanup — 180-day rule (broader version of original orphaned-anon cleanup).**
+
+   **Why this exists:** keep Firestore document count and Firebase Auth MAU bounded so the project stays inside the free tier on Firebase. See [`INFRASTRUCTURE.md` §17.3](../../../INFRASTRUCTURE.md) for the policy summary.
+
+   **Two thresholds:**
+
+   - **Anonymous + zero games:** delete after **14 days** (preserves freshly-launched-app users who haven't played yet; covers the orphaned-anon case from `auth/credential-already-in-use` retries).
+   - **Everyone else (signed-in OR anon with games played):** delete after **180 days** of inactivity — both Firebase Auth `lastSignInTime` AND `users/{uid}.updatedAt` older than 180 days.
+
+   **Cascade per deleted user:**
+   - Delete `users/{uid}` Firestore doc.
+   - Delete every `game_results/{uid}_*` Firestore doc.
+   - Delete the Firebase Auth user record (so MAU drops too — Firestore-only delete is not enough).
+   - If the user signed in with Apple, call Apple's [revoke-tokens REST API](https://developer.apple.com/documentation/sign_in_with_apple/revoke_tokens/) with a JWT signed by `AuthKey_3C2L469ZH5.p8` (same plumbing as deferred follow-up #4 — write the helper once, share it). This removes the app from the user's `appleid.apple.com → Apps Using Apple ID` list.
+
+   **Implementation sketch (lives in `functions/src/` alongside `sendPushNotification`):**
+
+   ```ts
+   import { onSchedule } from "firebase-functions/v2/scheduler";
+   import * as admin from "firebase-admin";
+
+   const db = admin.firestore();
+
+   const DAY = 24 * 60 * 60 * 1000;
+   const ANON_NO_GAMES_TTL_MS = 14 * DAY;
+   const INACTIVE_TTL_MS = 180 * DAY;
+
+   export const pruneInactiveUsers = onSchedule("every 168 hours", async () => {
+     const now = Date.now();
+     const anonCutoff = admin.firestore.Timestamp.fromMillis(now - ANON_NO_GAMES_TTL_MS);
+     const inactiveCutoff = admin.firestore.Timestamp.fromMillis(now - INACTIVE_TTL_MS);
+
+     // 1. Orphaned anon (no displayName, no games, > 14 days old).
+     const orphanSnap = await db.collection("users")
+       .where("displayName", "==", null)
+       .where("gamesPlayed", "==", 0)
+       .where("createdAt", "<", anonCutoff)
+       .limit(500)
+       .get();
+
+     // 2. Inactive everyone else (updatedAt older than 180 days).
+     const inactiveSnap = await db.collection("users")
+       .where("updatedAt", "<", inactiveCutoff)
+       .limit(500)
+       .get();
+
+     for (const doc of [...orphanSnap.docs, ...inactiveSnap.docs]) {
+       await deleteUserCascade(doc.id, doc.data());
+     }
+   });
+
+   async function deleteUserCascade(uid: string, userData: FirebaseFirestore.DocumentData) {
+     // Cross-check Auth lastSignInTime for the 180-day case
+     // (don't delete a real user who didn't trigger updatedAt for some reason).
+     const authUser = await admin.auth().getUser(uid).catch(() => null);
+     if (authUser?.metadata.lastSignInTime) {
+       const lastSignIn = new Date(authUser.metadata.lastSignInTime).getTime();
+       if (Date.now() - lastSignIn < INACTIVE_TTL_MS && userData.gamesPlayed > 0) return;
+     }
+
+     // Delete game_results in batches (collection group filter on userId field
+     // would be O(games), so prefer the doc-id prefix scan if results are small).
+     const results = await db.collection("game_results")
+       .where("userId", "==", uid)
+       .limit(500)
+       .get();
+     const batch = db.batch();
+     results.docs.forEach((d) => batch.delete(d.ref));
+     batch.delete(db.collection("users").doc(uid));
+     await batch.commit();
+
+     // Apple token revoke if applicable.
+     if (authUser?.providerData.some((p) => p.providerId === "apple.com")) {
+       await revokeAppleTokens(uid).catch((e) => console.warn("apple revoke failed", uid, e));
+     }
+
+     // Finally delete the Auth user.
+     if (authUser) await admin.auth().deleteUser(uid);
+   }
    ```
-   exports.pruneOrphanedAnonUsers = functions.pubsub
-     .schedule("every 168 hours")
-     .onRun(async () => {
-       const snap = await admin.firestore().collection("users")
-         .where("displayName", "==", null)
-         .where("gamesPlayed", "==", 0)
-         .where("createdAt", "<", Timestamp.fromDate(new Date(Date.now() - 14 * 24 * 60 * 60 * 1000)))
-         .limit(500)
-         .get();
-       const batch = admin.firestore().batch();
-       snap.docs.forEach((d) => batch.delete(d.ref));
-       await batch.commit();
-     });
-   ```
-   Lives in `functions/` (already deployed for push notifications). Schedule weekly. Rule: only deletes anon docs older than 14 days with zero games — preserves the just-launched-app users who haven't played yet.
+
+   Helper `revokeAppleTokens(uid)` is the same one used by the in-app account-deletion `onDelete` trigger (deferred follow-up #4) — implement it once, call from both places.
+
+   **Required Firestore index:** add a single-field descending index on `users.updatedAt` (or rely on default automatic indexing — single-field queries work without a composite index). Re-deploy `firestore.indexes.json` if needed.
+
+   **Testing plan:**
+   - Seed fixtures: one anon with no games (15 days old), one anon with games (200 days old), one Google user (200 days old), one Google user (5 days old).
+   - Run the function locally via `firebase emulators:start --only functions,firestore` and a manual trigger.
+   - Verify only the first three are deleted; the fresh Google user is untouched.
+   - Verify `auth.getUser(uid)` throws `auth/user-not-found` for the deleted ones.
+
+   **Effort:** ~1.5 days (function + Apple revoke helper if not already extracted from #4 + emulator tests + deploy + production smoke).
+
+   **Sequencing:** ship after deferred follow-up #4 lands so the Apple revoke helper already exists. Not a hard ship blocker on its own, but should be deployed at the same time as the 2.0.0 native build to start cleaning up early adopters before the user base grows.
 
 ---
 
