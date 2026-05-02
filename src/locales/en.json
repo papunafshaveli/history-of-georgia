@@ -74,6 +74,7 @@
   "leaderboard_loading": "Loading...",
   "leaderboard_error_offline": "You are offline",
   "leaderboard_your_rank": "Your rank: #{rank}",
+  "leaderboard_self_tag": "YOU",
 
   "your_card_anonymous_name": "Anonymous player",
   "your_card_total_points": "Total points",
