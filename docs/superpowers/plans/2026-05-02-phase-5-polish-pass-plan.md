@@ -1,10 +1,26 @@
 # Phase 5 Polish Pass Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **STATUS — DONE (2026-05-03).** All 8 tasks landed across 12 commits on `Add-question-variations`. Branch is 12 commits ahead of origin (not pushed yet). Polish pass is complete; remaining work tracked in deferred follow-ups in the parent plan (`2026-04-29-scoring-leaderboard-plan.md`).
 
 **Goal:** Resolve the 12 polish-pass issues identified during 2026-05-02 iOS verification and triaged into design / polish / tech-bug categories — sign-in surface simplification, Stats local-storage rewire, Leaderboard podium, parchment Modal redesign, force-update soft/hard split, GameSummary score-tier copy, MilestoneNudgeModal removal, and `isSigningIn` loading state.
 
 **Architecture:** Sequence of **8 commits** on `Add-question-variations`. Steps ordered to land cleanup + small fixes first (low risk, fast feedback), then paired UI changes that complete the "sign-in only on Leaderboard tab" model, then the broader Modal-component refactor last (highest blast radius). Each step is one logical scope per commit, explicit user permission per commit, never push to main. No code shipped beyond what's in the spec.
+
+## Landed commits
+
+| Task | Commit | Title |
+| --- | --- | --- |
+| 1 | `76465ca` | Remove MilestoneNudgeModal — sign-in lives on Leaderboard tab only |
+| 2 | `f865f6e` | GameSummary tier copy now keys off score via ScoreThreshold enum |
+| 3 | `bf69e18` | Auth loading state — isSigningIn flag with in-button spinner |
+| (infra) | `54a2c0e` | Track Firestore composite indexes in repo |
+| 4 | `a719474` | Sign-in lives only on the Leaderboard tab — Lean anon + Settings cleanup |
+| 5 | `8448620` | Olympic podium for top-3 leaderboard ranks |
+| 6 | `1a78b3b` | Stats reads from local AsyncStorage; sign-out no longer wipes view |
+| 7 | `e319070` | Parchment Modal redesign — content fit, Rules visual upgrade, sign-out modal in Endgame style |
+| 8 | `e715ad5` | Force-update soft / hard split + Endgame-style update modals |
+
+Plus the design-spec commit (`e186d1c`), this implementation plan (`ef09df4`), and the .gitignore tooling commit (`3a67a59`) at the start of the branch.
 
 **Tech Stack:** React Native 0.83.4, Expo SDK 55, TypeScript, Firebase 11.1.0 (Auth + Firestore), AsyncStorage, React Navigation 7. Test runner: Jest (`jest-expo` preset). Lint: `expo lint`. Type-check: `npx tsc --noEmit`.
 

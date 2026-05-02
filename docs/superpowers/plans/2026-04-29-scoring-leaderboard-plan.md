@@ -77,7 +77,25 @@
   3. Rebuild for **simulator** (`eas build --profile development-simulator --platform ios`) — this verifies Phase 5 UI on iOS but Apple Sign In may not work cleanly on simulator and that's acceptable for v1 staging.
   4. Worst case: defer all iOS Apple-Sign-In verification until a future build cycle; ship the v2.0.0 store binary against TestFlight where install signing is handled by App Store Connect.
 
-- 🟡 **Phase 5 polish pass — DESIGN COMPLETE (2026-05-02).** Walkthrough finished across all 12 surfaces. Categorised list of 12 issues confirmed. **Spec written:** [`docs/superpowers/specs/2026-05-02-phase-5-polish-pass-design.md`](../specs/2026-05-02-phase-5-polish-pass-design.md). Awaiting user spec review → then implementation plan via writing-plans skill.
+- ✅ **Phase 5 polish pass — DONE (2026-05-03).** All 8 implementation tasks landed across 12 commits on `Add-question-variations`. Spec: [`docs/superpowers/specs/2026-05-02-phase-5-polish-pass-design.md`](../specs/2026-05-02-phase-5-polish-pass-design.md). Plan: [`docs/superpowers/plans/2026-05-02-phase-5-polish-pass-plan.md`](2026-05-02-phase-5-polish-pass-plan.md).
+
+  **Polish-pass commits (chronological):**
+  - `3a67a59` — Ignore .superpowers/ brainstorm-tooling output
+  - `e186d1c` — Design spec
+  - `ef09df4` — Implementation plan
+  - `76465ca` — Task 1: Remove MilestoneNudgeModal entirely
+  - `f865f6e` — Task 2: GameSummary tier copy by score (via ScoreThreshold enum refresh)
+  - `bf69e18` — Task 3: Auth loading state isSigningIn (in-button spinner pattern)
+  - `54a2c0e` — Track Firestore composite indexes in repo (firestore.indexes.json)
+  - `a719474` — Task 4: Sign-in lives only on the Leaderboard tab — Lean anon + Settings cleanup
+  - `8448620` — Task 5: Olympic podium for top-3 leaderboard ranks
+  - `1a78b3b` — Task 6: Stats reads from local AsyncStorage; sign-out no longer wipes view
+  - `e319070` — Task 7: Parchment Modal redesign — content fit, Rules visual upgrade, sign-out modal in Endgame style
+  - `e715ad5` — Task 8: Force-update soft / hard split + Endgame-style update modals
+
+  Branch is **12 commits ahead** of origin/Add-question-variations. Not pushed yet.
+
+  **Remaining before 2.0.0 store submission:** see "Deferred follow-ups" below — items #3 (Apple email-collision merge handler) and #4 (Apple in-app account deletion, HARD ship blocker per Guideline 5.1.1(v)) are both required before submitting to the App Store. App-wide font replacement (#2) and orphaned anonymous user cleanup (#5) are nice-to-have but not blockers.
 
   **Issue summary** (full detail in the spec):
   - 🎨 Design-grade: Lean Leaderboard anon (#0), Settings auth simplification (#1), Leaderboard signed-in podium (#2), Stats local-storage rewire (#3), Parchment Modal redesign (#8 + #11 + #12), Force-update soft/hard split (#10)
