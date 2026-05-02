@@ -1,11 +1,12 @@
 import React, { useCallback, useMemo, useState } from "react";
 import {
   ActivityIndicator,
+  FlatList,
   Pressable,
   RefreshControl,
-  ScrollView,
   ToastAndroid,
   View,
+  type ListRenderItem,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useFocusEffect } from "@react-navigation/native";
@@ -21,12 +22,15 @@ import {
   useStyles,
   useTranslation,
 } from "@/src/hooks";
-import { LeaderboardTab } from "@/src/types";
+import { LeaderboardTab, type LeaderboardEntry } from "@/src/types";
 
+import LeaderboardPodium from "./LeaderboardPodium";
 import LeaderboardRow from "./LeaderboardRow";
 import LeaderboardTabs from "./LeaderboardTabs";
 
 import { getStyles } from "./styles";
+
+const PODIUM_MIN_ENTRIES = 3;
 
 const showSignInFailureToast = (message: string) => {
   if (IS_ANDROID) {
@@ -201,6 +205,49 @@ const LeaderboardScreen: React.FC = () => {
       ? t.leaderboard_empty_week_desc
       : t.leaderboard_empty_alltime_desc;
 
+  const hasFullPodium = entries.length >= PODIUM_MIN_ENTRIES;
+  const listData = hasFullPodium ? entries.slice(PODIUM_MIN_ENTRIES) : entries;
+
+  const listKeyExtractor = useCallback(
+    (entry: LeaderboardEntry) => entry.uid,
+    [],
+  );
+
+  const renderListItem: ListRenderItem<LeaderboardEntry> = useCallback(
+    ({ item }) => <LeaderboardRow entry={item} isSelf={item.uid === uid} />,
+    [uid],
+  );
+
+  const listHeader = (
+    <View>
+      {ownRankCaption ? (
+        <AppText
+          type="subHeadline"
+          fontFamily="serif"
+          color={colors.bronzeDark}
+          style={styles.titleText}
+        >
+          {ownRankCaption}
+        </AppText>
+      ) : null}
+
+      <LeaderboardTabs activeTab={activeTab} onChangeTab={setActiveTab} />
+
+      <LeaderboardPodium entries={entries} currentUid={uid} />
+    </View>
+  );
+
+  let listEmpty: React.ReactNode = null;
+  if (isLoading && entries.length === 0) {
+    listEmpty = (
+      <View style={styles.loadingState}>
+        <Loading />
+      </View>
+    );
+  } else if (isLeaderboardEmpty) {
+    listEmpty = <EmptyState title={emptyTitle} description={emptyDesc} />;
+  }
+
   return (
     <SafeAreaView edges={[]} style={styles.safeArea}>
       <View style={styles.fixedTitleContainer}>
@@ -242,43 +289,17 @@ const LeaderboardScreen: React.FC = () => {
           </View>
         </View>
       ) : (
-        <ScrollView
+        <FlatList
+          data={listData}
+          keyExtractor={listKeyExtractor}
+          renderItem={renderListItem}
+          ListHeaderComponent={listHeader}
+          ListEmptyComponent={listEmpty}
           contentContainerStyle={styles.scrollContent}
           refreshControl={
             <RefreshControl refreshing={isRefreshing} onRefresh={refresh} />
           }
-        >
-          {ownRankCaption ? (
-            <AppText
-              type="subHeadline"
-              fontFamily="serif"
-              color={colors.bronzeDark}
-              style={styles.titleText}
-            >
-              {ownRankCaption}
-            </AppText>
-          ) : null}
-
-          <LeaderboardTabs activeTab={activeTab} onChangeTab={setActiveTab} />
-
-          {isLoading && entries.length === 0 ? (
-            <View style={styles.loadingState}>
-              <Loading />
-            </View>
-          ) : isLeaderboardEmpty ? (
-            <EmptyState title={emptyTitle} description={emptyDesc} />
-          ) : (
-            <View style={styles.leaderboardListWrapper}>
-              {entries.map((entry) => (
-                <LeaderboardRow
-                  key={entry.uid}
-                  entry={entry}
-                  isSelf={entry.uid === uid}
-                />
-              ))}
-            </View>
-          )}
-        </ScrollView>
+        />
       )}
 
       <ConfirmNameModal

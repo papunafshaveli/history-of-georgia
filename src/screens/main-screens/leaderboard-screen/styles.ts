@@ -86,10 +86,6 @@ export const getStyles = (theme: AppTheme) =>
       opacity: 0.6,
     },
 
-    leaderboardListWrapper: {
-      gap: theme.spacing.x2,
-    },
-
     rowCard: {
       flexDirection: "row",
       alignItems: "center",
@@ -157,5 +153,82 @@ export const getStyles = (theme: AppTheme) =>
     loadingState: {
       paddingVertical: getAdjustedHeight(24),
       alignItems: "center",
+    },
+
+    podiumRow: {
+      flexDirection: "row",
+      justifyContent: "center",
+      alignItems: "flex-end",
+      columnGap: theme.spacing.x2,
+      paddingHorizontal: theme.spacing.x4,
+      marginTop: theme.spacing.x5,
+      marginBottom: theme.spacing.x5,
+    },
+    podiumCard: {
+      flex: 1,
+      alignItems: "center",
+      paddingVertical: theme.spacing.x4,
+      paddingHorizontal: theme.spacing.x2,
+      backgroundColor: theme.colors.surface,
+      borderRadius: theme.borderRadius.md,
+      borderColor: theme.colors.bronze,
+      ...theme.shadows.default,
+    },
+    podiumCardCenter: {
+      height: getAdjustedHeight(200),
+      borderWidth: 3,
+    },
+    podiumCardSide: {
+      height: getAdjustedHeight(170),
+      borderWidth: 2,
+    },
+    podiumCardSelf: {
+      borderColor: theme.colors.bronzeDark,
+      backgroundColor: theme.colors.parchmentTint,
+    },
+    podiumRankRibbon: {
+      backgroundColor: theme.colors.bronze,
+      paddingHorizontal: theme.spacing.x3,
+      paddingVertical: theme.spacing.x1,
+      borderRadius: theme.borderRadius.sm,
+      marginBottom: theme.spacing.x2,
+    },
+    podiumRankRibbonCenter: {
+      backgroundColor: theme.colors.bronzeDark,
+    },
+    podiumAvatar: {
+      borderRadius: theme.borderRadius.full,
+      backgroundColor: theme.colors.parchment,
+      borderWidth: 2,
+      borderColor: theme.colors.bronzeMid,
+      alignItems: "center",
+      justifyContent: "center",
+      overflow: "hidden",
+      marginBottom: theme.spacing.x2,
+    },
+    podiumAvatarLarge: {
+      width: getAdjustedWidth(72),
+      height: getAdjustedWidth(72),
+    },
+    podiumAvatarSmall: {
+      width: getAdjustedWidth(56),
+      height: getAdjustedWidth(56),
+    },
+    podiumAvatarImage: {
+      width: "100%",
+      height: "100%",
+    },
+    podiumName: {
+      textAlign: "center",
+      paddingHorizontal: theme.spacing.x1,
+    },
+    podiumPoints: {
+      marginTop: theme.spacing.x1,
+      fontVariant: ["tabular-nums"],
+      letterSpacing: 1,
+    },
+    podiumSelfTag: {
+      marginTop: theme.spacing.x2,
+      letterSpacing: 1,
     },
   });

@@ -74,6 +74,7 @@
   "leaderboard_loading": "იტვირთება...",
   "leaderboard_error_offline": "ხარ ოფლაინ",
   "leaderboard_your_rank": "შენი ადგილი: #{rank}",
+  "leaderboard_self_tag": "შენ",
 
   "your_card_anonymous_name": "ანონიმი მოთამაშე",
   "your_card_total_points": "სულ ქულა",
