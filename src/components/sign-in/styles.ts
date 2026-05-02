@@ -110,4 +110,38 @@ export const getStyles = (theme: AppTheme) =>
     saveButtonDisabled: {
       opacity: 0.5,
     },
+
+    updateModalContainer: {
+      flex: 1,
+      alignItems: "center",
+      gap: theme.spacing.x4,
+    },
+    updateTopIconWrapper: {
+      width: getAdjustedWidth(100),
+      height: getAdjustedWidth(100),
+      borderRadius: theme.borderRadius.full,
+      borderWidth: 3,
+      borderColor: theme.colors.bronzeDark,
+      backgroundColor: theme.colors.parchmentTint,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    updateBody: {
+      textAlign: "center",
+      lineHeight: 26,
+    },
+    updateButtonsGroup: {
+      width: "100%",
+      gap: getAdjustedHeight(8),
+      marginTop: "auto",
+    },
+    updateScrollButton: {
+      width: "100%",
+      height: getAdjustedHeight(56),
+      alignItems: "center",
+      justifyContent: "center",
+      borderRadius: theme.borderRadius.lg,
+      borderWidth: 3,
+      borderColor: theme.colors.bronze,
+    },
   });

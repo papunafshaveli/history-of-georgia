@@ -104,6 +104,10 @@
   "force_update_title": "Update required",
   "force_update_body": "A new version is required to keep playing. Please update from the store.",
   "force_update_button": "Update now",
+  "soft_update_title": "New version available",
+  "soft_update_body": "A newer version of the app is available. We recommend updating.",
+  "soft_update_primary": "Update",
+  "soft_update_secondary": "Later",
 
   "vibration_turn_on": "Turn on vibration",
   "vibration_turn_off": "Turn off vibration",

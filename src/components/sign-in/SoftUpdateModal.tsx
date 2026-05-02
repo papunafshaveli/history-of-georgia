@@ -16,11 +16,17 @@ const PLAY_STORE_URL =
   "https://play.google.com/store/apps/details?id=com.papunafshaveli.historyofgeorgia";
 const TOP_ICON_SIZE = 56;
 
-type ForceUpdateModalProps = {
+type SoftUpdateModalProps = {
   isVisible: boolean;
+  onUpdate: () => void;
+  onDismiss: () => void;
 };
 
-const ForceUpdateModal: React.FC<ForceUpdateModalProps> = ({ isVisible }) => {
+const SoftUpdateModal: React.FC<SoftUpdateModalProps> = ({
+  isVisible,
+  onUpdate,
+  onDismiss,
+}) => {
   const t = useTranslation();
   const { colors } = useAppTheme();
   const styles = useStyles(getStyles);
@@ -28,7 +34,8 @@ const ForceUpdateModal: React.FC<ForceUpdateModalProps> = ({ isVisible }) => {
   const handleUpdatePress = useCallback(() => {
     const url = IS_IOS ? APP_STORE_URL : PLAY_STORE_URL;
     Linking.openURL(url).catch(() => undefined);
-  }, []);
+    onUpdate();
+  }, [onUpdate]);
 
   const renderComponent = (
     <View style={styles.updateModalContainer}>
@@ -46,18 +53,29 @@ const ForceUpdateModal: React.FC<ForceUpdateModalProps> = ({ isVisible }) => {
         color={colors.onImage}
         style={styles.updateBody}
       >
-        {t.force_update_body}
+        {t.soft_update_body}
       </AppText>
 
       <View style={styles.updateButtonsGroup}>
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel={t.force_update_button}
+          accessibilityLabel={t.soft_update_primary}
           onPress={handleUpdatePress}
         >
           <GradientWrapper style={styles.updateScrollButton}>
             <AppText fontFamily="script" type="headline">
-              {t.force_update_button}
+              {t.soft_update_primary}
+            </AppText>
+          </GradientWrapper>
+        </Pressable>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={t.soft_update_secondary}
+          onPress={onDismiss}
+        >
+          <GradientWrapper style={styles.updateScrollButton}>
+            <AppText fontFamily="script" type="headline">
+              {t.soft_update_secondary}
             </AppText>
           </GradientWrapper>
         </Pressable>
@@ -68,10 +86,11 @@ const ForceUpdateModal: React.FC<ForceUpdateModalProps> = ({ isVisible }) => {
   return (
     <Modal
       isVisible={isVisible}
-      headerTitle={t.force_update_title}
+      headerTitle={t.soft_update_title}
+      onClose={onDismiss}
       renderComponent={renderComponent}
     />
   );
 };
 
-export default ForceUpdateModal;
+export default SoftUpdateModal;

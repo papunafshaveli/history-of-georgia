@@ -27,6 +27,7 @@ import {
   ErrorBoundary,
   ForceUpdateModal,
   Loading,
+  SoftUpdateModal,
 } from "@/src/components";
 
 import { AuthProvider } from "@/src/context/AuthProvider";
@@ -59,8 +60,17 @@ const BootEffects: React.FC = () => {
 };
 
 const ForceUpdateGate: React.FC = () => {
-  const { isBlocked } = useForceUpdateGate();
-  return <ForceUpdateModal isVisible={isBlocked} />;
+  const { isHardBlocked, isSoftBlocked, dismissSoft } = useForceUpdateGate();
+  return (
+    <>
+      <ForceUpdateModal isVisible={isHardBlocked} />
+      <SoftUpdateModal
+        isVisible={isSoftBlocked}
+        onUpdate={dismissSoft}
+        onDismiss={dismissSoft}
+      />
+    </>
+  );
 };
 
 const App: React.FC = () => {
