@@ -14,6 +14,7 @@ export const getStyles = (theme: AppTheme) =>
     modalContainer: {
       width: "90%",
       minHeight: getAdjustedHeight(550),
+      maxHeight: "90%",
       overflow: "visible",
     },
     header: {
@@ -38,7 +39,9 @@ export const getStyles = (theme: AppTheme) =>
 
     background: {
       flex: 1,
-      padding: getAdjustedWidth(15),
+    },
+    innerContent: {
+      flexGrow: 1,
     },
 
     darkTint: {

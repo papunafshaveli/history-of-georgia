@@ -1,7 +1,8 @@
 import React, { useCallback, useState } from "react";
-import { Pressable, View } from "react-native";
+import { ImageBackground, Pressable, View } from "react-native";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 
+import { CloseIcon } from "@/src/assets";
 import {
   useAppTheme,
   useAuth,
@@ -10,6 +11,7 @@ import {
 } from "@/src/hooks";
 import { logger } from "@/src/helpers/logger";
 
+import GradientWrapper from "../gradient-wrapper/GradientWrapper";
 import Modal from "../modal/Modal";
 import { AppText } from "../text";
 
@@ -142,15 +144,23 @@ const AccountSection: React.FC = () => {
   }
 
   const confirmAccessibilityState = { disabled: isSigningIn };
-  const confirmButtonStyle = isSigningIn
-    ? [styles.signOutConfirmButton, styles.signOutConfirmButtonDisabled]
-    : styles.signOutConfirmButton;
+  const confirmPressableStyle = isSigningIn
+    ? styles.signOutConfirmButtonDisabled
+    : undefined;
   const signOutModalCloseHandler = isSigningIn
     ? undefined
     : handleSignOutCancel;
 
   const signOutModalBody = (
     <View style={styles.signOutModalContainer}>
+      <ImageBackground
+        style={styles.signOutTopIconWrapper}
+        source={CloseIcon}
+        resizeMode="contain"
+        imageStyle={styles.signOutTopIcon}
+        accessibilityElementsHidden
+      />
+
       <AppText
         type="subHeadline"
         fontFamily="serif"
@@ -159,20 +169,18 @@ const AccountSection: React.FC = () => {
       >
         {t.settings_signout_confirm_body}
       </AppText>
+
       <View style={styles.signOutModalButtons}>
         <Pressable
           accessibilityRole="button"
           accessibilityLabel={t.settings_signout_confirm_cancel}
           onPress={handleSignOutCancel}
-          style={styles.signOutCancelButton}
         >
-          <AppText
-            type="subHeadline"
-            fontFamily="serif"
-            color={colors.bronzeDark}
-          >
-            {t.settings_signout_confirm_cancel}
-          </AppText>
+          <GradientWrapper style={styles.signOutScrollButton}>
+            <AppText fontFamily="script" type="headline">
+              {t.settings_signout_confirm_cancel}
+            </AppText>
+          </GradientWrapper>
         </Pressable>
         <Pressable
           accessibilityRole="button"
@@ -180,15 +188,13 @@ const AccountSection: React.FC = () => {
           accessibilityState={confirmAccessibilityState}
           onPress={handleSignOutConfirm}
           disabled={isSigningIn}
-          style={confirmButtonStyle}
+          style={confirmPressableStyle}
         >
-          <AppText
-            type="subHeadline"
-            fontFamily="serif"
-            color={colors.textOnPrimary}
-          >
-            {t.settings_signout_button}
-          </AppText>
+          <GradientWrapper style={styles.signOutScrollButton}>
+            <AppText fontFamily="script" type="headline">
+              {t.settings_signout_button}
+            </AppText>
+          </GradientWrapper>
         </Pressable>
       </View>
     </View>
