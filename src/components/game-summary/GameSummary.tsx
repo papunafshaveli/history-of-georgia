@@ -94,17 +94,10 @@ const GameSummary: React.FC<GameSummaryProps> = ({
   };
 
   const scoreFeedback = useMemo(() => {
-    if (score <= ScoreThreshold.Low) {
-      return t.feedback_low;
-    } else if (score <= ScoreThreshold.Medium) {
-      return t.feedback_medium;
-    } else if (score <= ScoreThreshold.High) {
-      return t.feedback_high;
-    } else if (score <= ScoreThreshold.Excellent) {
-      return t.feedback_outstanding;
-    } else {
-      return t.feedback_outstanding;
-    }
+    if (score >= ScoreThreshold.Expert) return t.gamesummary_tier_expert;
+    if (score >= ScoreThreshold.Strong) return t.gamesummary_tier_strong;
+    if (score >= ScoreThreshold.Solid) return t.gamesummary_tier_solid;
+    return t.gamesummary_tier_beginner;
   }, [score, t]);
 
   return (

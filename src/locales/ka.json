@@ -34,11 +34,10 @@
   "game_failed_to_load": "კითხვის ჩატვირთვა ვერ მოხერხდა",
   "game_retry": "თავიდან ცდა",
 
-  "feedback_low": "გააგრძელე მეცადინეობა...",
-  "feedback_medium": "კარგი შედეგია! ასე გააგრძელე!",
-  "feedback_high": "ძალიან კარგი შედეგია!",
-  "feedback_excellent": "შესანიშნავი შედეგია!",
-  "feedback_outstanding": "ყოჩაღ! წარმოუდგენელი შედეგი გაქვს!",
+  "gamesummary_tier_beginner": "კარგი დასაწყისია — განაგრძე!",
+  "gamesummary_tier_solid": "კარგად გაართვი თავი.",
+  "gamesummary_tier_strong": "ძლიერი შედეგი — საქართველოს ისტორიკოსი ხარ.",
+  "gamesummary_tier_expert": "განსაკუთრებული შედეგი — ლიდერბორდის მზე ხარ.",
 
   "ethernet_connection_lost": "ინტერნეტთან კავშირი არ არის...",
 

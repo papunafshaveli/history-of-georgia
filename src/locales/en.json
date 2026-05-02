@@ -34,11 +34,10 @@
   "game_failed_to_load": "Failed to load question",
   "game_retry": "Try again",
 
-  "feedback_low": "Keep studying...",
-  "feedback_medium": "Good result! Keep going!",
-  "feedback_high": "Very good result!",
-  "feedback_excellent": "Excellent result!",
-  "feedback_outstanding": "Bravo! Incredible result!",
+  "gamesummary_tier_beginner": "Solid start — keep going!",
+  "gamesummary_tier_solid": "Well done.",
+  "gamesummary_tier_strong": "Strong result — you know your Georgian history.",
+  "gamesummary_tier_expert": "Exceptional result — leaderboard royalty.",
 
   "ethernet_connection_lost": "No internet connection...",
 
