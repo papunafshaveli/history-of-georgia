@@ -64,6 +64,7 @@ bigChanges.md
 #ClaudeCode
 CLAUDE.md
 .claude/
+.superpowers/
 
 #Firebase functions build output
 functions/lib/
