@@ -39,7 +39,30 @@ export const getStyles = (theme: AppTheme) =>
       opacity: 0.6,
     },
 
-    providersStack: {
+    anonGate: {
+      flex: 1,
+      alignItems: "center",
+      justifyContent: "center",
+      paddingHorizontal: theme.spacing.x6,
+    },
+    anonIconCircle: {
+      width: getAdjustedWidth(64),
+      height: getAdjustedWidth(64),
+      borderRadius: theme.borderRadius.full,
+      backgroundColor: theme.colors.parchmentTint,
+      borderWidth: 2,
+      borderColor: theme.colors.bronzeDark,
+      alignItems: "center",
+      justifyContent: "center",
+      marginBottom: theme.spacing.x4,
+    },
+    anonHeadline: {
+      textAlign: "center",
+      marginBottom: theme.spacing.x8,
+      paddingHorizontal: theme.spacing.x4,
+    },
+    anonButtonsStack: {
+      width: "100%",
       gap: theme.spacing.x3,
     },
     signInButton: {

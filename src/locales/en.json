@@ -63,7 +63,7 @@
   "leaderboard_signin_cta_title": "Save your score on the leaderboard",
   "leaderboard_signin_cta_body": "Sign in to claim your spot and keep your rank across devices.",
   "leaderboard_signin_cta_button": "Sign in",
-  "leaderboard_signin_button_top": "Sign in to compete",
+  "leaderboard_anon_headline": "Compete with players across Georgia",
   "leaderboard_recent_games_section": "Last games",
   "leaderboard_recent_games_empty_title": "No games yet",
   "leaderboard_recent_games_empty_desc": "Play a game to see it here!",
@@ -97,7 +97,7 @@
 
   "settings_signout_button": "Sign out",
   "settings_signout_confirm_title": "Sign out?",
-  "settings_signout_confirm_body": "Your score will no longer appear on the leaderboard from this device.",
+  "settings_signout_confirm_body": "Signing out from this Google account. Your stats are saved to Google — sign back in any time.",
   "settings_signout_confirm_cancel": "Cancel",
 
   "force_update_title": "Update required",

@@ -1,8 +1,7 @@
 import React, { useCallback, useState } from "react";
-import { Pressable, ToastAndroid, View } from "react-native";
+import { Pressable, View } from "react-native";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 
-import { IS_ANDROID, IS_IOS } from "@/src/constants";
 import {
   useAppTheme,
   useAuth,
@@ -17,12 +16,6 @@ import { AppText } from "../text";
 import { getStyles } from "./styles";
 
 const ROW_ICON_SIZE = 22;
-
-const showSignInFailureToast = (message: string) => {
-  if (IS_ANDROID) {
-    ToastAndroid.show(message, ToastAndroid.SHORT);
-  }
-};
 
 type AccountRowProps = {
   iconName: keyof typeof MaterialCommunityIcons.glyphMap | "logo-google" | "logo-apple";
@@ -121,31 +114,9 @@ const AccountSection: React.FC = () => {
   const t = useTranslation();
   const { colors } = useAppTheme();
   const styles = useStyles(getStyles);
-  const {
-    isAnonymous,
-    isSigningIn,
-    signInWithGoogle,
-    signInWithApple,
-    signOut: authSignOut,
-  } = useAuth();
+  const { isAnonymous, isSigningIn, signOut: authSignOut } = useAuth();
 
   const [signOutConfirmOpen, setSignOutConfirmOpen] = useState(false);
-
-  const handleGooglePress = useCallback(async () => {
-    try {
-      await signInWithGoogle();
-    } catch {
-      showSignInFailureToast(t.signin_failure_toast);
-    }
-  }, [signInWithGoogle, t.signin_failure_toast]);
-
-  const handleApplePress = useCallback(async () => {
-    try {
-      await signInWithApple();
-    } catch {
-      showSignInFailureToast(t.signin_failure_toast);
-    }
-  }, [signInWithApple, t.signin_failure_toast]);
 
   const handleSignOutPress = useCallback(() => {
     setSignOutConfirmOpen(true);
@@ -166,7 +137,10 @@ const AccountSection: React.FC = () => {
     }
   }, [authSignOut, isSigningIn]);
 
-  const showApple = IS_IOS;
+  if (isAnonymous) {
+    return null;
+  }
+
   const confirmAccessibilityState = { disabled: isSigningIn };
   const confirmButtonStyle = isSigningIn
     ? [styles.signOutConfirmButton, styles.signOutConfirmButtonDisabled]
@@ -174,32 +148,6 @@ const AccountSection: React.FC = () => {
   const signOutModalCloseHandler = isSigningIn
     ? undefined
     : handleSignOutCancel;
-
-  if (isAnonymous) {
-    return (
-      <View style={styles.section}>
-        <AccountRow
-          iconName="logo-google"
-          label={t.signin_button_google}
-          onPress={handleGooglePress}
-          rightIconName="chevron-right"
-          disabled={isSigningIn}
-        />
-        {showApple ? (
-          <>
-            <View style={styles.divider} />
-            <AccountRow
-              iconName="logo-apple"
-              label={t.signin_button_apple}
-              onPress={handleApplePress}
-              rightIconName="chevron-right"
-              disabled={isSigningIn}
-            />
-          </>
-        ) : null}
-      </View>
-    );
-  }
 
   const signOutModalBody = (
     <View style={styles.signOutModalContainer}>
