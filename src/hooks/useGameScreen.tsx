@@ -23,6 +23,7 @@ import {
   saveGameAndUpdateStats,
   type GameEndPayload,
 } from "@/src/services/firestore-game-result";
+import { recordGame as recordLifetimeGame } from "@/src/services/local-lifetime-stats";
 import { addLocalRecentGame } from "@/src/services/local-recent-games";
 import { enqueuePendingResult } from "@/src/services/pending-results";
 import { invalidateLeaderboardCache } from "@/src/hooks/useLeaderboard";
@@ -85,6 +86,19 @@ export const useGameScreen = () => {
         selectedDifficulty: payload.selectedDifficulty,
         createdAtMs,
       });
+
+      // Local lifetime-stats accumulator powers the Stats screen. Fires
+      // once per game-end (regardless of Firestore success) so sign-out
+      // doesn't appear to wipe the user's stats.
+      try {
+        await recordLifetimeGame({
+          score: payload.score,
+          correctCount: payload.correctCount,
+          totalQuestions: payload.totalQuestions,
+        });
+      } catch (err) {
+        logger.warn("[useGameScreen] recordLifetimeGame failed:", err);
+      }
 
       if (!uid) {
         await enqueuePendingResult({

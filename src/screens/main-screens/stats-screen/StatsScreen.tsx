@@ -8,10 +8,10 @@ import { AppText, EmptyState, StatisticsCard } from "@/src/components";
 import { formatDate } from "@/src/helpers";
 import {
   useAppTheme,
+  useLifetimeStats,
   useRecentGames,
   useStyles,
   useTranslation,
-  useUserStats,
 } from "@/src/hooks";
 
 import { getStyles } from "./styles";
@@ -50,7 +50,7 @@ const StatsScreen = () => {
   const styles = useStyles(getStyles);
   const { colors } = useAppTheme();
 
-  const { stats, refresh: refreshStats } = useUserStats();
+  const { stats, refresh: refreshStats } = useLifetimeStats();
   const { games, refresh: refreshRecent } = useRecentGames();
 
   useFocusEffect(
@@ -61,14 +61,15 @@ const StatsScreen = () => {
   );
 
   const cardValues = useMemo<Record<StatsCardField, number>>(() => {
-    const gamesPlayed = stats?.gamesPlayed ?? 0;
-    const totalPoints = stats?.totalPoints ?? 0;
+    const { totalGames, totalPoints, bestSingleGameScore, totalQuestions } =
+      stats;
+    const averageScore =
+      totalGames > 0 ? Math.round(totalPoints / totalGames) : 0;
     return {
-      totalGames: gamesPlayed,
-      bestScore: stats?.bestSingleGameScore ?? 0,
-      averageScore:
-        gamesPlayed > 0 ? Math.round(totalPoints / gamesPlayed) : 0,
-      totalQuestions: stats?.totalQuestions ?? 0,
+      totalGames,
+      bestScore: bestSingleGameScore,
+      averageScore,
+      totalQuestions,
     };
   }, [stats]);
 
