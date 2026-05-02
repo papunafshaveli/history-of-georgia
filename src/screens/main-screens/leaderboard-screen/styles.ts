@@ -59,6 +59,9 @@ export const getStyles = (theme: AppTheme) =>
     signInButtonPressed: {
       transform: [{ scale: 0.98 }],
     },
+    signInButtonDisabled: {
+      opacity: 0.6,
+    },
 
     leaderboardListWrapper: {
       gap: theme.spacing.x2,

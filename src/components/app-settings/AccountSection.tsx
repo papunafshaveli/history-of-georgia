@@ -1,7 +1,8 @@
 import React, { useCallback, useState } from "react";
-import { Platform, Pressable, ToastAndroid, View } from "react-native";
+import { Pressable, ToastAndroid, View } from "react-native";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 
+import { IS_ANDROID, IS_IOS } from "@/src/constants";
 import {
   useAppTheme,
   useAuth,
@@ -18,7 +19,7 @@ import { getStyles } from "./styles";
 const ROW_ICON_SIZE = 22;
 
 const showSignInFailureToast = (message: string) => {
-  if (Platform.OS === "android") {
+  if (IS_ANDROID) {
     ToastAndroid.show(message, ToastAndroid.SHORT);
   }
 };
@@ -31,6 +32,7 @@ type AccountRowProps = {
   labelColor?: string;
   iconColor?: string;
   accessibilityLabel?: string;
+  disabled?: boolean;
 };
 
 const AccountRow: React.FC<AccountRowProps> = ({
@@ -41,6 +43,7 @@ const AccountRow: React.FC<AccountRowProps> = ({
   labelColor,
   iconColor,
   accessibilityLabel,
+  disabled,
 }) => {
   const { colors } = useAppTheme();
   const styles = useStyles(getStyles);
@@ -71,12 +74,23 @@ const AccountRow: React.FC<AccountRowProps> = ({
     );
   };
 
+  const isDisabled = !!disabled;
+  const accessibilityRowLabel = accessibilityLabel ?? label;
+  const rowAccessibilityState = { disabled: isDisabled };
+  const rippleConfig = isDisabled
+    ? null
+    : { color: colors.parchmentDivider };
+  const pressableStyle = isDisabled ? styles.accountRowDisabled : undefined;
+
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={accessibilityLabel ?? label}
+      accessibilityLabel={accessibilityRowLabel}
+      accessibilityState={rowAccessibilityState}
       onPress={onPress}
-      android_ripple={{ color: colors.parchmentDivider }}
+      disabled={disabled}
+      android_ripple={rippleConfig}
+      style={pressableStyle}
     >
       <View style={styles.accountRow}>
         <View style={styles.accountRowLeft}>
@@ -109,13 +123,13 @@ const AccountSection: React.FC = () => {
   const styles = useStyles(getStyles);
   const {
     isAnonymous,
+    isSigningIn,
     signInWithGoogle,
     signInWithApple,
     signOut: authSignOut,
   } = useAuth();
 
   const [signOutConfirmOpen, setSignOutConfirmOpen] = useState(false);
-  const [isSigningOut, setIsSigningOut] = useState(false);
 
   const handleGooglePress = useCallback(async () => {
     try {
@@ -142,19 +156,24 @@ const AccountSection: React.FC = () => {
   }, []);
 
   const handleSignOutConfirm = useCallback(async () => {
-    if (isSigningOut) return;
-    setIsSigningOut(true);
+    if (isSigningIn) return;
     try {
       await authSignOut();
     } catch (err) {
       logger.warn("[AccountSection] sign-out failed:", err);
     } finally {
-      setIsSigningOut(false);
       setSignOutConfirmOpen(false);
     }
-  }, [authSignOut, isSigningOut]);
+  }, [authSignOut, isSigningIn]);
 
-  const showApple = Platform.OS === "ios";
+  const showApple = IS_IOS;
+  const confirmAccessibilityState = { disabled: isSigningIn };
+  const confirmButtonStyle = isSigningIn
+    ? [styles.signOutConfirmButton, styles.signOutConfirmButtonDisabled]
+    : styles.signOutConfirmButton;
+  const signOutModalCloseHandler = isSigningIn
+    ? undefined
+    : handleSignOutCancel;
 
   if (isAnonymous) {
     return (
@@ -164,6 +183,7 @@ const AccountSection: React.FC = () => {
           label={t.signin_button_google}
           onPress={handleGooglePress}
           rightIconName="chevron-right"
+          disabled={isSigningIn}
         />
         {showApple ? (
           <>
@@ -173,6 +193,7 @@ const AccountSection: React.FC = () => {
               label={t.signin_button_apple}
               onPress={handleApplePress}
               rightIconName="chevron-right"
+              disabled={isSigningIn}
             />
           </>
         ) : null}
@@ -208,9 +229,10 @@ const AccountSection: React.FC = () => {
         <Pressable
           accessibilityRole="button"
           accessibilityLabel={t.settings_signout_button}
-          accessibilityState={{ disabled: isSigningOut }}
+          accessibilityState={confirmAccessibilityState}
           onPress={handleSignOutConfirm}
-          style={styles.signOutConfirmButton}
+          disabled={isSigningIn}
+          style={confirmButtonStyle}
         >
           <AppText
             type="subHeadline"
@@ -232,12 +254,13 @@ const AccountSection: React.FC = () => {
         onPress={handleSignOutPress}
         labelColor={colors.incorrectBorder}
         iconColor={colors.incorrectBorder}
+        disabled={isSigningIn}
       />
 
       <Modal
         isVisible={signOutConfirmOpen}
         headerTitle={t.settings_signout_confirm_title}
-        onClose={isSigningOut ? undefined : handleSignOutCancel}
+        onClose={signOutModalCloseHandler}
         renderComponent={signOutModalBody}
       />
     </View>

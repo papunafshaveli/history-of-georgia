@@ -78,6 +78,9 @@ export const getStyles = (theme: AppTheme) =>
     accountRowLabel: {
       flexShrink: 1,
     },
+    accountRowDisabled: {
+      opacity: 0.4,
+    },
 
     signOutModalContainer: {
       flex: 1,
@@ -109,5 +112,8 @@ export const getStyles = (theme: AppTheme) =>
       backgroundColor: theme.colors.incorrectBorder,
       alignItems: "center",
       justifyContent: "center",
+    },
+    signOutConfirmButtonDisabled: {
+      opacity: 0.4,
     },
   });

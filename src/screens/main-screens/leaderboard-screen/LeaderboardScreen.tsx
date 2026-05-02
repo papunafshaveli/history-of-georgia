@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo, useState } from "react";
 import {
-  Platform,
+  ActivityIndicator,
   Pressable,
   RefreshControl,
   ScrollView,
@@ -12,6 +12,7 @@ import { useFocusEffect } from "@react-navigation/native";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 
 import { AppText, ConfirmNameModal, EmptyState, Loading } from "@/src/components";
+import { IS_ANDROID, IS_IOS } from "@/src/constants";
 import {
   useAppTheme,
   useAuth,
@@ -27,7 +28,7 @@ import LeaderboardTabs from "./LeaderboardTabs";
 import { getStyles } from "./styles";
 
 const showSignInFailureToast = (message: string) => {
-  if (Platform.OS === "android") {
+  if (IS_ANDROID) {
     ToastAndroid.show(message, ToastAndroid.SHORT);
   }
 };
@@ -36,42 +37,59 @@ type ProviderButtonProps = {
   label: string;
   iconName: keyof typeof MaterialCommunityIcons.glyphMap | "logo-apple";
   onPress: () => void;
+  disabled?: boolean;
 };
 
 const ProviderButton: React.FC<ProviderButtonProps> = ({
   label,
   iconName,
   onPress,
+  disabled,
 }) => {
   const { colors } = useAppTheme();
   const styles = useStyles(getStyles);
 
   const buttonStyle = useCallback(
-    ({ pressed }: { pressed: boolean }) =>
-      pressed
+    ({ pressed }: { pressed: boolean }) => {
+      const base = pressed
         ? [styles.signInButton, styles.signInButtonPressed]
-        : styles.signInButton,
-    [styles],
+        : styles.signInButton;
+      return disabled ? [base, styles.signInButtonDisabled] : base;
+    },
+    [styles, disabled],
   );
 
   const isApple = iconName === "logo-apple";
+  const isDisabled = !!disabled;
+  const buttonAccessibilityState = { disabled: isDisabled };
+
+  let iconNode;
+  if (isDisabled) {
+    iconNode = <ActivityIndicator size="small" color={colors.bronzeDark} />;
+  } else if (isApple) {
+    iconNode = (
+      <Ionicons name="logo-apple" size={22} color={colors.bronzeDark} />
+    );
+  } else {
+    iconNode = (
+      <MaterialCommunityIcons
+        name={iconName as keyof typeof MaterialCommunityIcons.glyphMap}
+        size={22}
+        color={colors.bronzeDark}
+      />
+    );
+  }
 
   return (
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={label}
+      accessibilityState={buttonAccessibilityState}
       style={buttonStyle}
       onPress={onPress}
+      disabled={disabled}
     >
-      {isApple ? (
-        <Ionicons name="logo-apple" size={22} color={colors.bronzeDark} />
-      ) : (
-        <MaterialCommunityIcons
-          name={iconName as keyof typeof MaterialCommunityIcons.glyphMap}
-          size={22}
-          color={colors.bronzeDark}
-        />
-      )}
+      {iconNode}
       <AppText type="subHeadline" fontFamily="serif" color={colors.bronzeDark}>
         {label}
       </AppText>
@@ -105,7 +123,8 @@ const LeaderboardScreen: React.FC = () => {
   const t = useTranslation();
   const { colors } = useAppTheme();
   const styles = useStyles(getStyles);
-  const { isAnonymous, uid, signInWithGoogle, signInWithApple } = useAuth();
+  const { isAnonymous, uid, isSigningIn, signInWithGoogle, signInWithApple } =
+    useAuth();
 
   const [activeTab, setActiveTab] = useState<LeaderboardTab>(
     LeaderboardTab.WEEKLY,
@@ -158,7 +177,7 @@ const LeaderboardScreen: React.FC = () => {
     }, [refresh]),
   );
 
-  const showApple = Platform.OS === "ios";
+  const showApple = IS_IOS;
 
   const ownRank = useMemo<number | null>(() => {
     if (!uid) return null;
@@ -199,12 +218,14 @@ const LeaderboardScreen: React.FC = () => {
               label={t.signin_button_google}
               iconName="google"
               onPress={handleGooglePress}
+              disabled={isSigningIn}
             />
             {showApple ? (
               <ProviderButton
                 label={t.signin_button_apple}
                 iconName="logo-apple"
                 onPress={handleApplePress}
+                disabled={isSigningIn}
               />
             ) : null}
           </View>

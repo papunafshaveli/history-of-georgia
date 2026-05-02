@@ -56,6 +56,7 @@ type AuthContextValue = {
   uid: string | null;
   isAnonymous: boolean;
   isAuthenticating: boolean;
+  isSigningIn: boolean;
   signInWithGoogle: () => Promise<SignInResult>;
   signInWithApple: () => Promise<SignInResult>;
   signOut: () => Promise<void>;
@@ -100,6 +101,7 @@ const defaultContext: AuthContextValue = {
   uid: null,
   isAnonymous: true,
   isAuthenticating: true,
+  isSigningIn: false,
   signInWithGoogle: notImplemented("signInWithGoogle"),
   signInWithApple: notImplemented("signInWithApple"),
   signOut: notImplemented("signOut"),
@@ -115,6 +117,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [authVersion, setAuthVersion] = useState(0);
   const [isAuthenticating, setIsAuthenticating] = useState(true);
+  const [isSigningIn, setIsSigningIn] = useState(false);
 
   const ensuringRef = useRef<string | null>(null);
   const googleConfiguredRef = useRef(false);
@@ -171,6 +174,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   }, [bumpAuthVersion]);
 
   const signInWithGoogle = useCallback(async (): Promise<SignInResult> => {
+    setIsSigningIn(true);
     try {
       await GoogleSignin.hasPlayServices();
       const response = await GoogleSignin.signIn();
@@ -227,10 +231,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }
       logger.warn("[AuthProvider] signInWithGoogle failed:", err);
       throw err;
+    } finally {
+      setIsSigningIn(false);
     }
   }, [bumpAuthVersion]);
 
   const signInWithApple = useCallback(async (): Promise<SignInResult> => {
+    setIsSigningIn(true);
     try {
       if (!(await AppleAuthentication.isAvailableAsync())) {
         throw new Error(
@@ -305,17 +312,24 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }
       logger.warn("[AuthProvider] signInWithApple failed:", err);
       throw err;
+    } finally {
+      setIsSigningIn(false);
     }
   }, [bumpAuthVersion]);
 
   const signOut = useCallback(async () => {
+    setIsSigningIn(true);
     try {
-      await GoogleSignin.signOut();
-    } catch {
-      // Best-effort — Google session may already be cleared
+      try {
+        await GoogleSignin.signOut();
+      } catch {
+        // Best-effort — Google session may already be cleared
+      }
+      await firebaseSignOut(auth);
+      // onAuthStateChanged fires with null → anonymous sign-in resumes
+    } finally {
+      setIsSigningIn(false);
     }
-    await firebaseSignOut(auth);
-    // onAuthStateChanged fires with null → anonymous sign-in resumes
   }, []);
 
   const updateDisplayName = useCallback(
@@ -336,6 +350,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       uid: user?.uid ?? null,
       isAnonymous: user?.isAnonymous ?? true,
       isAuthenticating,
+      isSigningIn,
       signInWithGoogle,
       signInWithApple,
       signOut,
@@ -346,6 +361,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       user,
       authVersion,
       isAuthenticating,
+      isSigningIn,
       signInWithGoogle,
       signInWithApple,
       signOut,
