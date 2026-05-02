@@ -9,8 +9,8 @@
 ## ⏯ Current state — start here when resuming
 
 **Branch:** `Add-question-variations`
-**Last commit:** `a2727a7` — "Phase 4 verification fixes — Firestore rule + score-prop + GameSummary" (pushed)
-**Working tree:** clean. Phase 4 verified end-to-end on Android emulator (2026-05-01); next: Phase 5 implementation.
+**Last commit:** `c30f2d4` — "Phase 5 (Android): Account section + MilestoneNudgeModal + force-update gate" (pushed)
+**Working tree:** clean (besides this plan-doc update). Phase 5 code-complete and verified end-to-end on Android (2026-05-01); iOS verification (Phase 5D + Apple Sign In) blocked on a dev-client install error and a deferred polish pass.
 
 ### What is committed and working
 
@@ -57,7 +57,27 @@
 
   Side observation: every `pm clear` (or fresh anonymous sign-in followed by Google upgrade where the Google account is already linked elsewhere) creates an orphaned anonymous `users/{uid}` doc. Acceptable for v1; pruning is a v1.1 cleanup script (see "Deferred follow-ups" below).
 
-### Where the visual design debt stands
+### Phase 5 progress (2026-05-01 → 2026-05-02, all committed in `c30f2d4`)
+
+- ✅ **Step 5A — Settings → Account section** (verified Android 2026-05-01): new `AccountSection.tsx` mounted in `AppSettings.tsx` between toggles and theme. Anonymous → 2 compact rows (Sign in with Google / Apple iOS-only) styled like SettingToggle. Signed-in → single Sign out row (`logout` icon + warm-red `colors.incorrectBorder`) → tap opens confirmation Modal with Cancel + Sign out buttons. Confirm calls `auth.signOut()` → AuthProvider drops to fresh anonymous via the existing onAuthStateChanged listener. **Display-name editing UX deferred** (initial implementation made the Settings modal too tall — theme switcher cropped; user preferred sign-out-only). Future name-edit flow can attach to a profile screen or long-press on the leaderboard. Translation keys: `settings_signout_button`, `settings_signout_confirm_title`, `settings_signout_confirm_body`, `settings_signout_confirm_cancel`.
+
+- ✅ **Step 5B — `MilestoneNudgeModal`** (verified Android 2026-05-01): new `src/components/sign-in/MilestoneNudgeModal.tsx`. Triggered from `useGameScreen` end-of-game flow when `score > previousBest && isAnonymous && !hasSeenSignInNudge`. Modal replaces GameSummary for that one game; on dismiss (sign-in OR skip) it writes `users/{uid}.hasSeenSignInNudge = true` and opens GameSummary. **Snapshot-before-transaction** pattern: useGameScreen reads cached `users/{uid}` via `useUserStats` *before* `saveGameAndUpdateStats` bumps `bestSingleGameScore`, otherwise the comparison would always be false (new best vs new best). New `modals.milestone: boolean` field on GameState; INITIAL_STATE initialises to false; GameModals renders `<MilestoneNudgeModal>` when true. **ConfirmNameModal does NOT cascade from the milestone path** — the user keeps whatever provider name Google/Apple supplied. Translation keys: `milestone_title`, `milestone_body` (with `{score}` placeholder), `milestone_subbody`, `milestone_skip_button`.
+
+- ✅ **Step 5C — Force-update gate** (verified Android 2026-05-02 by bumping `minSupportedVersion` to "3.0.0" and back): three new files plus an App.tsx wire-in.
+  - `src/services/appConfig.ts` — `getAppConfig()` reads `app_config/version` from Firestore with a 6-hour AsyncStorage cache (`appConfig:cache:v1`). Returns null on missing doc / network failure → callers treat null as **grace mode** (don't block; retry on next launch).
+  - `src/hooks/useForceUpdateGate.ts` — runs once on mount, compares `Application.nativeApplicationVersion` against `config.minSupportedVersion` via `compareSemver`. Returns `{ isBlocked, latestVersion }`.
+  - `src/components/sign-in/ForceUpdateModal.tsx` — non-dismissible parchment Modal (no `onClose` prop → no X button) with body text + a single "Update now" button that opens the App Store (iOS) or Play Store (Android) deep link via `Linking.openURL`.
+  - `App.tsx` — new `ForceUpdateGate` component placed alongside `AppModals` inside the SafeAreaProvider. Renders nothing when not blocked; renders `<ForceUpdateModal>` when blocked.
+  - Translation keys: `force_update_title`, `force_update_body`, `force_update_button`.
+  - **Firestore Console action done:** `app_config/version` doc seeded with `{ minSupportedVersion: "2.0.0", latestVersion: "2.0.0" }`. The two fields are strings.
+
+- 🟡 **Step 5D — iOS dev-client build + Apple Sign In + Phase 5 UI verification on iPhone 11 Pro:** **BLOCKED**. Build succeeded on EAS. Install on iPhone fails with `"Unable to Install. This app cannot be installed because its integrity could not be verified."` even after enabling iOS Developer Mode. Working theory: yesterday's "Sign In with Apple" capability addition invalidated all `com.papunafshaveli.historyofgeorgia` provisioning profiles; EAS regenerated on this build but the profile may not have included the iPhone 11 Pro UDID (user uncertain whether MacBook Pro was selected at the device prompt again). Mitigations to try, in order:
+  1. Verify Developer Mode is on; verify EAS build's "Provisioned devices" list includes iPhone 11 Pro (not just MacBook).
+  2. AirDrop the IPA from Mac → iPhone (bypasses Safari install path).
+  3. Rebuild for **simulator** (`eas build --profile development-simulator --platform ios`) — this verifies Phase 5 UI on iOS but Apple Sign In may not work cleanly on simulator and that's acceptable for v1 staging.
+  4. Worst case: defer all iOS Apple-Sign-In verification until a future build cycle; ship the v2.0.0 store binary against TestFlight where install signing is handled by App Store Connect.
+
+- 🟡 **Phase 5 polish pass — DEFERRED.** User flagged design issues during Phase 5A (cramped Account section vs theme block, sign-out red row stridency) and after subsequent screens. Issues will be batched and addressed in a single follow-up commit. Specific issues collected from user TBD when they surface them.
 
 Logged in spec section "Design debt — Leaderboard UI is unfinished (2026-04-29)". Stats screen reuses the original `StatsScreen.tsx` design which the user explicitly liked, so that's not in design debt. Leaderboard tab visuals still need a designer pass after Phase 4+5 land.
 
@@ -65,14 +85,18 @@ Logged in spec section "Design debt — Leaderboard UI is unfinished (2026-04-29
 
 These items are intentionally deferred but **must** ship before 2.0.0 goes to production:
 
-1. **iOS dev-client build + Apple Sign In verification.**
-   Run `eas build --profile development --platform ios`, **select iPhone 11 Pro at the device prompt** (not MacBook Pro — that mistake cost a credit on 2026-04-30). Install the IPA on the iPhone via the EAS link, reconnect Metro, walk through:
-   - Anonymous → Apple sign-in upgrade via `linkWithCredential`
-   - Apple's `result.fullName` arrives synchronously on the **first** sign-in for that Apple ID + bundle ID; verify it lands in `users/{uid}.displayName` (Apple never returns it again on subsequent sign-ins, and we depend on capturing it once).
-   - ConfirmNameModal opens, pre-filled with the Apple-formatted name.
-   - Sign out → sign back in with same Apple ID → no modal (returning user).
-   - Apple-on-Android gating still hides the button (verify on the same iOS dev client running on a phone — confirms the gate is iOS-only, not "Apple available everywhere").
-   Bundle this with Phase 5 verification on the iOS build to save an EAS credit.
+1. **iOS dev-client install + Apple Sign In verification + Phase 5 UI on iOS.** Build attempted 2026-05-02 — succeeded on EAS but **install on iPhone 11 Pro fails with "integrity could not be verified"** even after enabling iOS Developer Mode. Likely cause: provisioning profile from this build doesn't include the iPhone 11 Pro UDID (provisioning was invalidated by the 2026-04-30 Sign In with Apple capability change; EAS regenerated but possibly with the wrong device). Path forward when user has time:
+   - Verify on the EAS build page that "Provisioned devices" lists iPhone 11 Pro, not just MacBook Pro.
+   - If yes → try AirDropping the IPA from Mac → iPhone (skips the Safari install flow).
+   - If no, or AirDrop also fails → rebuild with iPhone 11 Pro explicitly selected at the device prompt (1 EAS credit), OR fall back to `eas build --profile development-simulator --platform ios` to at least verify Phase 5 UI on iOS (Apple Sign In would stay unverified on simulator).
+   - Verification surface once installed:
+     - Anonymous → Apple sign-in upgrade via `linkWithCredential`
+     - Apple's `result.fullName` arrives synchronously on the **first** sign-in for that Apple ID + bundle ID; verify it lands in `users/{uid}.displayName` (Apple never returns it again on subsequent sign-ins, and we depend on capturing it once).
+     - ConfirmNameModal opens, pre-filled with the Apple-formatted name.
+     - Sign out → sign back in with same Apple ID → no modal (returning user).
+     - Phase 5A Account section (sign-out flow) renders correctly.
+     - Phase 5B MilestoneNudgeModal triggers as expected.
+     - Phase 5C ForceUpdateModal renders if `minSupportedVersion` is bumped above the installed binary version.
 
 2. **Orphaned anonymous `users/{uid}` cleanup.**
    Every fresh anon → Google upgrade that hits `auth/credential-already-in-use` (returning user, different anon UID this time) leaves the just-issued anon UID's `users/{uid}` doc behind with zeroed stats and no displayName. They never appear on the leaderboard (filtered by `displayName != null`), but they pollute the collection. Per spec these accumulate slowly; v1.1 fix is a Cloud Function:
