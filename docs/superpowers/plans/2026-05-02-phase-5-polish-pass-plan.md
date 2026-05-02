@@ -2368,6 +2368,7 @@ This is the only push during the polish pass — never push to main; never force
 3. **Apple `auth/email-already-in-use` merge handler** — deferred-follow-up item 3 in parent plan; ships in a separate PR before 2.0.0 store submission.
 4. **App-wide font replacement (#5)** — deferred-follow-up item 2; separate design effort with its own typography spec.
 5. **Folder rename `src/components/sign-in/` → `src/components/auth/`** — out of scope; revisit in folder-structure cleanup later.
+6. **Sign-out confirmation modal button visual treatment** — flagged by user during 2026-05-02 implementation. Three iterations attempted (flat outline, parchmentTint fill, GradientWrapper bronze plaque); user rejected all three as "too simple" / "out of context." Functional code shipped with the parchmentTint version (sufficient as a baseline). Needs designer pass alongside the existing Leaderboard UI design debt — both want a more period-appropriate parchment-and-bronze treatment than what stock RN primitives can produce.
 
 ---
 

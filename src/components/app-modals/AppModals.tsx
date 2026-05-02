@@ -52,6 +52,7 @@ const AppModals: React.FC<AppModalsProps> = ({
         headerTitle={t.common_rules}
         onClose={toggleRulesModal}
         renderComponent={<Rules />}
+        enableInnerScroll
       />
       <Modal
         isVisible={isSettingsModalVisible}
