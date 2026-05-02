@@ -5,6 +5,7 @@ export * from "./useLeaderboard";
 export * from "./usePendingResultsReplay";
 export * from "./useRecentGames";
 export * from "./useUserStats";
+export * from "./useLifetimeStats";
 export * from "./useCustomFonts";
 export * from "./useGameScreen";
 export * from "./useModalState";
