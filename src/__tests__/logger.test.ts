@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-require-imports -- intentional: each test mutates __DEV__ then re-requires the logger module after jest.resetModules(); ES static imports can't be re-evaluated against the new __DEV__ value. */
+
 describe("logger", () => {
   const originalDev = (global as Record<string, unknown>).__DEV__;
 
