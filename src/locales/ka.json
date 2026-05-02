@@ -63,7 +63,7 @@
   "leaderboard_signin_cta_title": "შეინახე ქულა ლიდერბორდზე",
   "leaderboard_signin_cta_body": "შემოდი და დაიკავე ადგილი ლიდერბორდზე.",
   "leaderboard_signin_cta_button": "შესვლა",
-  "leaderboard_signin_button_top": "შემოდი და მონაწილეობა მიიღე",
+  "leaderboard_anon_headline": "შეეჯიბრე საქართველოს მცოდნეებს",
   "leaderboard_recent_games_section": "ბოლო თამაშები",
   "leaderboard_recent_games_empty_title": "ჯერ არ გითამაშია",
   "leaderboard_recent_games_empty_desc": "ითამაშე და გამოჩნდება აქ!",
@@ -97,7 +97,7 @@
 
   "settings_signout_button": "გასვლა",
   "settings_signout_confirm_title": "გასვლა?",
-  "settings_signout_confirm_body": "შენი ქულა აღარ გამოჩნდება ლიდერბორდზე ამ ტელეფონიდან.",
+  "settings_signout_confirm_body": "გასვლა გავა Google-ის ანგარიშიდან. შენი სტატისტიკა შენახულია Google-ზე — ნებისმიერ დროს დაბრუნდი.",
   "settings_signout_confirm_cancel": "გაუქმება",
 
   "force_update_title": "განახლება საჭიროა",

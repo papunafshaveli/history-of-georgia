@@ -13,6 +13,7 @@ import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 
 import { AppText, ConfirmNameModal, EmptyState, Loading } from "@/src/components";
 import { IS_ANDROID, IS_IOS } from "@/src/constants";
+import { getAdjustedWidth } from "@/src/helpers";
 import {
   useAppTheme,
   useAuth,
@@ -207,13 +208,23 @@ const LeaderboardScreen: React.FC = () => {
       </View>
 
       {isAnonymous ? (
-        <ScrollView
-          contentContainerStyle={styles.scrollContent}
-          refreshControl={
-            <RefreshControl refreshing={isRefreshing} onRefresh={refresh} />
-          }
-        >
-          <View style={styles.providersStack}>
+        <View style={styles.anonGate}>
+          <View style={styles.anonIconCircle}>
+            <MaterialCommunityIcons
+              name="script-text-outline"
+              size={getAdjustedWidth(36)}
+              color={colors.bronzeDark}
+            />
+          </View>
+          <AppText
+            type="title"
+            fontFamily="serif"
+            color={colors.bronzeDark}
+            style={styles.anonHeadline}
+          >
+            {t.leaderboard_anon_headline}
+          </AppText>
+          <View style={styles.anonButtonsStack}>
             <ProviderButton
               label={t.signin_button_google}
               iconName="google"
@@ -229,7 +240,7 @@ const LeaderboardScreen: React.FC = () => {
               />
             ) : null}
           </View>
-        </ScrollView>
+        </View>
       ) : (
         <ScrollView
           contentContainerStyle={styles.scrollContent}

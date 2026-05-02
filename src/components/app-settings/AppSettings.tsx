@@ -75,8 +75,6 @@ const AppSettings: React.FC = () => {
         />
       </View>
 
-      <AccountSection />
-
       <View style={styles.themeSection}>
         <View style={styles.themeLabelRow}>
           <MaterialCommunityIcons
@@ -118,6 +116,8 @@ const AppSettings: React.FC = () => {
           })}
         </View>
       </View>
+
+      <AccountSection />
     </View>
   );
 };
