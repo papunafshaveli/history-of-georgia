@@ -23,7 +23,6 @@ import {
   saveGameAndUpdateStats,
   type GameEndPayload,
 } from "@/src/services/firestore-game-result";
-import { markSignInNudgeSeen } from "@/src/services/firestore-user";
 import { addLocalRecentGame } from "@/src/services/local-recent-games";
 import { enqueuePendingResult } from "@/src/services/pending-results";
 import { invalidateLeaderboardCache } from "@/src/hooks/useLeaderboard";
@@ -37,7 +36,6 @@ import { logger } from "../helpers/logger";
 import { useAuth } from "./useAuth";
 import { useSettings } from "./useSettings";
 import { usePlaySound } from "./usePlaySound";
-import { useUserStats } from "./useUserStats";
 
 const MAX_DUPLICATE_RETRIES = 3;
 
@@ -47,8 +45,7 @@ export const useGameScreen = () => {
   const difficulty: Difficulty | undefined = route.params?.difficulty;
 
   const { isMuted, isVibrationOff } = useSettings();
-  const { uid, isAnonymous } = useAuth();
-  const { stats: userStats } = useUserStats();
+  const { uid } = useAuth();
   const [gameState, setGameState] = useState<GameState>(INITIAL_STATE);
   const seenIdsRef = useRef<Set<number>>(new Set());
   const gameResultPersistedRef = useRef(false);
@@ -124,43 +121,15 @@ export const useGameScreen = () => {
 
     persist();
 
-    // Snapshot fields that decide whether the milestone-nudge modal fires.
-    // Read from the cached users/{uid} doc BEFORE the game-end transaction
-    // bumps bestSingleGameScore — otherwise we'd compare the new score
-    // against itself.
-    const previousBestSnapshot = userStats?.bestSingleGameScore ?? 0;
-    const hasSeenSignInNudgeSnapshot =
-      userStats?.hasSeenSignInNudge ?? false;
-    const isAnonymousSnapshot = isAnonymous;
-    const shouldShowMilestone =
-      gameState.score > previousBestSnapshot &&
-      isAnonymousSnapshot &&
-      !hasSeenSignInNudgeSnapshot;
-
     const timeout = setTimeout(() => {
       setGameState((prev) => ({
         ...prev,
-        modals: shouldShowMilestone
-          ? { ...prev.modals, milestone: true }
-          : { ...prev.modals, summary: true },
+        modals: { ...prev.modals, summary: true },
       }));
     }, GAME_OVER_SUMMARY_DELAY_MS);
 
     return () => clearTimeout(timeout);
   }, [gameState.crowns]);
-
-  const handleMilestoneDismiss = useCallback(() => {
-    if (uid) {
-      markSignInNudgeSeen(uid).catch((err) => {
-        logger.warn("[useGameScreen] markSignInNudgeSeen failed:", err);
-      });
-      invalidateUserStatsCache(uid).catch(() => undefined);
-    }
-    setGameState((prev) => ({
-      ...prev,
-      modals: { ...prev.modals, milestone: false, summary: true },
-    }));
-  }, [uid]);
 
   const getNextQuestion = useCallback(async () => {
     setGameState((prev) => ({
@@ -350,14 +319,12 @@ export const useGameScreen = () => {
       toggleSettingsModal,
       toggleHintModal,
       closeSummaryModal,
-      dismissMilestone: handleMilestoneDismiss,
     }),
     [
       toggleExitModal,
       toggleSettingsModal,
       toggleHintModal,
       closeSummaryModal,
-      handleMilestoneDismiss,
     ],
   );
 
