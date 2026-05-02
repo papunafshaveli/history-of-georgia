@@ -77,7 +77,14 @@
   3. Rebuild for **simulator** (`eas build --profile development-simulator --platform ios`) — this verifies Phase 5 UI on iOS but Apple Sign In may not work cleanly on simulator and that's acceptable for v1 staging.
   4. Worst case: defer all iOS Apple-Sign-In verification until a future build cycle; ship the v2.0.0 store binary against TestFlight where install signing is handled by App Store Connect.
 
-- 🟡 **Phase 5 polish pass — DEFERRED.** User flagged design issues during Phase 5A (cramped Account section vs theme block, sign-out red row stridency) and after subsequent screens. Issues will be batched and addressed in a single follow-up commit. Specific issues collected from user TBD when they surface them.
+- 🟡 **Phase 5 polish pass — DESIGN COMPLETE (2026-05-02).** Walkthrough finished across all 12 surfaces. Categorised list of 12 issues confirmed. **Spec written:** [`docs/superpowers/specs/2026-05-02-phase-5-polish-pass-design.md`](../specs/2026-05-02-phase-5-polish-pass-design.md). Awaiting user spec review → then implementation plan via writing-plans skill.
+
+  **Issue summary** (full detail in the spec):
+  - 🎨 Design-grade: Lean Leaderboard anon (#0), Settings auth simplification (#1), Leaderboard signed-in podium (#2), Stats local-storage rewire (#3), Parchment Modal redesign (#8 + #11 + #12), Force-update soft/hard split (#10)
+  - 🪛 Simple polish: remove MilestoneNudgeModal (#6), GameSummary tier copy by score (#7)
+  - 🐛 Tech bug: Auth loading state `isSigningIn` (#9)
+  - ⏭ Deferred: app-wide font replacement (#5 — see deferred follow-ups item 2)
+  - Dropped: kind migration of legacy stats (#4 — full-wipe kept)
 
 Logged in spec section "Design debt — Leaderboard UI is unfinished (2026-04-29)". Stats screen reuses the original `StatsScreen.tsx` design which the user explicitly liked, so that's not in design debt. Leaderboard tab visuals still need a designer pass after Phase 4+5 land.
 
@@ -98,7 +105,11 @@ These items are intentionally deferred but **must** ship before 2.0.0 goes to pr
      - Phase 5B MilestoneNudgeModal triggers as expected.
      - Phase 5C ForceUpdateModal renders if `minSupportedVersion` is bumped above the installed binary version.
 
-2. **Orphaned anonymous `users/{uid}` cleanup.**
+2. **App-wide font replacement.** User flagged 2026-05-02: wants to swap all four font families currently in use (`sans: helvetica-main`, `serif: nino-elite`, `script: aisi-bold`, `display: dm-medea`) for new typefaces. Constraints: must keep Georgian + Latin script coverage; must preserve legibility on parchment in both light and dark themes; should match the historical-chronicle feel. Out of scope for the Phase 5 polish pass — capture only; schedule as its own design effort once typeface candidates are chosen. Touches `src/assets/fonts/` and the font registration block; visual impact is global so plan a full screen review after the swap.
+
+3. **Apple `auth/email-already-in-use` merge handler.** Cross-provider email collision discovered 2026-05-02: signing in with Apple on iOS when the same email is already linked to a Google account on Android throws `auth/email-already-in-use` because Firebase's "One account per email" default blocks the link. Current code in `AuthProvider.signInWithApple` only handles `auth/credential-already-in-use`, not the email collision. **Path forward:** when `auth/email-already-in-use` fires, call `fetchSignInMethodsForEmail(auth, email)` to find which provider owns the existing UID, surface a modal asking the user to sign in with that provider first, then `linkWithCredential` the new (Apple) credential onto the now-signed-in account. Tested workaround during 2026-05-02 iOS verification: choose Apple "Hide My Email" on the OAuth sheet, which generates a relay email and bypasses the collision. Must ship before 2.0.0 store submission since most real users have matching Apple/Google emails.
+
+4. **Orphaned anonymous `users/{uid}` cleanup.**
    Every fresh anon → Google upgrade that hits `auth/credential-already-in-use` (returning user, different anon UID this time) leaves the just-issued anon UID's `users/{uid}` doc behind with zeroed stats and no displayName. They never appear on the leaderboard (filtered by `displayName != null`), but they pollute the collection. Per spec these accumulate slowly; v1.1 fix is a Cloud Function:
    ```
    exports.pruneOrphanedAnonUsers = functions.pubsub
