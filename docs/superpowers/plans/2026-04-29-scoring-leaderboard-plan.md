@@ -127,7 +127,7 @@ These items are intentionally deferred but **must** ship before 2.0.0 goes to pr
 
 3. ✅ **Apple `auth/email-already-in-use` merge handler — DONE-via-toast (2026-05-03, commit `115fc37`).** After reviewing drosha's production-shipped solution (also a sister project that passed App Store review), we adopted the toast-only UX instead of a `linkWithCredential` merge dance. Both `auth/email-already-in-use` and `auth/account-exists-with-different-credential` are now caught in `AuthProvider.signInWithGoogle` and `signInWithApple`; user sees a localized toast ("Account already exists / Please use the same method you originally signed in with") and is left on the Leaderboard tab to retry with the correct provider. No merge modal, no `fetchSignInMethodsForEmail` lookup. Tradeoff vs the original plan: marginally worse UX (manual retry) for substantially smaller scope and zero corner-case bugs around Apple nonces being re-consumed.
 
-4. 🟡 **In-app account deletion (Apple Guideline 5.1.1(v) — HARD ship blocker) — IMPLEMENTED 2026-05-03, awaiting Firestore rules deploy + smoke test.** Scope downgraded after discovering drosha's sister project shipped to production with a strictly simpler client-only pattern: no Cloud Function backstop, no Apple token revoke. We adopted that pattern verbatim. Effort revised from ~2 days to ~1 day. Spec: [`docs/superpowers/specs/2026-05-03-account-deletion-design.md`](../specs/2026-05-03-account-deletion-design.md). Plan: [`docs/superpowers/plans/2026-05-04-account-deletion-plan.md`](2026-05-04-account-deletion-plan.md).
+4. 🟡 **In-app account deletion (Apple Guideline 5.1.1(v) — HARD ship blocker) — IMPLEMENTED 2026-05-03, awaiting smoke test only.** Scope downgraded after discovering drosha's sister project shipped to production with a strictly simpler client-only pattern: no Cloud Function backstop, no Apple token revoke. We adopted that pattern verbatim. Effort revised from ~2 days to ~1 day. Spec: [`docs/superpowers/specs/2026-05-03-account-deletion-design.md`](../specs/2026-05-03-account-deletion-design.md). Plan: [`docs/superpowers/plans/2026-05-04-account-deletion-plan.md`](2026-05-04-account-deletion-plan.md).
 
    **Landed commits:**
    - `5fca0e5` — Spec + plan
@@ -135,10 +135,15 @@ These items are intentionally deferred but **must** ship before 2.0.0 goes to pr
    - `8fd0eaf` — Phase 2: `deleteUserData` cascade + Firestore rule flip
    - `ace6def` — Phase 3: `reauthenticate` + `deleteAccount` in AuthProvider
    - `b215787` — Phase 4: AccountSection UI rewrite + new translation keys
+   - `fe80672` — Phase 5: doc sync (INFRASTRUCTURE §17.4 + this plan)
+   - `9cd1100` — Option-B flip: preserve local stats on delete (only pending-results queue is cleared)
+   - `4886661` — `scripts/wipe-auth.ts` Admin SDK helper for dev resets
+   - `dec39cb` — README full-reset playbook (Firestore + Auth + AsyncStorage + verification)
+
+   **Firestore rules deployed to production 2026-05-03** (`firebase deploy --only firestore:rules` from this session). Owner-deletes are live on `users/{uid}` and `game_results/{id}`.
 
    **Remaining before this can ship:**
-   - **Deploy Firestore rules** to production: `firebase deploy --only firestore:rules`. Until this runs, the new `delete` permissions on `users/{uid}` + `game_results/{id}` aren't live and the cascade will fail with permission denied. Rules source is in the repo (commit `8fd0eaf`); only the deploy is outstanding.
-   - **Android smoke test** per spec test plan §1–4 — Anon → Google sign-in → play 1 game → delete → reauth prompt → confirm → cascade → fresh anon, no leaderboard entry. Plus the cancel-reauth path.
+   - **Android smoke test** per spec test plan §1–4 — Anon → Google sign-in → play 1 game → delete → reauth prompt → confirm → cascade → fresh anon, no leaderboard entry. Plus the cancel-reauth path. README "Firebase — Full reset for end-to-end testing" walks through the prep.
    - **iOS smoke test** — blocked on the existing iOS dev-client install issue (deferred follow-up #1). Code review only until that resolves.
 
    **App Store submission risk acknowledged:** Apple's Guideline 5.1.1(v) explicitly requires Sign in with Apple token revoke on deletion. We are shipping without it on the basis that drosha shipped without it and was approved. If our 2.0.0 review rejects on this point specifically, the v2.1 hotfix is: write the Cloud Function `onDelete` trigger, implement Apple JWT signing with the existing `AuthKey_3C2L469ZH5.p8`, call `https://appleid.apple.com/auth/revoke`. Effort: ~1 day for the Cloud Function alone. Documented in INFRASTRUCTURE.md §17.4.
