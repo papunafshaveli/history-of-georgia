@@ -7,7 +7,6 @@ export const getStyles = (theme: AppTheme) =>
   StyleSheet.create({
     container: {
       flex: 1,
-      paddingTop: getAdjustedHeight(40),
       paddingHorizontal: theme.spacing.x4,
       gap: getAdjustedHeight(20),
     },
@@ -61,5 +60,61 @@ export const getStyles = (theme: AppTheme) =>
     },
     themeOptionTextActive: {
       opacity: 1,
+    },
+
+    accountRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      paddingVertical: getAdjustedHeight(4),
+    },
+    accountRowLeft: {
+      flex: 1,
+      flexDirection: "row",
+      alignItems: "center",
+      gap: theme.spacing.x3,
+    },
+    accountRowLabel: {
+      flexShrink: 1,
+    },
+    accountRowDisabled: {
+      opacity: 0.4,
+    },
+
+    signOutModalContainer: {
+      flex: 1,
+      alignItems: "center",
+      gap: theme.spacing.x4,
+    },
+    signOutTopIconWrapper: {
+      width: getAdjustedWidth(100),
+      height: getAdjustedWidth(100),
+      overflow: "hidden",
+      borderRadius: theme.borderRadius.full,
+    },
+    signOutTopIcon: {
+      width: "100%",
+      height: "100%",
+    },
+    signOutModalBody: {
+      textAlign: "center",
+      lineHeight: 26,
+    },
+    signOutModalButtons: {
+      width: "100%",
+      gap: getAdjustedHeight(8),
+      marginTop: "auto",
+    },
+    signOutScrollButton: {
+      width: "100%",
+      height: getAdjustedHeight(56),
+      alignItems: "center",
+      justifyContent: "center",
+      borderRadius: theme.borderRadius.lg,
+      borderWidth: 3,
+      borderColor: theme.colors.bronze,
+    },
+    signOutConfirmButtonDisabled: {
+      opacity: 0.4,
     },
   });

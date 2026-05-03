@@ -1,0 +1,131 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ---------------------------------------------------------------------
+    // Existing rules (deployed in production; byte-for-byte preserved).
+    // ---------------------------------------------------------------------
+
+    match /tickets/{document=**} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    match /push_tokens/{token} {
+      allow read: if false;
+
+      // Authenticated users can write a token doc only when tagging it
+      // with their own uid (or leaving the uid blank — pre-2026-05-03
+      // schema, kept compatible while v1.1.0 binaries still exist in the
+      // wild). Without this, a malicious client could write ≥ 501 token
+      // docs tagged with a target uid and wedge the
+      // `pruneInactiveUsers` cascade above Firestore's writeBatch cap.
+      allow create, update: if request.auth != null
+        && (
+          request.resource.data.uid == null
+          || request.resource.data.uid == request.auth.uid
+        );
+
+      // Authenticated users can delete their own tokens (or pre-uid
+      // tokens via the same grandfather clause). Cloud Functions use the
+      // Admin SDK and bypass rules entirely.
+      allow delete: if request.auth != null
+        && (
+          resource.data.uid == null
+          || request.auth.uid == resource.data.uid
+        );
+    }
+
+    match /notifications/{document=**} {
+      allow read: if false;
+      allow write: if false;
+    }
+
+    // ---------------------------------------------------------------------
+    // New rules (added 2026-04-29 for scoring + leaderboard work).
+    // ---------------------------------------------------------------------
+
+    // users/{uid}
+    //   read:  any authenticated user (needed for the leaderboard query).
+    //   create: only the owner; all stats must be zeroed.
+    //   update: only the owner; lifetime stats can only grow (with a
+    //           ±5 jitter tolerance on totalPoints to accommodate idempotent
+    //           client retries that race the server). Single-write growth
+    //           caps (anti-cheat heuristic): +50_000 totalPoints / +1 game.
+    //           weekPoints can decrease only when weekStart advances.
+    //   delete: only the owner (Apple Guideline 5.1.1(v) account deletion).
+    match /users/{uid} {
+      allow read: if request.auth != null;
+
+      allow create: if request.auth.uid == uid
+        && request.resource.data.totalPoints == 0
+        && request.resource.data.gamesPlayed == 0
+        && request.resource.data.totalCorrect == 0
+        && request.resource.data.totalQuestions == 0
+        && request.resource.data.bestSingleGameScore == 0
+        && request.resource.data.weekPoints == 0;
+
+      // `lastSeenAt` is the load-bearing signal for `pruneInactiveUsers`
+      // (INFRASTRUCTURE.md §17.3). Without these checks, a malicious
+      // client could either self-exempt (write a future timestamp) or
+      // force premature deletion (backdate the value). We enforce:
+      //   - monotonic-or-equal (forward-only writes)
+      //   - bounded by request.time (no future timestamps)
+      // Both checks bypass via null so docs without `lastSeenAt` (the
+      // field is new — pre-2026-05-03 docs lack it) and updates that
+      // don't touch `lastSeenAt` (e.g. `markSignInNudgeSeen`) still
+      // succeed.
+      allow update: if request.auth.uid == uid
+        && request.resource.data.totalPoints         >= resource.data.totalPoints - 5
+        && request.resource.data.gamesPlayed         >= resource.data.gamesPlayed
+        && request.resource.data.totalCorrect        >= resource.data.totalCorrect
+        && request.resource.data.totalQuestions      >= resource.data.totalQuestions
+        && request.resource.data.bestSingleGameScore >= resource.data.bestSingleGameScore
+        && (request.resource.data.totalPoints - resource.data.totalPoints) <= 50000
+        && (request.resource.data.gamesPlayed - resource.data.gamesPlayed) <= 1
+        && request.resource.data.createdAt == resource.data.createdAt
+        && (request.resource.data.weekPoints >= resource.data.weekPoints
+            || request.resource.data.weekStart != resource.data.weekStart)
+        && (resource.data.lastSeenAt == null
+            || request.resource.data.lastSeenAt >= resource.data.lastSeenAt)
+        && (request.resource.data.lastSeenAt == null
+            || request.resource.data.lastSeenAt <= request.time);
+
+      allow delete: if request.auth.uid == uid;
+    }
+
+    // game_results/{uid}_{resultId}
+    //   read:   non-existent doc → any authenticated client (so the
+    //           idempotency check inside saveGameAndUpdateStats's
+    //           transaction.get(resultRef) can evaluate even when the
+    //           result doc has not yet been created); existing doc →
+    //           only the owner.
+    //   create: only the owner; score >= 0, single-write cap of 50_000,
+    //           correctCount <= totalQuestions, doc id starts with "{uid}_".
+    //   update: never (results are immutable).
+    //   delete: only the owner (Apple Guideline 5.1.1(v) account deletion).
+    match /game_results/{id} {
+      allow read: if request.auth != null
+        && (resource == null || request.auth.uid == resource.data.userId);
+
+      allow create: if request.auth != null
+        && request.auth.uid == request.resource.data.userId
+        && id.matches(request.auth.uid + "_.*")
+        && request.resource.data.score >= 0
+        && request.resource.data.score <= 50000
+        && request.resource.data.correctCount <= request.resource.data.totalQuestions;
+
+      allow update: if false;
+      allow delete: if request.auth != null
+        && request.auth.uid == resource.data.userId;
+    }
+
+    // app_config/{doc}
+    //   read:  public (the force-update gate runs before auth resolves).
+    //   write: never via clients; only via Firebase Console / Admin SDK.
+    match /app_config/{doc} {
+      allow read: if true;
+      allow write: if false;
+    }
+  }
+}

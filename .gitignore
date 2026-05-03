@@ -48,6 +48,7 @@ data_old.json
 #compiled js output
 upload.js
 firebase.js
+scripts/wipe-auth.js
 
 
 #android service key
@@ -64,6 +65,7 @@ bigChanges.md
 #ClaudeCode
 CLAUDE.md
 .claude/
+.superpowers/
 
 #Firebase functions build output
 functions/lib/

@@ -59,8 +59,6 @@ const OptionButton: React.FC<OptionButtonProps> = ({
           fontFamily="script"
           style={styles.optionText}
           numberOfLines={1}
-          adjustsFontSizeToFit
-          minimumFontScale={0.7}
         >
           {option}
         </AppText>

@@ -12,6 +12,7 @@ import { ThemeMode, useStyles } from "@/src/theme";
 
 import { AppText } from "../text";
 
+import AccountSection from "./AccountSection";
 import SettingToggle from "./SettingToggle";
 import { getStyles } from "./styles";
 
@@ -115,6 +116,8 @@ const AppSettings: React.FC = () => {
           })}
         </View>
       </View>
+
+      <AccountSection />
     </View>
   );
 };
