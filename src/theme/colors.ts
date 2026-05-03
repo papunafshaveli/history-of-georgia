@@ -13,6 +13,7 @@ type ColorScheme = {
   correctBorder: string;
   incorrectBg: string;
   incorrectBorder: string;
+  dangerOnParchment: string;
   parchment: string;
   parchmentAlt: string;
   text: string;
@@ -64,6 +65,7 @@ export const lightColors: ColorScheme = {
   correctBorder: "#3F8F63",
   incorrectBg: "#F7DADA",
   incorrectBorder: "#B85A5A",
+  dangerOnParchment: "#9A2222",
 
   // Parchment / old-roll
   parchment: "#E9C78F",
@@ -131,6 +133,7 @@ export const darkColors: ColorScheme = {
   correctBorder: "#5DB47C",
   incorrectBg: "#2E1A1A",
   incorrectBorder: "#D17373",
+  dangerOnParchment: "#9A2222",
 
   // Parchment — kept close to light theme since parchment images don't change
   parchment: "#C6A96C",

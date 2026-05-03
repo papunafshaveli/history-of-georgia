@@ -1,14 +1,9 @@
 import React, { useCallback, useState } from "react";
-import { ImageBackground, Pressable, View } from "react-native";
+import { ActivityIndicator, ImageBackground, Pressable, View } from "react-native";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 
 import { CloseIcon } from "@/src/assets";
-import {
-  useAppTheme,
-  useAuth,
-  useStyles,
-  useTranslation,
-} from "@/src/hooks";
+import { useAppTheme, useAuth, useStyles, useTranslation } from "@/src/hooks";
 import { logger } from "@/src/helpers/logger";
 import { showToast } from "@/src/helpers/showToast";
 
@@ -21,7 +16,10 @@ import { getStyles } from "./styles";
 const ROW_ICON_SIZE = 22;
 
 type AccountRowProps = {
-  iconName: keyof typeof MaterialCommunityIcons.glyphMap | "logo-google" | "logo-apple";
+  iconName:
+    | keyof typeof MaterialCommunityIcons.glyphMap
+    | "logo-google"
+    | "logo-apple";
   label: string;
   onPress?: () => void;
   rightIconName?: keyof typeof MaterialCommunityIcons.glyphMap;
@@ -49,7 +47,11 @@ const AccountRow: React.FC<AccountRowProps> = ({
   const renderIcon = () => {
     if (iconName === "logo-apple") {
       return (
-        <Ionicons name="logo-apple" size={ROW_ICON_SIZE} color={resolvedIconColor} />
+        <Ionicons
+          name="logo-apple"
+          size={ROW_ICON_SIZE}
+          color={resolvedIconColor}
+        />
       );
     }
     if (iconName === "logo-google") {
@@ -73,9 +75,7 @@ const AccountRow: React.FC<AccountRowProps> = ({
   const isDisabled = !!disabled;
   const accessibilityRowLabel = accessibilityLabel ?? label;
   const rowAccessibilityState = { disabled: isDisabled };
-  const rippleConfig = isDisabled
-    ? null
-    : { color: colors.parchmentDivider };
+  const rippleConfig = isDisabled ? null : { color: colors.parchmentDivider };
   const pressableStyle = isDisabled ? styles.accountRowDisabled : undefined;
 
   return (
@@ -152,10 +152,17 @@ const AccountSection: React.FC = () => {
   }
 
   const confirmAccessibilityState = { disabled: isDeleting };
-  const confirmPressableStyle = isDeleting
+  const disabledPressableStyle = isDeleting
     ? styles.signOutConfirmButtonDisabled
     : undefined;
   const deleteModalCloseHandler = isDeleting ? undefined : handleDeleteCancel;
+  const confirmButtonContent = isDeleting ? (
+    <ActivityIndicator size="small" color={colors.bronzeDark} />
+  ) : (
+    <AppText fontFamily="script" type="headline">
+      {t.common_delete_account_button}
+    </AppText>
+  );
 
   const deleteModalBody = (
     <View style={styles.signOutModalContainer}>
@@ -180,8 +187,10 @@ const AccountSection: React.FC = () => {
         <Pressable
           accessibilityRole="button"
           accessibilityLabel={t.common_cancel}
+          accessibilityState={confirmAccessibilityState}
           onPress={handleDeleteCancel}
           disabled={isDeleting}
+          style={disabledPressableStyle}
         >
           <GradientWrapper style={styles.signOutScrollButton}>
             <AppText fontFamily="script" type="headline">
@@ -195,12 +204,10 @@ const AccountSection: React.FC = () => {
           accessibilityState={confirmAccessibilityState}
           onPress={handleDeleteConfirm}
           disabled={isDeleting}
-          style={confirmPressableStyle}
+          style={disabledPressableStyle}
         >
           <GradientWrapper style={styles.signOutScrollButton}>
-            <AppText fontFamily="script" type="headline">
-              {t.common_delete_account_button}
-            </AppText>
+            {confirmButtonContent}
           </GradientWrapper>
         </Pressable>
       </View>
@@ -213,8 +220,8 @@ const AccountSection: React.FC = () => {
         iconName="delete-outline"
         label={t.common_delete_account_row}
         onPress={handleDeletePress}
-        labelColor={colors.incorrectBorder}
-        iconColor={colors.incorrectBorder}
+        labelColor={colors.dangerOnParchment}
+        iconColor={colors.dangerOnParchment}
         disabled={isDeleting}
       />
 

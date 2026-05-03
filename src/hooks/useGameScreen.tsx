@@ -216,11 +216,16 @@ export const useGameScreen = () => {
         if (earnedPoints > 0 && questionDifficulty) {
           nextScoreByDifficulty[questionDifficulty] += earnedPoints;
         }
+        const didEarn = earnedPoints > 0;
         return {
           ...prev,
           crowns: isCorrect ? prev.crowns : prev.crowns - 1,
           score: prev.score + earnedPoints,
           scoreByDifficulty: nextScoreByDifficulty,
+          lastScoreChange: didEarn ? earnedPoints : prev.lastScoreChange,
+          scoreChangeKey: didEarn
+            ? prev.scoreChangeKey + 1
+            : prev.scoreChangeKey,
           stats: {
             questionsAnswered: prev.stats.questionsAnswered + 1,
             correctAnswers: isCorrect

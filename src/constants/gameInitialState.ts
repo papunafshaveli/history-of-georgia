@@ -7,6 +7,8 @@ export const INITIAL_STATE: GameState = {
   hintsRemaining: HINT_LIMIT,
   score: 0,
   scoreByDifficulty: { easy: 0, medium: 0, hard: 0 },
+  lastScoreChange: null,
+  scoreChangeKey: 0,
   stats: {
     questionsAnswered: 0,
     correctAnswers: 0,

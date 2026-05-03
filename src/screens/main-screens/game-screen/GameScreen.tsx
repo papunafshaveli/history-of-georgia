@@ -39,7 +39,12 @@ const GameScreen = () => {
       ]}
     >
       <View style={styles.gameScreenContainer}>
-        <GameHeader crowns={gameState.crowns} score={gameState.score} />
+        <GameHeader
+          crowns={gameState.crowns}
+          score={gameState.score}
+          lastScoreChange={gameState.lastScoreChange}
+          scoreChangeKey={gameState.scoreChangeKey}
+        />
 
         {gameState.status.hasError ? (
           <View style={errorStyles.container}>

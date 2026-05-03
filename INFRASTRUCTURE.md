@@ -188,13 +188,14 @@ All components live in `src/components/<folder>/<File>.tsx` and are barrel-expor
 | `SettingToggle` | Icon + label + switch row (`iconName`, `label`, `value`, `onValueChange`) |
 | `StatisticsCard` | Card with icon + numeric title + description (`iconName`, `title`, `description`) |
 | `DifficultyRing` | Animated ring selector for easy/medium/hard (`selectedDifficulty`, `onDifficultyChange`) |
+| `ScoreChangeIndicator` | Reanimated "+N" floater that overlays the score on correct answers; props `value` (points earned, null when idle) + `changeKey` (incrementing trigger) |
 | `SearchInput` | Text input with search icon (`placeholder`, `value`, `onChangeText`) |
 
 ### Game-screen sub-components (`src/components/game-screen-components/`)
 
 | Component | Purpose |
 | --- | --- |
-| `GameHeader` | Crowns (lives) + score |
+| `GameHeader` | Crowns (lives) + score (renders `ScoreChangeIndicator` overlay) |
 | `QuestionDisplay` | Quiz question text |
 | `OptionsDisplay` | FlatList of `OptionButton`; tracks `selectedOption` |
 | `GameFooter` | Hint button + exit button |
@@ -424,7 +425,7 @@ Persistence: `getReactNativePersistence(AsyncStorage)` (see `firebase.ts`).
 | `game_results/{uid}_{resultId}` | Immutable per-game result. Fields: `userId`, `score`, `correctCount`, `totalQuestions`, `selectedDifficulty`, `scoreByDifficulty`, `createdAt` | Read: owner only (allows the idempotency check inside the save transaction to read non-existent docs). Create: owner only, doc id matches `{uid}_*`, `score >= 0 && <= 50 000`, `correctCount <= totalQuestions`. Update / delete: forbidden. |
 | `app_config/version` | Force-update gate. Fields: `minSupportedVersion`, `latestVersion` | Read: public (gate runs before auth resolves). Write: forbidden via clients; Firebase Console / Admin SDK only. |
 | `notifications/{id}` | Push-notification triggers. Fields: `title`, `body`, `status` (`pending` / `processing` / `sent` / `failed`) | Read + write: forbidden via clients; Firebase Console manual entry only. |
-| `push_tokens/{token}` | Expo push tokens registered per device. Fields: `token`, `uid` (added 2026-05-03 — null for anon, owner uid otherwise; lets `pruneInactiveUsers` cascade clean up tokens of pruned users), `platform`, `updatedAt` | Read: forbidden via clients (Cloud Function reads via Admin SDK). Write: authenticated users may write only when tagging the token with their own uid (or leaving uid blank, for compatibility with v1.1.0 binaries). Delete: authenticated owner only (or pre-uid grandfather case). |
+| `push_tokens/{token}` | Expo push tokens registered per device. Fields: `token`, `uid` (added 2026-05-03 — null for anon, owner uid otherwise; lets `pruneInactiveUsers` cascade clean up tokens of pruned users), `platform`, `updatedAt` | Read: authenticated owner only (`resource.data.uid == request.auth.uid`) — required by `deleteUserData`'s multi-device cascade per §17.4; pre-uid grandfather docs (`uid == null`) remain client-unreadable. Cloud Functions use Admin SDK and bypass rules. Write: authenticated users may write only when tagging the token with their own uid (or leaving uid blank, for compatibility with v1.1.0 binaries). Delete: authenticated owner only (or pre-uid grandfather case). |
 
 Rules file: `firestore.rules`. Deploy via `firebase deploy --only firestore:rules`.
 
@@ -539,7 +540,7 @@ Stats screen reads from **AsyncStorage** (`local-lifetime-stats`, `local-recent-
 - `users/{uid}.lastSeenAt` field, written by `touchLastSeen()` from `AuthProvider.onAuthStateChanged`. Throttled to once per 7 days per uid via the AsyncStorage cache key `lastSeen:syncedAt:v2:${uid}`. Future-timestamp guard (`elapsed >= 0`) prevents clock-skew freezes.
 - `lastSeenAt` is also advanced inside `saveGameAndUpdateStats`'s transaction so game-end (live or offline-replay) refreshes it server-side. Without this, an offline player whose throttled `touchLastSeen` heartbeats never reach the server could be classified as inactive purely because best-effort writes failed silently.
 - `push_tokens/{token}.uid` field, set by `registerForNotifications()` and refreshed across auth transitions by `retagPushToken()` (called from `onAuthStateChanged`).
-- Firestore rule constraint on `lastSeenAt` — monotonic-or-equal AND `<= request.time`, so a malicious client cannot self-exempt or self-backdate. Both checks bypass via null for backwards compatibility with v1.1.0 docs.
+- Firestore rule constraints on `lastSeenAt` (monotonic-or-equal AND `<= request.time`) were attempted in v2.0.0 but **deferred to v2.1** — the `<= request.time` clause rejected legitimate `serverTimestamp()` writes in production rule evaluation (placeholder-vs-Timestamp comparison quirk), blocking `touchLastSeen`, `updateProviderProfile`, and `updateDisplayName`. The field is still written client-side as v2.0.0 telemetry; rule enforcement ships alongside the prune Cloud Function in v2.1 with proper Firestore-emulator integration tests.
 - Firestore rule on `push_tokens` — write requires authenticated uid match (or null for v1.1.0 grandfather). Closes the cascade-poisoning attack at the trust boundary.
 
 `lastSeenAt` was chosen as the recency signal over `updatedAt` and Firebase Auth's `lastSignInTime`:
@@ -566,13 +567,15 @@ Only `lastSeenAt` reliably tracks "the user opened the app."
 
 ### 17.4 In-app account deletion (Apple Guideline 5.1.1(v))
 
-User-initiated deletion via Settings → Account → "Delete account & sign out". Client-only cascade — **no Cloud Function backstop**, **no Apple token revoke** — proven through App Store review by the drosha sister project shipping with this exact pattern. Order:
+User-initiated deletion via Settings → Account → "Delete account & sign out". Client-only cascade — **no Cloud Function backstop**, **no Apple token revoke** — proven through App Store review by the drosha sister project shipping with this exact pattern. Order (irreversible local cleanup runs LAST so a partial failure is retry-safe):
 
 1. `reauthenticate()` (Google or Apple) — satisfies Firebase's `auth/requires-recent-login`. Skipped for anon (button is hidden anyway).
-2. Local-side cleanup, parallel: (a) drop the `pending-results` AsyncStorage queue — queued rows carry the old uid and would fail Firestore rules under the new anon user; (b) `unregisterNotifications()` — delete the device's `push_tokens/{token}` Firestore doc and clear the cached token from AsyncStorage so the user stops receiving notifications addressed to the deleted account. Lifetime stats + recent games are intentionally **kept** (per §17.2: stats are device-local, not account-bound; same physical user on the same device retains their gameplay history across sign-in / sign-out / delete).
-3. `deleteUserData(uid)` cascade — three steps, each chunked 500-op `writeBatch`: (a) every `push_tokens` doc with `uid == <deleted uid>` (covers other-device tokens — `unregisterNotifications` only handled the local one); (b) every `game_results` doc where `userId == <deleted uid>`; (c) `users/{uid}` last (its presence is the retry handle for any earlier step that crashed).
-4. `auth.currentUser.delete()` — Firebase Auth account.
-5. `onAuthStateChanged` fires null → `AuthProvider` issues a fresh anon user automatically.
+2. `deleteUserData(uid)` cascade — three steps, each chunked 500-op `writeBatch`: (a) every `push_tokens` doc with `uid == <deleted uid>` (covers other-device tokens registered under v2.0.0+ — see caveat below); (b) every `game_results` doc where `userId == <deleted uid>`; (c) `users/{uid}` last (its presence is the retry handle for any earlier step that crashed). Idempotent — safe to retry against an already-deleted doc.
+3. `unregisterNotifications()` — delete this device's `push_tokens/{token}` Firestore doc (needs auth, so must run before step 4 invalidates credentials) and clear the cached token from AsyncStorage so the user stops receiving notifications.
+4. `auth.currentUser.delete()` — Firebase Auth account. `onAuthStateChanged` fires null → `AuthProvider` issues a fresh anon user automatically.
+5. `clearPendingResults()` — drop the `pending-results` AsyncStorage queue. Runs **after** the server-side delete succeeds so a failure in steps 2–4 leaves the offline queue intact for retry; on success the new anon user can't replay these entries anyway (uid mismatch → silently dropped by the replay path). Lifetime stats + recent games are intentionally **kept** (per §17.2: stats are device-local, not account-bound; same physical user on the same device retains their gameplay history across sign-in / sign-out / delete).
+
+**Multi-device push-token cleanup caveat.** The cascade in step 2(a) only catches `push_tokens` docs that have a `uid` field — i.e. tokens registered under v2.0.0 or later. Pre-2026-05-03 (v1.1.0) tokens have `uid: null` and are unreadable by clients via the current rule (`resource.data.uid == request.auth.uid`). They remain in Firestore until either: (a) the next push to that device returns `DeviceNotRegistered` and `sendPushNotification` prunes the row, or (b) v2.1's `pruneInactiveUsers` Cloud Function handles them server-side via Admin SDK. For a launch-time backstop, an Admin-SDK script that purges all `uid == null` token docs can be run once the v2.0.0 binary has propagated.
 
 **Firestore rule shape:** `users/{uid}` and `game_results/{id}` permit `delete` only by the owner. `push_tokens/{token}` permits `delete` by the owner uid (or any authenticated client for pre-uid grandfather docs).
 

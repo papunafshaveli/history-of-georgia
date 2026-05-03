@@ -1,12 +1,12 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { Pressable, TextInput, View } from "react-native";
+import { ActivityIndicator, Pressable, TextInput, View } from "react-native";
 
 import { useAppTheme, useAuth, useStyles, useTranslation } from "@/src/hooks";
 import { logger } from "@/src/helpers/logger";
 
+import GradientWrapper from "../gradient-wrapper/GradientWrapper";
 import Modal from "../modal/Modal";
 import { AppText } from "../text";
-import Loading from "../loading/Loading";
 
 import { getStyles } from "./styles";
 
@@ -56,17 +56,28 @@ const ConfirmNameModal: React.FC<ConfirmNameModalProps> = ({
     }
   }, [isValid, isSaving, name, onSaved, updateDisplayName]);
 
-  const saveButtonStyle = useCallback(
-    ({ pressed }: { pressed: boolean }) => {
-      if (!isValid || isSaving) {
-        return [styles.saveButton, styles.saveButtonDisabled];
-      }
-      return pressed
-        ? [styles.saveButton, styles.saveButtonPressed]
-        : styles.saveButton;
-    },
-    [isValid, isSaving, styles],
+  const isSaveDisabled = !isValid || isSaving;
+  const savePressableStyle = isSaveDisabled
+    ? styles.saveButtonDisabled
+    : undefined;
+  const saveAccessibilityState = { disabled: isSaveDisabled };
+  const saveButtonContent = isSaving ? (
+    <ActivityIndicator size="small" color={colors.bronzeDark} />
+  ) : (
+    <AppText fontFamily="script" type="headline">
+      {t.name_modal_save}
+    </AppText>
   );
+  const validationContent = showValidationError ? (
+    <AppText
+      type="caption"
+      fontFamily="sans"
+      color={colors.dangerOnParchment}
+      style={styles.validationText}
+    >
+      {t.name_validation_length}
+    </AppText>
+  ) : null;
 
   const renderComponent = (
     <View style={styles.confirmContainer}>
@@ -92,37 +103,19 @@ const ConfirmNameModal: React.FC<ConfirmNameModalProps> = ({
         editable={!isSaving}
       />
 
-      <View style={styles.validationRow}>
-        {showValidationError ? (
-          <AppText
-            type="caption"
-            fontFamily="sans"
-            color={colors.incorrectBorder}
-            style={styles.validationText}
-          >
-            {t.name_validation_length}
-          </AppText>
-        ) : null}
-      </View>
+      <View style={styles.validationRow}>{validationContent}</View>
 
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={t.name_modal_save}
-        accessibilityState={{ disabled: !isValid || isSaving }}
+        accessibilityState={saveAccessibilityState}
         onPress={handleSave}
-        style={saveButtonStyle}
+        disabled={isSaveDisabled}
+        style={savePressableStyle}
       >
-        {isSaving ? (
-          <Loading />
-        ) : (
-          <AppText
-            type="subHeadline"
-            fontFamily="serif"
-            color={colors.bronzeDark}
-          >
-            {t.name_modal_save}
-          </AppText>
-        )}
+        <GradientWrapper style={styles.saveScrollButton}>
+          {saveButtonContent}
+        </GradientWrapper>
       </Pressable>
     </View>
   );
