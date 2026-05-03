@@ -7,13 +7,15 @@ export type QuizQuestion = {
   correctAnswer: string;
   hint: string;
   randomField: number;
-  difficulty?: Difficulty;
+  difficulty: Difficulty;
 };
 
 export type GameState = {
   currentQuestion: QuizQuestion | null;
   crowns: number;
   hintsRemaining: number;
+  score: number;
+  scoreByDifficulty: Record<Difficulty, number>;
   stats: {
     questionsAnswered: number;
     correctAnswers: number;

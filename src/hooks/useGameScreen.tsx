@@ -13,13 +13,28 @@ import {
   CORRECT_ANSWER_DELAY_MS,
   INCORRECT_ANSWER_DELAY_MS,
   GAME_OVER_SUMMARY_DELAY_MS,
+  pointsFor,
 } from "@/src/constants";
 import { ClickSound, CorrectSound, Crown, IncorrectSound } from "@/src/assets";
 
+import {
+  GameResultRulesError,
+  GameResultTransientError,
+  saveGameAndUpdateStats,
+  type GameEndPayload,
+} from "@/src/services/firestore-game-result";
+import { recordGame as recordLifetimeGame } from "@/src/services/local-lifetime-stats";
+import { addLocalRecentGame } from "@/src/services/local-recent-games";
+import { enqueuePendingResult } from "@/src/services/pending-results";
+import { invalidateLeaderboardCache } from "@/src/hooks/useLeaderboard";
+import { invalidateUserStatsCache } from "@/src/hooks/useUserStats";
+import { uuid } from "@/src/utils/uuid";
+
 import { fetchRandomQuestion, vibrateImpact } from "../helpers";
 import { logEvent, AnalyticsEvent } from "../helpers/analytics";
-import { saveGameResult } from "../helpers/gameHistory";
+import { logger } from "../helpers/logger";
 
+import { useAuth } from "./useAuth";
 import { useSettings } from "./useSettings";
 import { usePlaySound } from "./usePlaySound";
 
@@ -31,32 +46,112 @@ export const useGameScreen = () => {
   const difficulty: Difficulty | undefined = route.params?.difficulty;
 
   const { isMuted, isVibrationOff } = useSettings();
+  const { uid } = useAuth();
   const [gameState, setGameState] = useState<GameState>(INITIAL_STATE);
   const seenIdsRef = useRef<Set<number>>(new Set());
+  const gameResultPersistedRef = useRef(false);
 
   const { playSound } = usePlaySound();
 
   useEffect(() => {
-    if (gameState.crowns === 0) {
-      logEvent(AnalyticsEvent.GAME_END, {
-        score: gameState.stats.correctAnswers,
-        questions_answered: gameState.stats.questionsAnswered,
-      });
-      saveGameResult({
-        score: gameState.stats.correctAnswers,
-        questionsAnswered: gameState.stats.questionsAnswered,
-        date: new Date().toISOString(),
-        difficulty,
-      });
-      const timeout = setTimeout(() => {
-        setGameState((prev) => ({
-          ...prev,
-          modals: { ...prev.modals, summary: true },
-        }));
-      }, GAME_OVER_SUMMARY_DELAY_MS);
+    if (gameState.crowns !== 0) return;
+    if (gameResultPersistedRef.current) return;
+    gameResultPersistedRef.current = true;
 
-      return () => clearTimeout(timeout);
-    }
+    const payload: GameEndPayload = {
+      score: gameState.score,
+      correctCount: gameState.stats.correctAnswers,
+      totalQuestions: gameState.stats.questionsAnswered,
+      selectedDifficulty: difficulty ?? null,
+      scoreByDifficulty: gameState.scoreByDifficulty,
+    };
+
+    logEvent(AnalyticsEvent.GAME_END, {
+      score: payload.score,
+      questions_answered: payload.totalQuestions,
+    });
+
+    const persist = async () => {
+      const resultId = uuid();
+      const createdAtMs = Date.now();
+
+      // Save to local storage immediately so the user sees the game in
+      // "ბოლო თამაშები" the next time they open the leaderboard tab —
+      // independent of network, auth, or Firestore success.
+      await addLocalRecentGame({
+        resultId,
+        score: payload.score,
+        correctCount: payload.correctCount,
+        totalQuestions: payload.totalQuestions,
+        selectedDifficulty: payload.selectedDifficulty,
+        createdAtMs,
+      });
+
+      // Local lifetime-stats accumulator powers the Stats screen. Fires
+      // once per game-end (regardless of Firestore success) so sign-out
+      // doesn't appear to wipe the user's stats.
+      try {
+        await recordLifetimeGame({
+          score: payload.score,
+          correctCount: payload.correctCount,
+          totalQuestions: payload.totalQuestions,
+        });
+      } catch (err) {
+        logger.warn("[useGameScreen] recordLifetimeGame failed:", err);
+      }
+
+      if (!uid) {
+        // No authenticated user yet — extremely rare, but reachable when
+        // the boot-time anonymous sign-in fails (e.g. offline first
+        // launch). Queue the result with `uid: null`; replay attributes
+        // null to the current uid (there's no other uid that could own
+        // it, by definition). This keeps the user's game data safe
+        // through transient auth bootstrap failures without blocking
+        // gameplay.
+        await enqueuePendingResult({
+          resultId,
+          payload,
+          gameEndedAt: new Date(createdAtMs).toISOString(),
+          uid: null,
+        });
+        return;
+      }
+      try {
+        await saveGameAndUpdateStats(uid, resultId, payload);
+        await Promise.all([
+          invalidateUserStatsCache(uid),
+          invalidateLeaderboardCache(),
+        ]);
+      } catch (error) {
+        if (error instanceof GameResultTransientError) {
+          await enqueuePendingResult({
+            resultId,
+            payload,
+            gameEndedAt: new Date(createdAtMs).toISOString(),
+            uid,
+          });
+          return;
+        }
+        if (error instanceof GameResultRulesError) {
+          logEvent(AnalyticsEvent.GAME_END, {
+            dropped: "rules_violation",
+          });
+          return;
+        }
+        logger.warn("[useGameScreen] saveGameAndUpdateStats failed:", error);
+      }
+    };
+
+    persist();
+
+    const timeout = setTimeout(() => {
+      setGameState((prev) => ({
+        ...prev,
+        modals: { ...prev.modals, summary: true },
+      }));
+    }, GAME_OVER_SUMMARY_DELAY_MS);
+
+    return () => clearTimeout(timeout);
   }, [gameState.crowns]);
 
   const getNextQuestion = useCallback(async () => {
@@ -108,21 +203,33 @@ export const useGameScreen = () => {
         return;
 
       const isCorrect = option === gameState.currentQuestion.correctAnswer;
+      const questionDifficulty = gameState.currentQuestion.difficulty;
+      const earnedPoints =
+        isCorrect && questionDifficulty ? pointsFor(questionDifficulty) : 0;
+
       logEvent(AnalyticsEvent.QUESTION_ANSWERED, { correct: isCorrect });
       if (!isVibrationOff) vibrateImpact();
       playSound(isCorrect ? CorrectSound : IncorrectSound, isMuted);
 
-      setGameState((prev) => ({
-        ...prev,
-        crowns: isCorrect ? prev.crowns : prev.crowns - 1,
-        stats: {
-          questionsAnswered: prev.stats.questionsAnswered + 1,
-          correctAnswers: isCorrect
-            ? prev.stats.correctAnswers + 1
-            : prev.stats.correctAnswers,
-        },
-        status: { ...prev.status, isOptionLocked: true },
-      }));
+      setGameState((prev) => {
+        const nextScoreByDifficulty = { ...prev.scoreByDifficulty };
+        if (earnedPoints > 0 && questionDifficulty) {
+          nextScoreByDifficulty[questionDifficulty] += earnedPoints;
+        }
+        return {
+          ...prev,
+          crowns: isCorrect ? prev.crowns : prev.crowns - 1,
+          score: prev.score + earnedPoints,
+          scoreByDifficulty: nextScoreByDifficulty,
+          stats: {
+            questionsAnswered: prev.stats.questionsAnswered + 1,
+            correctAnswers: isCorrect
+              ? prev.stats.correctAnswers + 1
+              : prev.stats.correctAnswers,
+          },
+          status: { ...prev.status, isOptionLocked: true },
+        };
+      });
 
       const nextQuestionGetTime = isCorrect
         ? CORRECT_ANSWER_DELAY_MS
@@ -178,6 +285,7 @@ export const useGameScreen = () => {
 
   const handleRestart = useCallback(async () => {
     seenIdsRef.current.clear();
+    gameResultPersistedRef.current = false;
     setGameState(INITIAL_STATE);
     await getNextQuestion();
   }, [getNextQuestion]);
@@ -235,7 +343,12 @@ export const useGameScreen = () => {
       toggleHintModal,
       closeSummaryModal,
     }),
-    [toggleExitModal, toggleSettingsModal, toggleHintModal, closeSummaryModal],
+    [
+      toggleExitModal,
+      toggleSettingsModal,
+      toggleHintModal,
+      closeSummaryModal,
+    ],
   );
 
   const crownsArray = useMemo(

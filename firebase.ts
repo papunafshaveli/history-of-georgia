@@ -1,5 +1,10 @@
 import { initializeApp } from "firebase/app";
 import { initializeFirestore } from "firebase/firestore";
+// @ts-expect-error — getReactNativePersistence is exported from the RN bundle
+// (resolved via @firebase/auth's "react-native" exports condition) but not typed
+// in the main firebase/auth entry. Runtime-safe on React Native.
+import { initializeAuth, getReactNativePersistence } from "firebase/auth";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const firebaseConfig = {
   apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY,
@@ -12,8 +17,13 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
+
 const db = initializeFirestore(app, {
   experimentalAutoDetectLongPolling: true,
 });
 
-export { db };
+const auth = initializeAuth(app, {
+  persistence: getReactNativePersistence(AsyncStorage),
+});
+
+export { db, auth };

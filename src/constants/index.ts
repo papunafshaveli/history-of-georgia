@@ -9,3 +9,5 @@ export * from "./battles";
 export * from "./publicFigures";
 export * from "./language";
 export * from "./timing";
+export * from "./questionPrefixes";
+export * from "./scoring";

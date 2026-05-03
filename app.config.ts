@@ -53,6 +53,14 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     "expo-notifications",
     "expo-audio",
     "expo-asset",
+    [
+      "@react-native-google-signin/google-signin",
+      {
+        iosUrlScheme:
+          "com.googleusercontent.apps.394970199474-rsfg2j50nef71sjirltumcb9j7tvtmej",
+      },
+    ],
+    "expo-apple-authentication",
   ],
   extra: {
     eas: {

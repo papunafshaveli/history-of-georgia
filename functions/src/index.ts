@@ -94,3 +94,19 @@ export const sendPushNotification = onDocumentCreated(
     }
   },
 );
+
+// `pruneInactiveUsers` (the scheduled inactive-user cleanup) was deferred
+// to v2.1 after seven adversarial-review rounds surfaced cross-cutting
+// failure modes that need a deeper redesign than this codebase has time
+// for before the v2.0.0 store submission. The schema additions remain in
+// place so the v2.1 implementation has telemetry to validate against:
+//   - `users/{uid}.lastSeenAt` (touched by `touchLastSeen` on every
+//     onAuthStateChanged, throttled per uid).
+//   - `push_tokens/{token}.uid` (set by `registerForNotifications` and
+//     refreshed by `retagPushToken` on auth-state changes).
+//   - Firestore rule constraints on `lastSeenAt` (monotonic + bounded).
+// See INFRASTRUCTURE.md §17.3 and the parent plan deferred follow-up #5
+// for the v2.1 requirements list distilled from the adversarial reviews
+// (Firestore-emulator integration tests, server-trusted lastSeenAt
+// writes, migration plan for legacy queue entries, bootstrap edge case
+// handling, etc.).

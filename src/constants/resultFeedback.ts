@@ -1,6 +1,5 @@
 export enum ScoreThreshold {
-  Low = 5,
-  Medium = 10,
-  High = 15,
-  Excellent = 20,
+  Solid = 51,
+  Strong = 151,
+  Expert = 301,
 }

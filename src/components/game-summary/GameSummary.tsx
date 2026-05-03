@@ -1,9 +1,8 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef } from "react";
 
 import { View, ImageBackground, Pressable, Linking } from "react-native";
 
 import * as Animatable from "react-native-animatable";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import * as StoreReview from "expo-store-review";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
@@ -13,7 +12,12 @@ import { NavigationProp, useNavigation } from "@react-navigation/native";
 import { IS_ANDROID, ScoreThreshold } from "@/src/constants";
 import { CircleIcon } from "@/src/assets";
 import { openAppOrUrl } from "@/src/helpers";
-import { useAppTheme, useStyles, useTranslation } from "@/src/hooks";
+import {
+  useAppTheme,
+  useStyles,
+  useTranslation,
+  useUserStats,
+} from "@/src/hooks";
 import { STORE_REVIEW_PULSE_DURATION_MS } from "@/src/constants";
 import { RootStackParamList, ScreenName } from "@/src/types";
 
@@ -34,42 +38,35 @@ const GameSummary: React.FC<GameSummaryProps> = ({
   onCloseSummary,
   score,
 }) => {
-  const [highestScore, setHighestScore] = useState<number | null>(null);
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const t = useTranslation();
   const { colors } = useAppTheme();
   const styles = useStyles(getStyles);
 
-  const promptForReview = async () => {
-    if (await StoreReview.isAvailableAsync()) {
-      StoreReview.requestReview();
-    }
-  };
-
-  const saveScore = async () => {
-    const storedHighScore = await AsyncStorage.getItem("highScore");
-    const highScore = storedHighScore ? JSON.parse(storedHighScore) : 0;
-
-    if (score > highScore) {
-      await AsyncStorage.setItem("highScore", JSON.stringify(score));
-      setHighestScore(score);
-      promptForReview();
-    } else {
-      setHighestScore(highScore);
-    }
-  };
-
-  const getHighestScore = async () => {
-    const storedHighScore = await AsyncStorage.getItem("highScore");
-    if (storedHighScore) {
-      setHighestScore(JSON.parse(storedHighScore));
-    }
-  };
+  // Best score from Firestore — saveGameAndUpdateStats has already run by
+  // the time this modal mounts (or is racing in the background); pre-game
+  // value in `stats.bestSingleGameScore` is fine because we Math.max with
+  // the current `score` for display, and refresh() will pull the post-game
+  // value shortly. No legacy AsyncStorage[highScore] read here — that was
+  // wiped by the v2.0.0 migration.
+  const { stats, refresh: refreshStats } = useUserStats();
+  const previousBest = stats?.bestSingleGameScore ?? 0;
+  const highestScore = Math.max(score, previousBest);
+  const reviewPromptedRef = useRef(false);
 
   useEffect(() => {
-    getHighestScore();
-    saveScore();
-  }, [score]);
+    refreshStats();
+  }, [refreshStats]);
+
+  useEffect(() => {
+    if (reviewPromptedRef.current) return;
+    if (stats === null) return;
+    if (score <= previousBest) return;
+    reviewPromptedRef.current = true;
+    StoreReview.isAvailableAsync().then((available) => {
+      if (available) StoreReview.requestReview();
+    });
+  }, [stats, score, previousBest]);
 
   const handleVisitFbPage = () => {
     const fbAppUrl = "fb://profile/61572292876345";
@@ -90,22 +87,17 @@ const GameSummary: React.FC<GameSummaryProps> = ({
     onCloseSummary();
     navigation.reset({
       index: 0,
-      routes: [{ name: "tabs", params: { screen: ScreenName.STATS_SCREEN } }],
+      routes: [
+        { name: "tabs", params: { screen: ScreenName.STATS_SCREEN } },
+      ],
     });
   };
 
   const scoreFeedback = useMemo(() => {
-    if (score <= ScoreThreshold.Low) {
-      return t.feedback_low;
-    } else if (score <= ScoreThreshold.Medium) {
-      return t.feedback_medium;
-    } else if (score <= ScoreThreshold.High) {
-      return t.feedback_high;
-    } else if (score <= ScoreThreshold.Excellent) {
-      return t.feedback_outstanding;
-    } else {
-      return t.feedback_outstanding;
-    }
+    if (score >= ScoreThreshold.Expert) return t.gamesummary_tier_expert;
+    if (score >= ScoreThreshold.Strong) return t.gamesummary_tier_strong;
+    if (score >= ScoreThreshold.Solid) return t.gamesummary_tier_solid;
+    return t.gamesummary_tier_beginner;
   }, [score, t]);
 
   return (
