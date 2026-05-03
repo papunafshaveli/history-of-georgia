@@ -37,8 +37,6 @@ import {
 } from "@/src/services/firestore-user";
 import { deleteUserData } from "@/src/services/firestore-account-deletion";
 import { clearPendingResults } from "@/src/services/pending-results";
-import { clearLifetimeStats } from "@/src/services/local-lifetime-stats";
-import { clearLocalRecentGames } from "@/src/services/local-recent-games";
 import { useTranslation } from "@/src/hooks/useTranslation";
 
 export type SignInResult = {
@@ -435,13 +433,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       await reauthenticate();
     }
 
-    // Local AsyncStorage wipe — non-blocking individually but awaited so
-    // failures here surface to the caller before the cascade fires.
-    await Promise.allSettled([
-      clearPendingResults(),
-      clearLifetimeStats(),
-      clearLocalRecentGames(),
-    ]);
+    // Drop the offline replay queue — those queued rows carry the old uid
+    // and would be rejected by Firestore rules under the new anon user.
+    // Lifetime stats + recent games are device-local per INFRASTRUCTURE.md
+    // §17.2 and intentionally survive sign-out / delete.
+    await clearPendingResults();
 
     // Firestore cascade — must succeed while still authed (rules require
     // request.auth.uid == uid for the deletes).
