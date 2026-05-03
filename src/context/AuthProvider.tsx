@@ -11,6 +11,7 @@ import {
   OAuthProvider,
   linkWithCredential,
   onAuthStateChanged,
+  reauthenticateWithCredential,
   signInAnonymously,
   signInWithCredential,
   signOut as firebaseSignOut,
@@ -26,6 +27,7 @@ import * as AppleAuthentication from "expo-apple-authentication";
 import * as Crypto from "expo-crypto";
 
 import { auth } from "@/firebase";
+import { IS_IOS } from "@/src/constants/platform";
 import { logger } from "@/src/helpers/logger";
 import { showToast } from "@/src/helpers/showToast";
 import {
@@ -33,6 +35,10 @@ import {
   updateDisplayName as updateDisplayNameService,
   updateProviderProfile,
 } from "@/src/services/firestore-user";
+import { deleteUserData } from "@/src/services/firestore-account-deletion";
+import { clearPendingResults } from "@/src/services/pending-results";
+import { clearLifetimeStats } from "@/src/services/local-lifetime-stats";
+import { clearLocalRecentGames } from "@/src/services/local-recent-games";
 import { useTranslation } from "@/src/hooks/useTranslation";
 
 export type SignInResult = {
@@ -63,6 +69,7 @@ type AuthContextValue = {
   signInWithApple: () => Promise<SignInResult>;
   signOut: () => Promise<void>;
   updateDisplayName: (name: string) => Promise<void>;
+  deleteAccount: () => Promise<void>;
   bumpAuthVersion: () => void;
 };
 
@@ -112,6 +119,7 @@ const defaultContext: AuthContextValue = {
   signInWithApple: notImplemented("signInWithApple"),
   signOut: notImplemented("signOut"),
   updateDisplayName: notImplemented("updateDisplayName"),
+  deleteAccount: notImplemented("deleteAccount"),
   bumpAuthVersion: () => undefined,
 };
 
@@ -367,6 +375,82 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     [bumpAuthVersion],
   );
 
+  const reauthenticate = useCallback(async () => {
+    const current = auth.currentUser;
+    if (!current) throw new Error("[AuthProvider] no user to reauthenticate");
+
+    const providerId = current.providerData[0]?.providerId;
+
+    if (providerId === "google.com") {
+      await GoogleSignin.hasPlayServices();
+      const response = await GoogleSignin.signIn();
+      if (!isSuccessResponse(response)) {
+        throw new Error("[AuthProvider] Google reauth cancelled");
+      }
+      const { idToken } = response.data;
+      if (!idToken) {
+        throw new Error("[AuthProvider] Google reauth missing idToken");
+      }
+      const credential = GoogleAuthProvider.credential(idToken);
+      await reauthenticateWithCredential(current, credential);
+      return;
+    }
+
+    if (providerId === "apple.com" && IS_IOS) {
+      const rawNonceBytes = await Crypto.getRandomBytesAsync(16);
+      const rawNonce = bytesToHex(rawNonceBytes);
+      const hashedNonce = await Crypto.digestStringAsync(
+        Crypto.CryptoDigestAlgorithm.SHA256,
+        rawNonce,
+      );
+      const appleResult = await AppleAuthentication.signInAsync({
+        requestedScopes: [
+          AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
+          AppleAuthentication.AppleAuthenticationScope.EMAIL,
+        ],
+        nonce: hashedNonce,
+      });
+      if (!appleResult.identityToken) {
+        throw new Error("[AuthProvider] Apple reauth missing identityToken");
+      }
+      const provider = new OAuthProvider("apple.com");
+      const credential = provider.credential({
+        idToken: appleResult.identityToken,
+        rawNonce,
+      });
+      await reauthenticateWithCredential(current, credential);
+      return;
+    }
+
+    throw new Error(
+      `[AuthProvider] reauthenticate not supported for provider ${providerId}`,
+    );
+  }, []);
+
+  const deleteAccount = useCallback(async () => {
+    const current = auth.currentUser;
+    if (!current) return;
+
+    if (!current.isAnonymous) {
+      await reauthenticate();
+    }
+
+    // Local AsyncStorage wipe — non-blocking individually but awaited so
+    // failures here surface to the caller before the cascade fires.
+    await Promise.allSettled([
+      clearPendingResults(),
+      clearLifetimeStats(),
+      clearLocalRecentGames(),
+    ]);
+
+    // Firestore cascade — must succeed while still authed (rules require
+    // request.auth.uid == uid for the deletes).
+    await deleteUserData(current.uid);
+
+    // Auth account last — onAuthStateChanged then issues a fresh anon user.
+    await current.delete();
+  }, [reauthenticate]);
+
   const value = useMemo<AuthContextValue>(
     () => ({
       user,
@@ -378,6 +462,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       signInWithApple,
       signOut,
       updateDisplayName,
+      deleteAccount,
       bumpAuthVersion,
     }),
     [
@@ -389,6 +474,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       signInWithApple,
       signOut,
       updateDisplayName,
+      deleteAccount,
       bumpAuthVersion,
     ],
   );
