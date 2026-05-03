@@ -549,7 +549,7 @@ Stats screen reads from **AsyncStorage** (`local-lifetime-stats`, `local-recent-
 User-initiated deletion via Settings → Account → "Delete account & sign out". Client-only cascade — **no Cloud Function backstop**, **no Apple token revoke** — proven through App Store review by the drosha sister project shipping with this exact pattern. Order:
 
 1. `reauthenticate()` (Google or Apple) — satisfies Firebase's `auth/requires-recent-login`. Skipped for anon (button is hidden anyway).
-2. Drop the `pending-results` AsyncStorage queue — queued rows carry the old uid and would fail Firestore rules under the new anon user. Lifetime stats + recent games are intentionally **kept** (per §17.2: stats are device-local, not account-bound; same physical user on the same device retains their gameplay history across sign-in / sign-out / delete).
+2. Local-side cleanup, parallel: (a) drop the `pending-results` AsyncStorage queue — queued rows carry the old uid and would fail Firestore rules under the new anon user; (b) `unregisterNotifications()` — delete the device's `push_tokens/{token}` Firestore doc and clear the cached token from AsyncStorage so the user stops receiving notifications addressed to the deleted account. Lifetime stats + recent games are intentionally **kept** (per §17.2: stats are device-local, not account-bound; same physical user on the same device retains their gameplay history across sign-in / sign-out / delete).
 3. `deleteUserData(uid)` cascade — chunked 499-op `writeBatch` over `game_results` where `userId == uid`, with `users/{uid}` packed into the last batch.
 4. `auth.currentUser.delete()` — Firebase Auth account.
 5. `onAuthStateChanged` fires null → `AuthProvider` issues a fresh anon user automatically.
