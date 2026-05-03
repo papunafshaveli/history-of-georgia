@@ -12,8 +12,28 @@ service cloud.firestore {
     }
 
     match /push_tokens/{token} {
-      allow write: if true;
       allow read: if false;
+
+      // Authenticated users can write a token doc only when tagging it
+      // with their own uid (or leaving the uid blank — pre-2026-05-03
+      // schema, kept compatible while v1.1.0 binaries still exist in the
+      // wild). Without this, a malicious client could write ≥ 501 token
+      // docs tagged with a target uid and wedge the
+      // `pruneInactiveUsers` cascade above Firestore's writeBatch cap.
+      allow create, update: if request.auth != null
+        && (
+          request.resource.data.uid == null
+          || request.resource.data.uid == request.auth.uid
+        );
+
+      // Authenticated users can delete their own tokens (or pre-uid
+      // tokens via the same grandfather clause). Cloud Functions use the
+      // Admin SDK and bypass rules entirely.
+      allow delete: if request.auth != null
+        && (
+          resource.data.uid == null
+          || request.auth.uid == resource.data.uid
+        );
     }
 
     match /notifications/{document=**} {
@@ -45,6 +65,16 @@ service cloud.firestore {
         && request.resource.data.bestSingleGameScore == 0
         && request.resource.data.weekPoints == 0;
 
+      // `lastSeenAt` is the load-bearing signal for `pruneInactiveUsers`
+      // (INFRASTRUCTURE.md §17.3). Without these checks, a malicious
+      // client could either self-exempt (write a future timestamp) or
+      // force premature deletion (backdate the value). We enforce:
+      //   - monotonic-or-equal (forward-only writes)
+      //   - bounded by request.time (no future timestamps)
+      // Both checks bypass via null so docs without `lastSeenAt` (the
+      // field is new — pre-2026-05-03 docs lack it) and updates that
+      // don't touch `lastSeenAt` (e.g. `markSignInNudgeSeen`) still
+      // succeed.
       allow update: if request.auth.uid == uid
         && request.resource.data.totalPoints         >= resource.data.totalPoints - 5
         && request.resource.data.gamesPlayed         >= resource.data.gamesPlayed
@@ -55,7 +85,11 @@ service cloud.firestore {
         && (request.resource.data.gamesPlayed - resource.data.gamesPlayed) <= 1
         && request.resource.data.createdAt == resource.data.createdAt
         && (request.resource.data.weekPoints >= resource.data.weekPoints
-            || request.resource.data.weekStart != resource.data.weekStart);
+            || request.resource.data.weekStart != resource.data.weekStart)
+        && (resource.data.lastSeenAt == null
+            || request.resource.data.lastSeenAt >= resource.data.lastSeenAt)
+        && (request.resource.data.lastSeenAt == null
+            || request.resource.data.lastSeenAt <= request.time);
 
       allow delete: if request.auth.uid == uid;
     }
