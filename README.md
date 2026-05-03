@@ -303,7 +303,40 @@ npx tsc scripts/wipe-auth.ts --esModuleInterop --resolveJsonModule --skipLibChec
 
 The script paginates `admin.auth().listUsers()` and batches `admin.auth().deleteUsers()` 1000 at a time. It refuses to run without `--confirm` and prints the resolved project ID before deleting anything. Reads credentials from `android-service-account-key/history-of-georgia-43551-firebase-adminsdk-*.json` (gitignored).
 
-Recommended reset order: clear Firestore first (previous section), then run this script.
+## Firebase — Full reset for end-to-end testing
+
+When testing account deletion, sign-in flows, or anything that needs a clean baseline, run a complete reset in this order. **Firestore data and Firebase Auth are separate stores — both must be wiped for a true reset.**
+
+1. **Stop the dev-client first.** If the app is running, the moment the wipe finishes, `onAuthStateChanged` fires with `null` and immediately re-creates a fresh anonymous user, leaving you with one residual entry in the Auth tab.
+
+2. **Wipe Firestore data:**
+
+   ```bash
+   firebase firestore:delete --recursive users
+   firebase firestore:delete --recursive game_results
+   ```
+
+   Skip `push_tokens` unless you're specifically testing push registration — those rows are device-bound (keyed by Expo push token, not by uid) and don't orphan when users are deleted. Never delete `tickets` — that's the canonical question pool.
+
+3. **Wipe Firebase Auth users:**
+
+   ```bash
+   npx tsc scripts/wipe-auth.ts --esModuleInterop --resolveJsonModule --skipLibCheck \
+     && node scripts/wipe-auth.js --confirm
+   ```
+
+4. **Clear AsyncStorage on the device:**
+
+   ```bash
+   adb shell pm clear com.papunafshaveli.historyofgeorgia
+   ```
+
+5. **Verify in Firebase Console:**
+
+   - <https://console.firebase.google.com/project/history-of-georgia-43551/authentication/users> — Auth tab should be empty
+   - <https://console.firebase.google.com/project/history-of-georgia-43551/firestore/data> — `users`, `game_results` are gone or empty; `tickets`, `app_config`, `notifications`, `push_tokens` should still exist
+
+6. **Re-launch the dev-client.** A fresh anonymous user is created automatically; you're now testing against a clean slate.
 
 ## Force-update gate — Firestore values
 
