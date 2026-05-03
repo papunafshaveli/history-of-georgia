@@ -52,3 +52,7 @@ export const recordGame = async (game: RecordGameInput): Promise<void> => {
   };
   await AsyncStorage.setItem(LIFETIME_STATS_KEY, JSON.stringify(next));
 };
+
+export const clearLifetimeStats = async (): Promise<void> => {
+  await AsyncStorage.removeItem(LIFETIME_STATS_KEY);
+};
