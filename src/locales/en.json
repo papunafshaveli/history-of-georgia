@@ -98,10 +98,12 @@
   "name_modal_save": "Save",
   "name_validation_length": "Name must be 2 to 24 characters",
 
-  "settings_signout_button": "Sign out",
-  "settings_signout_confirm_title": "Sign out?",
-  "settings_signout_confirm_body": "Signing out from this Google account. Your stats are saved to Google — sign back in any time.",
-  "settings_signout_confirm_cancel": "Cancel",
+  "common_cancel": "Cancel",
+  "common_delete_account_row": "Delete account & sign out",
+  "common_delete_account_title": "Delete account?",
+  "common_delete_account_message": "This will permanently delete your account, all game data, and sign you out. This action cannot be undone.",
+  "common_delete_account_button": "Delete & sign out",
+  "common_delete_account_error": "Could not delete account, please try again",
 
   "force_update_title": "Update required",
   "force_update_body": "A new version is required to keep playing. Please update from the store.",
