@@ -57,7 +57,16 @@ export const getLeaderboard = async (
 
   const snapshot = await getDocs(q);
 
-  return snapshot.docs.map((doc, index) =>
-    buildEntry(doc.id, doc.data() as UserDoc, index + 1, tab),
-  );
+  // Drop zero-point users from the leaderboard — a freshly signed-in user
+  // shouldn't show at rank #1 just for having a displayName. They'll
+  // appear once they've earned points. Filter is client-side because
+  // adding a `> 0` range filter would require new composite indexes
+  // and conflict with the existing `displayName != null` inequality
+  // filter (Firestore allows only one range/inequality filter per query).
+  const pointsField = tab === LeaderboardTab.WEEKLY ? "weekPoints" : "totalPoints";
+  return snapshot.docs
+    .filter((doc) => ((doc.data() as UserDoc)[pointsField] ?? 0) > 0)
+    .map((doc, index) =>
+      buildEntry(doc.id, doc.data() as UserDoc, index + 1, tab),
+    );
 };

@@ -257,10 +257,22 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const resolvedPhotoURL =
         providerUser.photo ?? signedIn.user.photoURL ?? null;
 
-      await updateProviderProfile(signedIn.user.uid, {
-        displayName: resolvedDisplayName,
-        photoURL: resolvedPhotoURL,
-      });
+      // Best-effort profile sync. Auth has already succeeded; if this
+      // Firestore write fails (transient network, rule race) the user is
+      // still authenticated, and ConfirmNameModal collects the name on
+      // the wasFirstLink path. Don't surface a misleading "sign-in
+      // failed" toast for a profile-sync hiccup.
+      try {
+        await updateProviderProfile(signedIn.user.uid, {
+          displayName: resolvedDisplayName,
+          photoURL: resolvedPhotoURL,
+        });
+      } catch (profileErr) {
+        logger.warn(
+          "[AuthProvider] updateProviderProfile failed (Google):",
+          profileErr,
+        );
+      }
 
       return { wasFirstLink, displayName: resolvedDisplayName };
     } catch (err) {
@@ -343,10 +355,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const resolvedDisplayName =
         appleDisplayName ?? signedIn.user.displayName ?? null;
 
-      await updateProviderProfile(signedIn.user.uid, {
-        displayName: resolvedDisplayName,
-        photoURL: signedIn.user.photoURL ?? null,
-      });
+      // Best-effort profile sync — see Google flow above for rationale.
+      try {
+        await updateProviderProfile(signedIn.user.uid, {
+          displayName: resolvedDisplayName,
+          photoURL: signedIn.user.photoURL ?? null,
+        });
+      } catch (profileErr) {
+        logger.warn(
+          "[AuthProvider] updateProviderProfile failed (Apple):",
+          profileErr,
+        );
+      }
 
       return { wasFirstLink, displayName: resolvedDisplayName };
     } catch (err) {
@@ -454,21 +474,35 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       await reauthenticate();
     }
 
-    // Local-side cleanup, parallel:
-    //   - pending-results queue: queued rows carry the old uid and would be
-    //     rejected by Firestore rules under the new anon user.
-    //   - push token: drop the device's push_tokens/{token} doc so the user
-    //     stops receiving notifications addressed to the deleted account.
-    // Lifetime stats + recent games are device-local per INFRASTRUCTURE.md
-    // §17.2 and intentionally survive sign-out / delete.
-    await Promise.all([clearPendingResults(), unregisterNotifications()]);
-
-    // Firestore cascade — must succeed while still authed (rules require
-    // request.auth.uid == uid for the deletes).
+    // Order matters here. Each step must succeed before the next, and
+    // irreversible local cleanup runs LAST so a partial failure leaves
+    // the user with their offline queue intact and the account in a
+    // retryable state.
+    //
+    // 1. Firestore cascade — must succeed while still authed (rules
+    //    require request.auth.uid == uid for the deletes). Idempotent:
+    //    safe to retry against an already-deleted doc.
     await deleteUserData(current.uid);
 
-    // Auth account last — onAuthStateChanged then issues a fresh anon user.
+    // 2. Drop the device's push_tokens/{token} doc so the deleted
+    //    account stops receiving notifications addressed to it. Needs
+    //    auth (rule requires owner uid match), so it must run before
+    //    `current.delete()` invalidates the credentials.
+    await unregisterNotifications();
+
+    // 3. Auth account — onAuthStateChanged then issues a fresh anon user.
     await current.delete();
+
+    // 4. Pending-results queue is local-only AsyncStorage — clear it
+    //    AFTER the server-side delete succeeds. If steps 1–3 failed,
+    //    the queue is preserved and a retry can still flush legitimate
+    //    offline games against the not-yet-deleted account. After step
+    //    3 succeeds, queued rows would be dropped by the replay path
+    //    anyway (uid mismatch with the new anon user), but explicitly
+    //    clearing avoids the dropped-replay log noise. Lifetime stats
+    //    + recent games are device-local per INFRASTRUCTURE.md §17.2
+    //    and intentionally survive sign-out / delete.
+    await clearPendingResults();
   }, [reauthenticate]);
 
   const value = useMemo<AuthContextValue>(

@@ -4,15 +4,23 @@ import { View, Image } from "react-native";
 import { useStyles, useTranslation } from "@/src/hooks";
 
 import { AppText } from "../text";
+import ScoreChangeIndicator from "../score-change-indicator/ScoreChangeIndicator";
 
 import { getStyles } from "./styles";
 
 type GameHeaderProps = {
   crowns: number[];
   score: number;
+  lastScoreChange: number | null;
+  scoreChangeKey: number;
 };
 
-const GameHeader: React.FC<GameHeaderProps> = ({ crowns, score }) => {
+const GameHeader: React.FC<GameHeaderProps> = ({
+  crowns,
+  score,
+  lastScoreChange,
+  scoreChangeKey,
+}) => {
   const t = useTranslation();
   const styles = useStyles(getStyles);
 
@@ -25,14 +33,20 @@ const GameHeader: React.FC<GameHeaderProps> = ({ crowns, score }) => {
           <Image key={index} source={crown} style={styles.singleCrown} />
         ))}
       </View>
-      <AppText
-        type="headline"
-        fontFamily="serif"
-        style={styles.answersTextAndCount}
-        numberOfLines={1}
-      >
-        {scoreText}
-      </AppText>
+      <View style={styles.scoreWrapper}>
+        <AppText
+          type="headline"
+          fontFamily="serif"
+          style={styles.answersTextAndCount}
+          numberOfLines={1}
+        >
+          {scoreText}
+        </AppText>
+        <ScoreChangeIndicator
+          value={lastScoreChange}
+          changeKey={scoreChangeKey}
+        />
+      </View>
     </>
   );
 };

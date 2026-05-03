@@ -15,8 +15,12 @@ export const getStyles = (theme: AppTheme) =>
       width: getAdjustedWidth(38),
       height: getAdjustedWidth(24),
     },
-    answersTextAndCount: {
+    scoreWrapper: {
       marginTop: getAdjustedHeight(12),
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    answersTextAndCount: {
       textAlign: "center",
     },
     imageBackgroundWrapper: {

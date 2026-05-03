@@ -83,12 +83,12 @@ const GameSummary: React.FC<GameSummaryProps> = ({
     Linking.openURL(visitLink).catch(() => {});
   };
 
-  const handleNavigateToStats = () => {
+  const handleNavigateToLeaderboard = () => {
     onCloseSummary();
     navigation.reset({
       index: 0,
       routes: [
-        { name: "tabs", params: { screen: ScreenName.STATS_SCREEN } },
+        { name: "tabs", params: { screen: ScreenName.LEADERBOARD_SCREEN } },
       ],
     });
   };
@@ -155,12 +155,12 @@ const GameSummary: React.FC<GameSummaryProps> = ({
 
         <GradientWrapper style={styles.gradient}>
           <IconButton
-            iconName="bar-chart"
-            onPress={handleNavigateToStats}
+            iconName="leaderboard"
+            onPress={handleNavigateToLeaderboard}
             size={24}
             color={colors.bronzeDark}
             containerStyle={styles.gradient}
-            accessibilityLabel="Stats"
+            accessibilityLabel="Leaderboard"
           />
         </GradientWrapper>
 

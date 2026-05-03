@@ -91,21 +91,14 @@ export const getStyles = (theme: AppTheme) =>
     validationText: {
       textAlign: "center",
     },
-    saveButton: {
-      flexDirection: "row",
+    saveScrollButton: {
+      width: "100%",
+      height: getAdjustedHeight(56),
       alignItems: "center",
       justifyContent: "center",
-      width: "100%",
-      paddingVertical: theme.spacing.x3,
-      paddingHorizontal: theme.spacing.x4,
       borderRadius: theme.borderRadius.lg,
       borderWidth: 3,
       borderColor: theme.colors.bronze,
-      backgroundColor: theme.colors.parchment,
-      ...theme.shadows.default,
-    },
-    saveButtonPressed: {
-      transform: [{ scale: 0.98 }],
     },
     saveButtonDisabled: {
       opacity: 0.5,

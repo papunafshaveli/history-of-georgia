@@ -16,6 +16,8 @@ export type GameState = {
   hintsRemaining: number;
   score: number;
   scoreByDifficulty: Record<Difficulty, number>;
+  lastScoreChange: number | null;
+  scoreChangeKey: number;
   stats: {
     questionsAnswered: number;
     correctAnswers: number;

@@ -12,7 +12,16 @@ service cloud.firestore {
     }
 
     match /push_tokens/{token} {
-      allow read: if false;
+      // Owner can read tokens tagged with their own uid. Required by the
+      // user-initiated `deleteUserData` cascade (INFRASTRUCTURE.md §17.4):
+      // `where("uid", "==", request.auth.uid)` finds this user's tokens
+      // across all their devices so the cascade can delete them. Per-doc
+      // evaluation on queries means a user cannot list other users' tokens
+      // — the where-filter must match this rule. Pre-2026-05-03 grandfather
+      // tokens have `uid == null` and remain unreadable by clients (Cloud
+      // Functions use Admin SDK and bypass rules).
+      allow read: if request.auth != null
+        && resource.data.uid == request.auth.uid;
 
       // Authenticated users can write a token doc only when tagging it
       // with their own uid (or leaving the uid blank — pre-2026-05-03
@@ -65,16 +74,16 @@ service cloud.firestore {
         && request.resource.data.bestSingleGameScore == 0
         && request.resource.data.weekPoints == 0;
 
-      // `lastSeenAt` is the load-bearing signal for `pruneInactiveUsers`
-      // (INFRASTRUCTURE.md §17.3). Without these checks, a malicious
-      // client could either self-exempt (write a future timestamp) or
-      // force premature deletion (backdate the value). We enforce:
-      //   - monotonic-or-equal (forward-only writes)
-      //   - bounded by request.time (no future timestamps)
-      // Both checks bypass via null so docs without `lastSeenAt` (the
-      // field is new — pre-2026-05-03 docs lack it) and updates that
-      // don't touch `lastSeenAt` (e.g. `markSignInNudgeSeen`) still
-      // succeed.
+      // `lastSeenAt` rule constraints (monotonic + bounded by
+      // request.time) are deferred to v2.1 along with the
+      // `pruneInactiveUsers` Cloud Function and proper Firestore-emulator
+      // integration tests (see INFRASTRUCTURE.md §17.3). The bounded
+      // check rejected legitimate `serverTimestamp()` writes in
+      // production rule evaluation (Firestore comparison quirk on the
+      // serverTimestamp placeholder), blocking touchLastSeen,
+      // updateProviderProfile, and updateDisplayName. The schema field
+      // still gets written client-side as v2.0.0 telemetry — only the
+      // rule enforcement is deferred.
       allow update: if request.auth.uid == uid
         && request.resource.data.totalPoints         >= resource.data.totalPoints - 5
         && request.resource.data.gamesPlayed         >= resource.data.gamesPlayed
@@ -85,11 +94,7 @@ service cloud.firestore {
         && (request.resource.data.gamesPlayed - resource.data.gamesPlayed) <= 1
         && request.resource.data.createdAt == resource.data.createdAt
         && (request.resource.data.weekPoints >= resource.data.weekPoints
-            || request.resource.data.weekStart != resource.data.weekStart)
-        && (resource.data.lastSeenAt == null
-            || request.resource.data.lastSeenAt >= resource.data.lastSeenAt)
-        && (request.resource.data.lastSeenAt == null
-            || request.resource.data.lastSeenAt <= request.time);
+            || request.resource.data.weekStart != resource.data.weekStart);
 
       allow delete: if request.auth.uid == uid;
     }

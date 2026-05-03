@@ -47,7 +47,8 @@ export const getStyles = (theme: AppTheme) =>
 
       flexDirection: "row",
       alignItems: "center",
-      justifyContent: "space-between",
+      justifyContent: "center",
+      gap: getAdjustedWidth(8),
 
       position: "absolute",
       bottom: getAdjustedHeight(-40),
