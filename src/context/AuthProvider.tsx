@@ -27,11 +27,13 @@ import * as Crypto from "expo-crypto";
 
 import { auth } from "@/firebase";
 import { logger } from "@/src/helpers/logger";
+import { showToast } from "@/src/helpers/showToast";
 import {
   ensureUserDoc,
   updateDisplayName as updateDisplayNameService,
   updateProviderProfile,
 } from "@/src/services/firestore-user";
+import { useTranslation } from "@/src/hooks/useTranslation";
 
 export type SignInResult = {
   /**
@@ -80,6 +82,10 @@ const hasErrorCode = (
   "code" in err &&
   (err as { code?: unknown }).code === code;
 
+const isEmailCollisionError = (err: unknown): boolean =>
+  hasErrorCode(err, "auth/email-already-in-use") ||
+  hasErrorCode(err, "auth/account-exists-with-different-credential");
+
 const bytesToHex = (bytes: Uint8Array): string =>
   Array.from(bytes)
     .map((b) => b.toString(16).padStart(2, "0"))
@@ -114,6 +120,7 @@ export const AuthContext = createContext<AuthContextValue>(defaultContext);
 type AuthProviderProps = { children: React.ReactNode };
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
+  const t = useTranslation();
   const [user, setUser] = useState<User | null>(null);
   const [authVersion, setAuthVersion] = useState(0);
   const [isAuthenticating, setIsAuthenticating] = useState(true);
@@ -121,6 +128,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const ensuringRef = useRef<string | null>(null);
   const googleConfiguredRef = useRef(false);
+
+  const showAccountExistsToast = useCallback(() => {
+    showToast({
+      type: "error",
+      text1: t.common_account_exists_title,
+      text2: t.common_account_exists_message,
+    });
+  }, [t]);
 
   const bumpAuthVersion = useCallback(() => {
     setAuthVersion((v) => v + 1);
@@ -229,12 +244,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       ) {
         return { wasFirstLink: false, displayName: null };
       }
+      if (isEmailCollisionError(err)) {
+        showAccountExistsToast();
+        return { wasFirstLink: false, displayName: null };
+      }
       logger.warn("[AuthProvider] signInWithGoogle failed:", err);
       throw err;
     } finally {
       setIsSigningIn(false);
     }
-  }, [bumpAuthVersion]);
+  }, [bumpAuthVersion, showAccountExistsToast]);
 
   const signInWithApple = useCallback(async (): Promise<SignInResult> => {
     setIsSigningIn(true);
@@ -310,12 +329,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       ) {
         return { wasFirstLink: false, displayName: null };
       }
+      if (isEmailCollisionError(err)) {
+        showAccountExistsToast();
+        return { wasFirstLink: false, displayName: null };
+      }
       logger.warn("[AuthProvider] signInWithApple failed:", err);
       throw err;
     } finally {
       setIsSigningIn(false);
     }
-  }, [bumpAuthVersion]);
+  }, [bumpAuthVersion, showAccountExistsToast]);
 
   const signOut = useCallback(async () => {
     setIsSigningIn(true);

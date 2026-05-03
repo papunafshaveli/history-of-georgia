@@ -8,6 +8,8 @@ import {
 } from "@react-navigation/native";
 import { registerRootComponent } from "expo";
 
+import Toast from "react-native-toast-message";
+
 import {
   BPGNinoEliteUltra,
   DMMedea,
@@ -151,6 +153,7 @@ const App: React.FC = () => {
                     />
                     <ForceUpdateGate />
                   </View>
+                  <Toast />
                 </SafeAreaProvider>
               </ThemeProvider>
             </ThemeModeContext>

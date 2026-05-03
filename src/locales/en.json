@@ -90,6 +90,8 @@
   "signin_skip": "Skip for now",
   "signin_failure_toast": "Couldn't sign in, please try again",
   "signin_coming_soon": "Sign-in arrives in the next update",
+  "common_account_exists_title": "Account already exists",
+  "common_account_exists_message": "This email is already linked to another sign-in method. Please use the same method you originally signed in with.",
 
   "name_modal_title": "Pick your name",
   "name_modal_caption": "This name will appear on the leaderboard.",
