@@ -249,9 +249,9 @@ In `docs/superpowers/plans/2026-04-29-scoring-leaderboard-plan.md`:
 - Lives in AsyncStorage, not Firestore. Per `INFRASTRUCTURE.md §17.2`, signing out does NOT wipe these. **Decision needed:** does delete-account ALSO preserve local stats?
   - **Drosha:** their stats screen sources from Firestore, so deletion wipes their stats automatically.
   - **Ours:** stats screen sources from AsyncStorage. After deletion, the fresh anon user keeps the previous user's lifetime stats / recent games on their device — visually weird (leaderboard rank gone but stats intact).
-  - **Recommendation:** also wipe `local-lifetime-stats` + `local-recent-games` AsyncStorage keys in step 2. Mirrors the user's mental model of "delete everything."
-  - **Alternative:** preserve them (some users might prefer not to lose their personal stats). Less destructive but inconsistent with the modal copy ("This will permanently delete your account, all game data, and sign you out").
-  - **Locking in:** wipe them. Modal copy and user expectation align with hard delete.
+  - **Original recommendation (2026-05-03 spec draft):** wipe local-lifetime-stats + local-recent-games for symmetry with the modal copy.
+  - **Revised decision (2026-05-03 implementation review):** **preserve** local stats. Stats are device-local per §17.2 (the Phase 5 polish-pass decision); wiping them on delete-account would contradict that contract. The same physical user on the same device retains their gameplay history across sign-in / sign-out / delete; only the Firebase identity (and leaderboard rank) goes away. Modal copy was updated to reflect this: "This permanently deletes your leaderboard account and signs you out. Your stats on this device are kept. This action cannot be undone."
+  - **What still gets wiped on delete:** the `pending-results` queue. Those queued rows carry the old uid and would be rejected by Firestore rules under the new anon user. Clearing them prevents zombie queue entries.
 
 ---
 

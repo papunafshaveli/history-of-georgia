@@ -101,7 +101,7 @@
   "common_cancel": "Cancel",
   "common_delete_account_row": "Delete account & sign out",
   "common_delete_account_title": "Delete account?",
-  "common_delete_account_message": "This will permanently delete your account, all game data, and sign you out. This action cannot be undone.",
+  "common_delete_account_message": "This permanently deletes your leaderboard account and signs you out. Your stats on this device are kept. This action cannot be undone.",
   "common_delete_account_button": "Delete & sign out",
   "common_delete_account_error": "Could not delete account, please try again",
 
