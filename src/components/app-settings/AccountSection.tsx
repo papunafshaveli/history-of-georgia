@@ -10,6 +10,7 @@ import {
   useTranslation,
 } from "@/src/hooks";
 import { logger } from "@/src/helpers/logger";
+import { showToast } from "@/src/helpers/showToast";
 
 import GradientWrapper from "../gradient-wrapper/GradientWrapper";
 import Modal from "../modal/Modal";
@@ -116,42 +117,47 @@ const AccountSection: React.FC = () => {
   const t = useTranslation();
   const { colors } = useAppTheme();
   const styles = useStyles(getStyles);
-  const { isAnonymous, isSigningIn, signOut: authSignOut } = useAuth();
+  const { isAnonymous, deleteAccount } = useAuth();
 
-  const [signOutConfirmOpen, setSignOutConfirmOpen] = useState(false);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
-  const handleSignOutPress = useCallback(() => {
-    setSignOutConfirmOpen(true);
+  const handleDeletePress = useCallback(() => {
+    setDeleteConfirmOpen(true);
   }, []);
 
-  const handleSignOutCancel = useCallback(() => {
-    setSignOutConfirmOpen(false);
+  const handleDeleteCancel = useCallback(() => {
+    setDeleteConfirmOpen(false);
   }, []);
 
-  const handleSignOutConfirm = useCallback(async () => {
-    if (isSigningIn) return;
+  const handleDeleteConfirm = useCallback(async () => {
+    if (isDeleting) return;
+    setIsDeleting(true);
     try {
-      await authSignOut();
+      await deleteAccount();
+      // onAuthStateChanged fires null → fresh anon user; AccountSection
+      // unmounts naturally because isAnonymous becomes true.
     } catch (err) {
-      logger.warn("[AccountSection] sign-out failed:", err);
-    } finally {
-      setSignOutConfirmOpen(false);
+      logger.warn("[AccountSection] deleteAccount failed:", err);
+      showToast({
+        type: "error",
+        text1: t.common_delete_account_error,
+      });
+      setIsDeleting(false);
     }
-  }, [authSignOut, isSigningIn]);
+  }, [deleteAccount, isDeleting, t]);
 
   if (isAnonymous) {
     return null;
   }
 
-  const confirmAccessibilityState = { disabled: isSigningIn };
-  const confirmPressableStyle = isSigningIn
+  const confirmAccessibilityState = { disabled: isDeleting };
+  const confirmPressableStyle = isDeleting
     ? styles.signOutConfirmButtonDisabled
     : undefined;
-  const signOutModalCloseHandler = isSigningIn
-    ? undefined
-    : handleSignOutCancel;
+  const deleteModalCloseHandler = isDeleting ? undefined : handleDeleteCancel;
 
-  const signOutModalBody = (
+  const deleteModalBody = (
     <View style={styles.signOutModalContainer}>
       <ImageBackground
         style={styles.signOutTopIconWrapper}
@@ -167,32 +173,33 @@ const AccountSection: React.FC = () => {
         color={colors.onImage}
         style={styles.signOutModalBody}
       >
-        {t.settings_signout_confirm_body}
+        {t.common_delete_account_message}
       </AppText>
 
       <View style={styles.signOutModalButtons}>
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel={t.settings_signout_confirm_cancel}
-          onPress={handleSignOutCancel}
+          accessibilityLabel={t.common_cancel}
+          onPress={handleDeleteCancel}
+          disabled={isDeleting}
         >
           <GradientWrapper style={styles.signOutScrollButton}>
             <AppText fontFamily="script" type="headline">
-              {t.settings_signout_confirm_cancel}
+              {t.common_cancel}
             </AppText>
           </GradientWrapper>
         </Pressable>
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel={t.settings_signout_button}
+          accessibilityLabel={t.common_delete_account_button}
           accessibilityState={confirmAccessibilityState}
-          onPress={handleSignOutConfirm}
-          disabled={isSigningIn}
+          onPress={handleDeleteConfirm}
+          disabled={isDeleting}
           style={confirmPressableStyle}
         >
           <GradientWrapper style={styles.signOutScrollButton}>
             <AppText fontFamily="script" type="headline">
-              {t.settings_signout_button}
+              {t.common_delete_account_button}
             </AppText>
           </GradientWrapper>
         </Pressable>
@@ -203,19 +210,19 @@ const AccountSection: React.FC = () => {
   return (
     <View style={styles.section}>
       <AccountRow
-        iconName="logout"
-        label={t.settings_signout_button}
-        onPress={handleSignOutPress}
+        iconName="delete-outline"
+        label={t.common_delete_account_row}
+        onPress={handleDeletePress}
         labelColor={colors.incorrectBorder}
         iconColor={colors.incorrectBorder}
-        disabled={isSigningIn}
+        disabled={isDeleting}
       />
 
       <Modal
-        isVisible={signOutConfirmOpen}
-        headerTitle={t.settings_signout_confirm_title}
-        onClose={signOutModalCloseHandler}
-        renderComponent={signOutModalBody}
+        isVisible={deleteConfirmOpen}
+        headerTitle={t.common_delete_account_title}
+        onClose={deleteModalCloseHandler}
+        renderComponent={deleteModalBody}
       />
     </View>
   );

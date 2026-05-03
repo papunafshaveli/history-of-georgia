@@ -98,10 +98,12 @@
   "name_modal_save": "შენახვა",
   "name_validation_length": "სახელი უნდა იყოს 2-დან 24 სიმბოლომდე",
 
-  "settings_signout_button": "გასვლა",
-  "settings_signout_confirm_title": "გასვლა?",
-  "settings_signout_confirm_body": "გასვლა გავა Google-ის ანგარიშიდან. შენი სტატისტიკა შენახულია Google-ზე — ნებისმიერ დროს დაბრუნდი.",
-  "settings_signout_confirm_cancel": "გაუქმება",
+  "common_cancel": "გაუქმება",
+  "common_delete_account_row": "ანგარიშის წაშლა და გასვლა",
+  "common_delete_account_title": "ანგარიშის წაშლა?",
+  "common_delete_account_message": "ეს მოქმედება სამუდამოდ წაშლის თქვენს ანგარიშს, თამაშის ისტორიას და ლიდერბორდის ადგილს. დასაბრუნებელი არაფერი იქნება.",
+  "common_delete_account_button": "წაშლა და გასვლა",
+  "common_delete_account_error": "ანგარიშის წაშლა ვერ მოხერხდა, სცადე თავიდან",
 
   "force_update_title": "განახლება საჭიროა",
   "force_update_body": "სათამაშოდ საჭიროა აპლიკაციის განახლება. გთხოვ განახლება მაღაზიიდან.",
