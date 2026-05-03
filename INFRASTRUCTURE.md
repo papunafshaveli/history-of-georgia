@@ -280,7 +280,7 @@ All in `src/helpers/`, pure functions or thin wrappers.
 | `firestore-leaderboard.ts` | Firestore `users` (filtered by `displayName != null`) | `getLeaderboard(tab: LeaderboardTab)` — sorts by `weekPoints` (WEEKLY) or `totalPoints` (ALLTIME), top 50 |
 | `local-recent-games.ts` | AsyncStorage | `addLocalRecentGame(game)`, `getRecentGames()` — independent of auth, always written |
 | `local-lifetime-stats.ts` | AsyncStorage | `recordGame({ score, correctCount, totalQuestions })`, `getLifetimeStats()` — independent of Firestore, fires on every game |
-| `pending-results.ts` | AsyncStorage queue (cap = `PENDING_RESULTS_QUEUE_CAP` = 20) | `enqueuePendingResult(...)`, `replayPendingResults(uid)` — offline queue, replayed when online + authed |
+| `pending-results.ts` | AsyncStorage queue (cap = `PENDING_RESULTS_QUEUE_CAP` = 20) | `enqueuePendingResult(...)`, `replayPendingResults(uid)` — offline queue, replayed when online + authed. Each entry stores the `uid` it was played under; replay refuses to attribute a queued result to any other uid (sign-out / sign-in / auto-prune transitions silently drop mismatched entries rather than re-credit them). |
 | `appConfig.ts` | Firestore `app_config/version` (public read) | `getAppConfig()` → `{ minSupportedVersion, latestVersion }` — drives force-update gate |
 
 **Why dual write to Firestore + AsyncStorage?** The local services (`local-recent-games`, `local-lifetime-stats`) are the source of truth for `StatsScreen` so signing out doesn't wipe the user's view. Firestore writes are the source of truth for the leaderboard and survive device reset.
@@ -420,11 +420,11 @@ Persistence: `getReactNativePersistence(AsyncStorage)` (see `firebase.ts`).
 | Collection | Purpose | Rules summary |
 | --- | --- | --- |
 | `tickets/{id}` | Quiz question pool (~1,564 docs). Fields: `question`, `options[]`, `correctAnswer`, `hint`, `difficulty`, `randomField` | Read: public. Write: forbidden via rules; only via `upload.ts` (Admin SDK). |
-| `users/{uid}` | Per-user stats. Fields: `displayName`, `photoURL`, `isAnonymous`, `totalPoints`, `gamesPlayed`, `totalCorrect`, `totalQuestions`, `bestSingleGameScore`, `weekPoints`, `weekStart`, `hasSeenSignInNudge`, `createdAt`, `updatedAt` | Read: any authed user (leaderboard query). Create: owner only, all stats zeroed. Update: owner only, lifetime stats can only grow with anti-cheat caps (≤ +50 000 totalPoints / +1 game per write, ±5 jitter for retries); `weekPoints` may decrease only when `weekStart` advances; `createdAt` immutable. Delete: forbidden. |
+| `users/{uid}` | Per-user stats. Fields: `displayName`, `photoURL`, `isAnonymous`, `totalPoints`, `gamesPlayed`, `totalCorrect`, `totalQuestions`, `bestSingleGameScore`, `weekPoints`, `weekStart`, `hasSeenSignInNudge`, `lastSeenAt` (refreshed by `touchLastSeen`, drives §17.3), `createdAt`, `updatedAt` | Read: any authed user (leaderboard query). Create: owner only, all stats zeroed. Update: owner only, lifetime stats can only grow with anti-cheat caps (≤ +50 000 totalPoints / +1 game per write, ±5 jitter for retries); `weekPoints` may decrease only when `weekStart` advances; `createdAt` immutable. Delete: owner only (Apple Guideline 5.1.1(v) — see §17.4). |
 | `game_results/{uid}_{resultId}` | Immutable per-game result. Fields: `userId`, `score`, `correctCount`, `totalQuestions`, `selectedDifficulty`, `scoreByDifficulty`, `createdAt` | Read: owner only (allows the idempotency check inside the save transaction to read non-existent docs). Create: owner only, doc id matches `{uid}_*`, `score >= 0 && <= 50 000`, `correctCount <= totalQuestions`. Update / delete: forbidden. |
 | `app_config/version` | Force-update gate. Fields: `minSupportedVersion`, `latestVersion` | Read: public (gate runs before auth resolves). Write: forbidden via clients; Firebase Console / Admin SDK only. |
 | `notifications/{id}` | Push-notification triggers. Fields: `title`, `body`, `status` (`pending` / `processing` / `sent` / `failed`) | Read + write: forbidden via clients; Firebase Console manual entry only. |
-| `push_tokens/{token}` | Expo push tokens registered per device | Write: public. Read: forbidden via clients (Cloud Function reads via Admin SDK). |
+| `push_tokens/{token}` | Expo push tokens registered per device. Fields: `token`, `uid` (added 2026-05-03 — null for anon, owner uid otherwise; lets `pruneInactiveUsers` cascade clean up tokens of pruned users), `platform`, `updatedAt` | Read: forbidden via clients (Cloud Function reads via Admin SDK). Write: authenticated users may write only when tagging the token with their own uid (or leaving uid blank, for compatibility with v1.1.0 binaries). Delete: authenticated owner only (or pre-uid grandfather case). |
 
 Rules file: `firestore.rules`. Deploy via `firebase deploy --only firestore:rules`.
 
@@ -529,20 +529,40 @@ Stats screen reads from **AsyncStorage** (`local-lifetime-stats`, `local-recent-
 - Stats survive offline play.
 - Leaderboard rank depends on Firestore (only signed-in users with a `displayName`).
 
-### 17.3 Inactive-user cleanup — 180-day rule
+### 17.3 Inactive-user cleanup — 180-day rule (deferred to v2.1)
 
-**Goal:** keep Firestore document count and Firebase Auth MAU low to control cost.
+**Status: deferred to v2.1.** The schema is in place (see "What ships in v2.0.0" below); the scheduled `pruneInactiveUsers` Cloud Function does **not** ship with v2.0.0.
 
-**Policy:**
-- A user is **inactive** if both `users/{uid}.updatedAt` and the Firebase Auth `lastSignInTime` are older than **180 days**.
-- Inactive users are deleted via a scheduled Cloud Function (weekly).
-- Cascade delete: `users/{uid}` Firestore doc + every `game_results/{uid}_*` doc + the Firebase Auth user record.
-- For Apple-Sign-In users, the cleanup also calls Apple's revoke-tokens REST API (same JWT-signed pattern as in-app account deletion) so the app no longer appears under the user's Apple ID → Apps Using Apple ID list.
-- Anonymous users follow the same rule but with a tighter threshold of **14 days with zero games played** (carry-over of the orphaned-anon cleanup case).
+**Why deferred:** seven adversarial-review rounds against `pruneInactiveUsers` surfaced a sequence of cross-cutting failure modes (race conditions, clock skew, multi-uid throttle state, push-token bindings, offline replay, migration paths, bootstrap edge cases, trust boundaries). The findings stopped converging — by round 7, fixes for one round were creating regressions caught by the next. The function entangles five subsystems (heartbeat semantics, throttle state, push-token binding, offline queue replay, scheduled-job retry semantics) and needs proper Firestore-emulator integration tests + server-trusted `lastSeenAt` writes before it can ship. Out of scope for v2.0.0.
 
-**Why two thresholds?** Anonymous users are auto-created on every fresh install; if they never play a game in 14 days, they're almost certainly an abandoned install or a `pm clear` orphan. Real signed-in users invest time and may return seasonally; 180 days mirrors industry-default retention windows.
+**What ships in v2.0.0 (telemetry + future-safe schema):**
+- `users/{uid}.lastSeenAt` field, written by `touchLastSeen()` from `AuthProvider.onAuthStateChanged`. Throttled to once per 7 days per uid via the AsyncStorage cache key `lastSeen:syncedAt:v2:${uid}`. Future-timestamp guard (`elapsed >= 0`) prevents clock-skew freezes.
+- `lastSeenAt` is also advanced inside `saveGameAndUpdateStats`'s transaction so game-end (live or offline-replay) refreshes it server-side. Without this, an offline player whose throttled `touchLastSeen` heartbeats never reach the server could be classified as inactive purely because best-effort writes failed silently.
+- `push_tokens/{token}.uid` field, set by `registerForNotifications()` and refreshed across auth transitions by `retagPushToken()` (called from `onAuthStateChanged`).
+- Firestore rule constraint on `lastSeenAt` — monotonic-or-equal AND `<= request.time`, so a malicious client cannot self-exempt or self-backdate. Both checks bypass via null for backwards compatibility with v1.1.0 docs.
+- Firestore rule on `push_tokens` — write requires authenticated uid match (or null for v1.1.0 grandfather). Closes the cascade-poisoning attack at the trust boundary.
 
-**Implementation status:** scheduled. See deferred follow-up #5 in [`docs/superpowers/plans/2026-04-29-scoring-leaderboard-plan.md`](./docs/superpowers/plans/2026-04-29-scoring-leaderboard-plan.md) for the Cloud Function spec.
+`lastSeenAt` was chosen as the recency signal over `updatedAt` and Firebase Auth's `lastSignInTime`:
+- `updatedAt` only advances on profile edits, milestone nudges, and game completions — a user who reopens the app daily for 180 days without playing is still classified as inactive.
+- `lastSignInTime` only advances on explicit sign-in events, not on token-refresh restored sessions — so OAuth users could have a frozen `lastSignInTime` while being daily-active.
+
+Only `lastSeenAt` reliably tracks "the user opened the app."
+
+**v2.1 requirements list (distilled from the adversarial reviews):**
+1. Firestore-emulator integration tests covering: cascade reorder, partial-failure retry, race between candidate-list query and per-candidate delete, clock skew, multi-uid throttle, multi-device push tokens.
+2. Server-trusted `lastSeenAt` writes — most likely a HTTPS Callable Cloud Function the client invokes instead of the direct write path. Removes the trust-boundary concern entirely.
+3. Migration plan for legacy `pending-results` queue entries (without `uid`).
+4. Bootstrap edge case handling — game-end before anonymous sign-in resolves needs a defined path that doesn't risk cross-account corruption.
+5. Push-token ownership re-binding strategy under multi-uid flows that doesn't depend on a one-time snapshot at registration.
+6. Decision on offline-replay ownership: drop mismatches (data loss) vs preserve forever keyed by owner uid (storage growth) vs explicit recovery UX. Pick one with product input rather than code.
+
+**Manual cleanup in the dev / early-adopter phase:** `scripts/wipe-auth.ts` plus `firebase firestore:delete --recursive users` / `game_results` from the README "Full reset for end-to-end testing" section is sufficient for the foreseeable future. Inactive-user accumulation at our current scale (mostly dev testing + early adopters) is cosmetic, not a cost driver.
+
+**Source (v2.0.0 telemetry-only):**
+- Client write: `src/services/firestore-user.ts` — `touchLastSeen` + `LAST_SEEN_THROTTLE_MS = 7 days`. Wired in `src/context/AuthProvider.tsx` after `ensureUserDoc`.
+- Game-end transaction `lastSeenAt` advance: `src/services/firestore-game-result.ts`.
+- Push-token uid tagging: `src/helpers/notifications.ts` (`registerForNotifications`, `retagPushToken`).
+- Server prune function: **not implemented in v2.0.0**, lives in deferred follow-up #5 in `docs/superpowers/plans/2026-04-29-scoring-leaderboard-plan.md`.
 
 ### 17.4 In-app account deletion (Apple Guideline 5.1.1(v))
 
@@ -550,11 +570,11 @@ User-initiated deletion via Settings → Account → "Delete account & sign out"
 
 1. `reauthenticate()` (Google or Apple) — satisfies Firebase's `auth/requires-recent-login`. Skipped for anon (button is hidden anyway).
 2. Local-side cleanup, parallel: (a) drop the `pending-results` AsyncStorage queue — queued rows carry the old uid and would fail Firestore rules under the new anon user; (b) `unregisterNotifications()` — delete the device's `push_tokens/{token}` Firestore doc and clear the cached token from AsyncStorage so the user stops receiving notifications addressed to the deleted account. Lifetime stats + recent games are intentionally **kept** (per §17.2: stats are device-local, not account-bound; same physical user on the same device retains their gameplay history across sign-in / sign-out / delete).
-3. `deleteUserData(uid)` cascade — chunked 499-op `writeBatch` over `game_results` where `userId == uid`, with `users/{uid}` packed into the last batch.
+3. `deleteUserData(uid)` cascade — three steps, each chunked 500-op `writeBatch`: (a) every `push_tokens` doc with `uid == <deleted uid>` (covers other-device tokens — `unregisterNotifications` only handled the local one); (b) every `game_results` doc where `userId == <deleted uid>`; (c) `users/{uid}` last (its presence is the retry handle for any earlier step that crashed).
 4. `auth.currentUser.delete()` — Firebase Auth account.
 5. `onAuthStateChanged` fires null → `AuthProvider` issues a fresh anon user automatically.
 
-**Firestore rule shape:** `users/{uid}` and `game_results/{id}` permit `delete` only by the owner.
+**Firestore rule shape:** `users/{uid}` and `game_results/{id}` permit `delete` only by the owner. `push_tokens/{token}` permits `delete` by the owner uid (or any authenticated client for pre-uid grandfather docs).
 
 **If Apple rejects 2.0.0 specifically on the revoke-tokens requirement** (Guideline 5.1.1(v) explicitly requires server-side Apple token revoke), the v2.1 hotfix is: add a `functions.auth.user().onDelete()` Cloud Function that signs a JWT with the existing `AuthKey_3C2L469ZH5.p8` and calls `https://appleid.apple.com/auth/revoke`. ~1 day of work.
 
@@ -574,7 +594,7 @@ Source files: `src/context/AuthProvider.tsx` (`reauthenticate`, `deleteAccount`)
 | --- | --- | --- |
 | **Firestore reads** | Every leaderboard fetch (top 50 users), every `tickets` fetch, every user stats read | 30-min in-memory cache on `useLeaderboard`; question caching in `fetchRandomQuestion`; budgets +1 read per game write transaction |
 | **Firestore writes** | One transactional write per game result (creates `game_results` doc + updates `users` doc); push token register/unregister | Capped per game; queue cap = 20 prevents unbounded offline write replay |
-| **Firestore storage** | `users`, `game_results`, `push_tokens`, `tickets`, `notifications` collections | Inactive-user cleanup (§17.3) keeps `users` + `game_results` bounded |
+| **Firestore storage** | `users`, `game_results`, `push_tokens`, `tickets`, `notifications` collections | Auto-cleanup deferred to v2.1 (§17.3); manual `scripts/wipe-auth.ts` + `firebase firestore:delete` from the README "Full reset" section is the dev/early-adopter path. User-initiated deletion (§17.4) cascades all three of `push_tokens`, `game_results`, `users/{uid}`. |
 | **Cloud Functions invocations** | `sendPushNotification` per `notifications` doc create | Manual trigger only (no auto-flooding) |
 | **Cloud Functions network** | Outbound Expo Push API calls (chunked) | Blaze plan required; expected: a few hundred sends per push campaign |
 | **Firebase Auth MAU** | Every distinct user counts toward the free tier (50k MAU) and beyond | Inactive-user cleanup deletes Auth records too |

@@ -101,10 +101,18 @@ export const useGameScreen = () => {
       }
 
       if (!uid) {
+        // No authenticated user yet — extremely rare, but reachable when
+        // the boot-time anonymous sign-in fails (e.g. offline first
+        // launch). Queue the result with `uid: null`; replay attributes
+        // null to the current uid (there's no other uid that could own
+        // it, by definition). This keeps the user's game data safe
+        // through transient auth bootstrap failures without blocking
+        // gameplay.
         await enqueuePendingResult({
           resultId,
           payload,
           gameEndedAt: new Date(createdAtMs).toISOString(),
+          uid: null,
         });
         return;
       }
@@ -120,6 +128,7 @@ export const useGameScreen = () => {
             resultId,
             payload,
             gameEndedAt: new Date(createdAtMs).toISOString(),
+            uid,
           });
           return;
         }

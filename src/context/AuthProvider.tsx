@@ -30,9 +30,13 @@ import { auth } from "@/firebase";
 import { IS_IOS } from "@/src/constants/platform";
 import { logger } from "@/src/helpers/logger";
 import { showToast } from "@/src/helpers/showToast";
-import { unregisterNotifications } from "@/src/helpers/notifications";
+import {
+  retagPushToken,
+  unregisterNotifications,
+} from "@/src/helpers/notifications";
 import {
   ensureUserDoc,
+  touchLastSeen,
   updateDisplayName as updateDisplayNameService,
   updateProviderProfile,
 } from "@/src/services/firestore-user";
@@ -175,6 +179,22 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             logger.warn("[AuthProvider] ensureUserDoc failed:", error);
           }
         }
+
+        // Refresh users/{uid}.lastSeenAt (throttled to once per 7 days per
+        // device). Drives the 180-day inactive-user cleanup; see
+        // INFRASTRUCTURE.md §17.3. Fire-and-forget — failure just means the
+        // refresh retries on next app open.
+        touchLastSeen(next.uid).catch((err) => {
+          logger.warn("[AuthProvider] touchLastSeen failed:", err);
+        });
+
+        // Keep the device's push_tokens/{token} doc tagged with the
+        // current uid so the cleanup cascade can find and delete it. No-op
+        // when the user hasn't registered for push, OR when the token is
+        // already tagged with this uid.
+        retagPushToken(next.uid).catch((err) => {
+          logger.warn("[AuthProvider] retagPushToken failed:", err);
+        });
 
         bumpAuthVersion();
         setIsAuthenticating(false);

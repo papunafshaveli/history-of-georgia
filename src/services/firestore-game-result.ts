@@ -107,6 +107,13 @@ export const saveGameAndUpdateStats = async (
           weekPoints: newWeekPoints,
           weekStart: currentWeekStart,
           hasSeenSignInNudge: false,
+          // Advancing lastSeenAt on every game-end (live or replay) means
+          // the inactive-user prune (INFRASTRUCTURE.md §17.3) sees offline
+          // players the moment their queue flushes — without this, a user
+          // who plays for months offline could be classified as inactive
+          // because the throttled `touchLastSeen` heartbeat never reached
+          // the server.
+          lastSeenAt: serverTimestamp(),
           createdAt: serverTimestamp(),
           updatedAt: serverTimestamp(),
         });
@@ -121,6 +128,7 @@ export const saveGameAndUpdateStats = async (
         bestSingleGameScore: newBest,
         weekPoints: newWeekPoints,
         weekStart: currentWeekStart,
+        lastSeenAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
       });
     });

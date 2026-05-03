@@ -148,7 +148,34 @@ These items are intentionally deferred but **must** ship before 2.0.0 goes to pr
 
    **App Store submission risk acknowledged:** Apple's Guideline 5.1.1(v) explicitly requires Sign in with Apple token revoke on deletion. We are shipping without it on the basis that drosha shipped without it and was approved. If our 2.0.0 review rejects on this point specifically, the v2.1 hotfix is: write the Cloud Function `onDelete` trigger, implement Apple JWT signing with the existing `AuthKey_3C2L469ZH5.p8`, call `https://appleid.apple.com/auth/revoke`. Effort: ~1 day for the Cloud Function alone. Documented in INFRASTRUCTURE.md §17.4.
 
-5. **Inactive-user cleanup — 180-day rule (broader version of original orphaned-anon cleanup).**
+5. ⏭ **Inactive-user cleanup — DEFERRED to v2.1 (2026-05-03).** Seven adversarial-review rounds (Codex) against the in-progress `pruneInactiveUsers` Cloud Function surfaced cross-cutting failure modes that need a deeper redesign than v2.0.0 has time for. Findings stopped converging by round 7 — fixes for one round were creating regressions caught by the next. The function entangles five subsystems (heartbeat semantics, throttle state, push-token binding, offline queue replay, scheduled-job retry semantics).
+
+   **What ships in v2.0.0 (telemetry + future-safe schema, no auto-cleanup):**
+   - `users/{uid}.lastSeenAt` field — written by `touchLastSeen()` from `AuthProvider.onAuthStateChanged` (throttled per uid, future-timestamp-safe). Also advanced inside `saveGameAndUpdateStats`'s transaction so offline-replay refreshes it.
+   - `push_tokens/{token}.uid` field — set by `registerForNotifications`, refreshed by `retagPushToken` on auth-state changes.
+   - Firestore rule constraints on `lastSeenAt` (monotonic + bounded by request.time) and `push_tokens` writes (auth uid match required).
+   - User-initiated `deleteAccount` cascade extended to clean `push_tokens` for the deleted uid (closes Codex round-7 H3 — covers other-device tokens, not just the local one).
+
+   **What does NOT ship in v2.0.0:**
+   - The `pruneInactiveUsers` Cloud Function itself. Removed from `functions/src/index.ts`.
+   - The `deleteUserCascade` helper. Removed.
+   - Any auto-pruning of inactive users.
+
+   **Manual cleanup in the dev / early-adopter phase:** `scripts/wipe-auth.ts` plus `firebase firestore:delete --recursive users/game_results` per the README "Full reset for end-to-end testing" section. Sufficient for the foreseeable future — inactive accumulation at our current scale is cosmetic, not a cost driver.
+
+   **v2.1 requirements list (distilled from rounds 1–7):**
+   1. **Firestore-emulator integration tests** for the cascade — covering reorder, partial-failure retry, race between candidate-list query and per-candidate delete, clock skew, multi-uid throttle state, multi-device push tokens.
+   2. **Server-trusted `lastSeenAt` writes** — likely a HTTPS Callable Cloud Function the client invokes instead of writing the field directly. Removes the trust-boundary concern entirely (round 6 finding).
+   3. **Migration plan for legacy `pending-results` queue entries** without `uid`. Round 6: don't silently drop them on first replay after upgrade.
+   4. **Bootstrap edge case handling** — game-end before anonymous sign-in resolves (round 6) needs a defined path that doesn't risk cross-account corruption.
+   5. **Push-token ownership re-binding** under multi-uid flows (round 4) — current `retagPushToken` works but ties uid binding to a one-time snapshot at registration.
+   6. **Decision on offline-replay ownership** when uids mismatch (round 5/7 oscillated between drop and preserve). Pick a product semantic with explicit input: drop / preserve forever / explicit recovery UX.
+   7. **Race recheck under concurrent `touchLastSeen`** — the round-4 fix re-reads `lastSeenAt` before delete, but Codex round 7 noted this still has windows. Needs proper transactional approach OR an explicit two-phase mark-then-delete flow.
+   8. **Apple Sign In token revoke** if Apple ever rejects 2.0.0 on Guideline 5.1.1(v) — same helper as in-app deletion would land here too.
+
+   ---
+
+   **Original spec (kept for reference — superseded by the v2.1 requirements list above):**
 
    **Why this exists:** keep Firestore document count and Firebase Auth MAU bounded so the project stays inside the free tier on Firebase. See [`INFRASTRUCTURE.md` §17.3](../../../INFRASTRUCTURE.md) for the policy summary.
 
