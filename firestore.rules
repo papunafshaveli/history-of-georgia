@@ -33,7 +33,7 @@ service cloud.firestore {
     //           client retries that race the server). Single-write growth
     //           caps (anti-cheat heuristic): +50_000 totalPoints / +1 game.
     //           weekPoints can decrease only when weekStart advances.
-    //   delete: never.
+    //   delete: only the owner (Apple Guideline 5.1.1(v) account deletion).
     match /users/{uid} {
       allow read: if request.auth != null;
 
@@ -57,7 +57,7 @@ service cloud.firestore {
         && (request.resource.data.weekPoints >= resource.data.weekPoints
             || request.resource.data.weekStart != resource.data.weekStart);
 
-      allow delete: if false;
+      allow delete: if request.auth.uid == uid;
     }
 
     // game_results/{uid}_{resultId}
@@ -68,7 +68,8 @@ service cloud.firestore {
     //           only the owner.
     //   create: only the owner; score >= 0, single-write cap of 50_000,
     //           correctCount <= totalQuestions, doc id starts with "{uid}_".
-    //   update/delete: never (results are immutable).
+    //   update: never (results are immutable).
+    //   delete: only the owner (Apple Guideline 5.1.1(v) account deletion).
     match /game_results/{id} {
       allow read: if request.auth != null
         && (resource == null || request.auth.uid == resource.data.userId);
@@ -80,7 +81,9 @@ service cloud.firestore {
         && request.resource.data.score <= 50000
         && request.resource.data.correctCount <= request.resource.data.totalQuestions;
 
-      allow update, delete: if false;
+      allow update: if false;
+      allow delete: if request.auth != null
+        && request.auth.uid == resource.data.userId;
     }
 
     // app_config/{doc}
