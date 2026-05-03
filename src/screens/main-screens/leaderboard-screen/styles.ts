@@ -231,4 +231,7 @@ export const getStyles = (theme: AppTheme) =>
       marginTop: theme.spacing.x2,
       letterSpacing: 1,
     },
+    rankTextWrapper: {
+      marginBottom: getAdjustedHeight(12),
+    },
   });

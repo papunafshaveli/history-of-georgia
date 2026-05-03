@@ -12,7 +12,12 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useFocusEffect } from "@react-navigation/native";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 
-import { AppText, ConfirmNameModal, EmptyState, Loading } from "@/src/components";
+import {
+  AppText,
+  ConfirmNameModal,
+  EmptyState,
+  Loading,
+} from "@/src/components";
 import { IS_ANDROID, IS_IOS } from "@/src/constants";
 import { getAdjustedWidth } from "@/src/helpers";
 import {
@@ -221,14 +226,16 @@ const LeaderboardScreen: React.FC = () => {
   const listHeader = (
     <View>
       {ownRankCaption ? (
-        <AppText
-          type="subHeadline"
-          fontFamily="serif"
-          color={colors.bronzeDark}
-          style={styles.titleText}
-        >
-          {ownRankCaption}
-        </AppText>
+        <View style={styles.rankTextWrapper}>
+          <AppText
+            type="subHeadline"
+            fontFamily="serif"
+            color={colors.bronzeDark}
+            style={styles.titleText}
+          >
+            {ownRankCaption}
+          </AppText>
+        </View>
       ) : null}
 
       <LeaderboardTabs activeTab={activeTab} onChangeTab={setActiveTab} />
