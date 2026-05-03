@@ -30,6 +30,7 @@ import { auth } from "@/firebase";
 import { IS_IOS } from "@/src/constants/platform";
 import { logger } from "@/src/helpers/logger";
 import { showToast } from "@/src/helpers/showToast";
+import { unregisterNotifications } from "@/src/helpers/notifications";
 import {
   ensureUserDoc,
   updateDisplayName as updateDisplayNameService,
@@ -433,11 +434,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       await reauthenticate();
     }
 
-    // Drop the offline replay queue — those queued rows carry the old uid
-    // and would be rejected by Firestore rules under the new anon user.
+    // Local-side cleanup, parallel:
+    //   - pending-results queue: queued rows carry the old uid and would be
+    //     rejected by Firestore rules under the new anon user.
+    //   - push token: drop the device's push_tokens/{token} doc so the user
+    //     stops receiving notifications addressed to the deleted account.
     // Lifetime stats + recent games are device-local per INFRASTRUCTURE.md
     // §17.2 and intentionally survive sign-out / delete.
-    await clearPendingResults();
+    await Promise.all([clearPendingResults(), unregisterNotifications()]);
 
     // Firestore cascade — must succeed while still authed (rules require
     // request.auth.uid == uid for the deletes).
