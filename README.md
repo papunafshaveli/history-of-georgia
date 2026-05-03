@@ -285,7 +285,25 @@ firebase firestore:delete --recursive notifications
 firebase firestore:delete --recursive users && firebase firestore:delete --recursive game_results && firebase firestore:delete --recursive notifications
 ```
 
-Note: Firebase Auth accounts must be deleted manually in Firebase Console → Authentication → Users. The `tickets` collection (questions) is intentionally NOT in this list — it's the canonical question pool, not user-generated content.
+Note: the `tickets` collection (questions) is intentionally NOT in this list — it's the canonical question pool, not user-generated content. Firebase Auth accounts are a separate concern — see the next section.
+
+## Firebase — Wipe all Auth users (dev reset)
+
+For end-to-end smoke testing of the account-deletion flow, you sometimes need to wipe every Firebase Auth user back to zero. Two paths:
+
+**Manual (Firebase Console):** open <https://console.firebase.google.com/project/history-of-georgia-43551/authentication/users>, select all on the page, click "Delete account", repeat per page.
+
+**Scripted (`scripts/wipe-auth.ts`):**
+
+```bash
+# One-time TypeScript compile, then run with --confirm.
+npx tsc scripts/wipe-auth.ts --esModuleInterop --resolveJsonModule --skipLibCheck \
+  && node scripts/wipe-auth.js --confirm
+```
+
+The script paginates `admin.auth().listUsers()` and batches `admin.auth().deleteUsers()` 1000 at a time. It refuses to run without `--confirm` and prints the resolved project ID before deleting anything. Reads credentials from `android-service-account-key/history-of-georgia-43551-firebase-adminsdk-*.json` (gitignored).
+
+Recommended reset order: clear Firestore first (previous section), then run this script.
 
 ## Force-update gate — Firestore values
 
