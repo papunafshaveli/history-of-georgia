@@ -546,7 +546,19 @@ Stats screen reads from **AsyncStorage** (`local-lifetime-stats`, `local-recent-
 
 ### 17.4 In-app account deletion (Apple Guideline 5.1.1(v))
 
-User-initiated deletion via Settings → Account → "Delete account". HARD ship blocker for App Store. Same cascade as 17.3 plus immediate Apple token revoke. See deferred follow-up #4 in the parent plan.
+User-initiated deletion via Settings → Account → "Delete account & sign out". Client-only cascade — **no Cloud Function backstop**, **no Apple token revoke** — proven through App Store review by the drosha sister project shipping with this exact pattern. Order:
+
+1. `reauthenticate()` (Google or Apple) — satisfies Firebase's `auth/requires-recent-login`. Skipped for anon (button is hidden anyway).
+2. Wipe local AsyncStorage — pending-results queue, lifetime stats, recent games.
+3. `deleteUserData(uid)` cascade — chunked 499-op `writeBatch` over `game_results` where `userId == uid`, with `users/{uid}` packed into the last batch.
+4. `auth.currentUser.delete()` — Firebase Auth account.
+5. `onAuthStateChanged` fires null → `AuthProvider` issues a fresh anon user automatically.
+
+**Firestore rule shape:** `users/{uid}` and `game_results/{id}` permit `delete` only by the owner.
+
+**If Apple rejects 2.0.0 specifically on the revoke-tokens requirement** (Guideline 5.1.1(v) explicitly requires server-side Apple token revoke), the v2.1 hotfix is: add a `functions.auth.user().onDelete()` Cloud Function that signs a JWT with the existing `AuthKey_3C2L469ZH5.p8` and calls `https://appleid.apple.com/auth/revoke`. ~1 day of work.
+
+Source files: `src/context/AuthProvider.tsx` (`reauthenticate`, `deleteAccount`), `src/services/firestore-account-deletion.ts` (`deleteUserData`), `src/components/app-settings/AccountSection.tsx` (UI). Spec: `docs/superpowers/specs/2026-05-03-account-deletion-design.md`. Plan: `docs/superpowers/plans/2026-05-04-account-deletion-plan.md`.
 
 ### 17.5 Other retention
 
