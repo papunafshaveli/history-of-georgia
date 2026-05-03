@@ -48,6 +48,7 @@ data_old.json
 #compiled js output
 upload.js
 firebase.js
+scripts/wipe-auth.js
 
 
 #android service key
