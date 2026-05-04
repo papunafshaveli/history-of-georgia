@@ -12,12 +12,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useFocusEffect } from "@react-navigation/native";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 
-import {
-  AppText,
-  ConfirmNameModal,
-  EmptyState,
-  Loading,
-} from "@/src/components";
+import { AppText, ConfirmNameModal, EmptyState } from "@/src/components";
 import { IS_ANDROID, IS_IOS } from "@/src/constants";
 import { getAdjustedWidth } from "@/src/helpers";
 import {
@@ -248,7 +243,7 @@ const LeaderboardScreen: React.FC = () => {
   if (isLoading && entries.length === 0) {
     listEmpty = (
       <View style={styles.loadingState}>
-        <Loading />
+        <ActivityIndicator size="large" color={colors.bronzeDark} />
       </View>
     );
   } else if (isLeaderboardEmpty) {
