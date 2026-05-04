@@ -20,7 +20,6 @@ export { default as StatisticsCard } from "./statistics-card/StatisticsCard";
 export { AppText } from "./text";
 export { default as DifficultyRing } from "./difficulty-ring/DifficultyRing";
 export { default as ScoreChangeIndicator } from "./score-change-indicator/ScoreChangeIndicator";
-export { default as SignInModal } from "./sign-in/SignInModal";
 export { default as ConfirmNameModal } from "./sign-in/ConfirmNameModal";
 export { default as ForceUpdateModal } from "./sign-in/ForceUpdateModal";
 export { default as SoftUpdateModal } from "./sign-in/SoftUpdateModal";
