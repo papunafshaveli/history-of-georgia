@@ -38,7 +38,7 @@ const SettingToggle: React.FC<SettingToggleProps> = ({
           color={colors.onImage}
         />
         <AppText
-          type="title"
+          type="headline"
           fontFamily="script"
           color={colors.onImage}
           style={styles.label}

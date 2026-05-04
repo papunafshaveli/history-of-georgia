@@ -11,6 +11,7 @@ import { registerRootComponent } from "expo";
 import Toast from "react-native-toast-message";
 
 import {
+  BPGIrubaqidzeHeavy,
   BPGNinoEliteUltra,
   DMMedea,
   GFAisiBoldItalic,
@@ -50,6 +51,7 @@ const FONT_MAP = {
   "aisi-bold": GFAisiBoldItalic,
   "dm-medea": DMMedea,
   "helvetica-main": Helvetica,
+  "irubaqidze-heavy": BPGIrubaqidzeHeavy,
   "nino-elite": BPGNinoEliteUltra,
 } as const;
 
