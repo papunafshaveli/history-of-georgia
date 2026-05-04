@@ -35,8 +35,8 @@ const GameHeader: React.FC<GameHeaderProps> = ({
       </View>
       <View style={styles.scoreWrapper}>
         <AppText
-          type="headline"
-          fontFamily="serif"
+          type="title"
+          fontFamily="script"
           style={styles.answersTextAndCount}
           numberOfLines={1}
         >

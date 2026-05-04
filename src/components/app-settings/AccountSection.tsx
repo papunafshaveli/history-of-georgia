@@ -1,5 +1,10 @@
 import React, { useCallback, useState } from "react";
-import { ActivityIndicator, ImageBackground, Pressable, View } from "react-native";
+import {
+  ActivityIndicator,
+  ImageBackground,
+  Pressable,
+  View,
+} from "react-native";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 
 import { CloseIcon } from "@/src/assets";
@@ -92,7 +97,7 @@ const AccountRow: React.FC<AccountRowProps> = ({
         <View style={styles.accountRowLeft}>
           {renderIcon()}
           <AppText
-            type="title"
+            type="headline"
             fontFamily="script"
             color={resolvedLabelColor}
             numberOfLines={1}

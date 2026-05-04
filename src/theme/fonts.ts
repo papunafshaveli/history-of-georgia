@@ -4,7 +4,7 @@ export const fonts = {
   // Section titles
   serif: "nino-elite",
   // Ornamental emphasis
-  script: "aisi-bold",
+  script: "irubaqidze-heavy",
   // Big hero text
   display: "dm-medea",
 } as const;
