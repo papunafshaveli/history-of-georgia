@@ -352,13 +352,15 @@ All design tokens live in `src/theme/`. Components access via `useStyles(getStyl
 | Colors | `colors.ts` | `lightColors`, `darkColors` schemes; primary, parchment, bronze, feedback, surface, text, border, gradient, shadow, chrome, ring tokens. Add new colors here with both light + dark variants — never hardcode hex / rgb / rgba in component files. |
 | Spacing | `spacing.ts` | `{ x1: 4, x2: 8, x3: 12, ... x32: 128 }` — 4px base unit, 17 steps |
 | Border radius | `borderRadius.ts` | `{ xs: 4, sm: 8, md: 12, lg: 16, full: 9999 }` |
-| Fonts | `fonts.ts` | `sans: "helvetica-main"` (body/UI), `serif: "nino-elite"` (titles), `script: "aisi-bold"` (ornament), `display: "dm-medea"` (hero) |
+| Fonts | `fonts.ts` | `sans: "helvetica-main"` (body/UI), `serif: "nino-elite"` (titles), `script: "irubaqidze-heavy"` (ornament), `display: "dm-medea"` (hero). Aisi Bold (`GFAisiBoldItalic.ttf`) is retained in `src/assets/fonts/` as fallback after the v2.0.0 swap (see note below). |
 | Shadows | `shadows.ts` | `default: { shadowColor, shadowOffset, shadowOpacity, shadowRadius, elevation }` — single preset |
 | Z-index | `zIndex.ts` | `{ header: 1000 }` |
 
 **Composition:** `theme.ts` exports `buildAppTheme(isDark)` which combines all tokens into an `AppTheme` object. `useAppTheme()` reads from `ThemeContext`; `useStyles(getStyles)` memoizes `StyleSheet.create` keyed by theme.
 
 **Mode switching:** `useThemeMode()` toggles light/dark; `useModifyThemeMode()` sets directly. System mode follows `Appearance` API.
+
+**Script-font swap (v2.0.0):** `script` was changed from `"aisi-bold"` (italic, hard to read on long sentences, narrow widths) to `"irubaqidze-heavy"` (upright BPG Irubaqidze, FontForge-baked Heavy weight via `ChangeWeight(60)`). Source font (`BPG Irubaqidze.ttf`, Regular only) was pulled from [thecotne/georgian-webfonts](https://github.com/thecotne/georgian-webfonts) and emboldened locally with FontForge to produce `BPGIrubaqidzeHeavy.ttf`. The two `script`-specific layout workarounds in `src/components/text/styles.ts` (`lineHeightBoost = fontSize * 0.25`, `rightBleedFix = fontSize * 0.08`) were originally added for Aisi's italic slant + tall ascenders — they remain in place for Irubaqidze and are tunable post-device-test if text feels too airy or left-shifted. `GFAisiBoldItalic.ttf` is kept in `src/assets/fonts/` as fallback until v2.0.0 is live in stores.
 
 ---
 
@@ -627,10 +629,13 @@ Did `runtimeVersion` change in app.config.ts since the last published binary?
 
 ### 19.2 Current release status (snapshot — keep updated)
 
+**As of 2026-05-04:**
+
 - `app.config.ts` has `version: "1.1.0"`, `runtimeVersion: "2.0.0"`. These don't match because `runtimeVersion` was bumped in commit `3de2045` during the Expo SDK upgrade.
 - Existing prod users are on a `1.1.0` (or older `1.0.0`) native binary.
 - The next prod release **must be a native build** — `eas build --platform all --profile production` then submit to the stores.
 - After users install the new `2.0.0` binary, future `eas update` calls reach them normally.
+- Ship-prep is in flight. Full v2.0.0 plan, what's done, what's left, deferrals and risks: see [`publishingV2.md`](./publishingV2.md) at the repo root.
 - For urgent JS-only hotfixes that need to reach the existing `1.1.0` binary, branch from the last published commit (e.g. `09dd471`), cherry-pick fixes, run `npm ci` to match the pre-upgrade lockfile, then `eas update --branch production`. Reference: `hotfix/ui-fixes-1.1.x`.
 
 ### 19.3 Pre-release checklist (before the 2.0.0 native build)
