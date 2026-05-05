@@ -4,7 +4,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
   name: "საქართველოს ისტორია",
   slug: "history-of-georgia",
-  version: "1.1.0",
+  version: "2.0.0",
   runtimeVersion: "2.0.0",
   orientation: "portrait",
   icon: "./src/assets/images/hofGeLogo.png",
@@ -14,7 +14,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     reactCompiler: true,
   },
   ios: {
-    buildNumber: "1.1.0",
+    buildNumber: "2.0.0",
     supportsTablet: false,
     infoPlist: {
       LSApplicationQueriesSchemes: ["fb", "youtube"],
@@ -23,7 +23,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     bundleIdentifier: "com.papunafshaveli.historyofgeorgia",
   },
   android: {
-    versionCode: 10,
+    versionCode: 11,
     adaptiveIcon: {
       foregroundImage: "./src/assets/images/faviconHofGe.png",
       backgroundColor: "#ffffff",
