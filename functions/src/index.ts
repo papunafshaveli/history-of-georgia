@@ -32,12 +32,10 @@ export const sendPushNotification = onDocumentCreated(
 
     try {
       const tokensSnapshot = await db.collection("push_tokens").get();
-      const allTokens = tokensSnapshot.docs.map(
-        (doc) => doc.data().token as string,
+      const validDocs = tokensSnapshot.docs.filter((doc) =>
+        Expo.isExpoPushToken(doc.data().token as string),
       );
-      const validTokens = allTokens.filter((token) =>
-        Expo.isExpoPushToken(token),
-      );
+      const validTokens = validDocs.map((doc) => doc.data().token as string);
 
       if (validTokens.length === 0) {
         await snapshot.ref.update({
@@ -70,9 +68,7 @@ export const sendPushNotification = onDocumentCreated(
           ticket.status === "error" &&
           ticket.details?.error === "DeviceNotRegistered"
         ) {
-          deletePromises.push(
-            db.collection("push_tokens").doc(validTokens[index]).delete(),
-          );
+          deletePromises.push(validDocs[index].ref.delete());
         }
       });
       await Promise.all(deletePromises);
