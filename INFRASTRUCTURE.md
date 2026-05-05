@@ -458,13 +458,12 @@ The `displayName` filter in both indexes is what excludes anonymous accounts (th
 
 | Service | Purpose | Auth / credentials | Where configured |
 | --- | --- | --- | --- |
-| **Firebase** | Auth, Firestore, Cloud Functions, Analytics | API key + project ID in `.env` | `firebase.ts` (client), `functions/` (server) |
+| **Firebase** | Auth, Firestore, Cloud Functions | API key + project ID in `.env` | `firebase.ts` (client), `functions/` (server) |
 | **Google Sign-In** | OAuth provider | Web + iOS client IDs | `app.config.ts` plugin block + `.env` |
 | **Apple Sign-In** | OAuth provider | Native (Apple ID) + `.p8` key registered with Firebase | `app.config.ts` plugin entry, Firebase Console |
 | **Expo Push (FCM/APNs)** | Push notifications | Expo manages credentials via EAS | `useNotifications` hook + `sendPushNotification` Cloud Function |
 | **EAS Build** | iOS + Android binaries | Apple Team ID, App Store Connect, Play Store service account | `eas.json`, `android-service-account-key/` |
 | **EAS Update** | OTA JS bundle delivery | Bound by `runtimeVersion` match | `app.config.ts` `updates.url` |
-| **Firebase Analytics** | Event logging | Firebase project | `helpers/analytics.ts` |
 | **YouTube embed** | Video on detail screens | none (public) | `YoutubePlayer` (`react-native-youtube-iframe`) |
 
 ---
