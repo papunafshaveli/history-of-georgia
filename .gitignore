@@ -58,6 +58,8 @@ android-service-account-key/
 #firebase config
 
 .firebase.ts
+google-services.json
+GoogleService-Info.plist
 
 #plan
 bigChanges.md

@@ -461,7 +461,7 @@ The `displayName` filter in both indexes is what excludes anonymous accounts (th
 | **Firebase** | Auth, Firestore, Cloud Functions | API key + project ID in `.env` | `firebase.ts` (client), `functions/` (server) |
 | **Google Sign-In** | OAuth provider | Web + iOS client IDs | `app.config.ts` plugin block + `.env` |
 | **Apple Sign-In** | OAuth provider | Native (Apple ID) + `.p8` key registered with Firebase | `app.config.ts` plugin entry, Firebase Console |
-| **Expo Push (FCM/APNs)** | Push notifications | Expo manages credentials via EAS | `useNotifications` hook + `sendPushNotification` Cloud Function |
+| **Expo Push (FCM/APNs)** | Push notifications | iOS: Apple APNs key managed by EAS. Android: requires `google-services.json` at the repo root (referenced by `app.config.ts` `android.googleServicesFile`) so the client gets a token, AND an FCM V1 service account JSON uploaded via `eas credentials` so Expo's relay can deliver to the token. Both halves are required — without the file the client can't register; without the EAS service account Expo can't deliver. | `useNotifications` hook + `sendPushNotification` Cloud Function |
 | **EAS Build** | iOS + Android binaries | Apple Team ID, App Store Connect, Play Store service account | `eas.json`, `android-service-account-key/` |
 | **EAS Update** | OTA JS bundle delivery | Bound by `runtimeVersion` match | `app.config.ts` `updates.url` |
 | **YouTube embed** | Video on detail screens | none (public) | `YoutubePlayer` (`react-native-youtube-iframe`) |
@@ -490,6 +490,7 @@ EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID=...
 
 - `name`, `slug`, `version`, `runtimeVersion`
 - `ios.bundleIdentifier`, `android.package` — both `com.papunafshaveli.historyofgeorgia`
+- `android.googleServicesFile` — `./google-services.json` (gitignored; embeds FCM credentials at Android build time)
 - `extra.eas.projectId` — `27042bfa-ef74-4c27-89e1-395a3eef60df`
 - `updates.url` — EAS Update URL
 - `plugins[]` — `expo-splash-screen`, `expo-font`, `expo-notifications`, `expo-audio`, `expo-asset`, `@react-native-google-signin/google-signin` (with iOS reversed client ID), `expo-apple-authentication`
@@ -505,6 +506,8 @@ Profiles: `development`, `development-simulator` (extends `development` with `io
 - `*.mobileprovision`, `*.p12`, `*.jks`, `*.key`, `*.pem`
 - `firebase-admin-key.json` (Admin SDK credentials, used by `upload.ts`)
 - `android-service-account-key/`
+- `google-services.json` (Android Firebase config, embedded at build time via `app.config.ts` `android.googleServicesFile`)
+- `GoogleService-Info.plist` (iOS Firebase config; not currently referenced but kept gitignored as defense)
 - `data.json`, `data-draft.json`, `data_old.json`
 
 ---
