@@ -8,7 +8,7 @@ import {
   type FlexStyle,
 } from "react-native";
 
-import { EvilIcons } from "@expo/vector-icons";
+import { MaterialIcons } from "@expo/vector-icons";
 
 import { useAppTheme, useStyles, useThemeMode } from "@/src/hooks";
 import { BodyRoll, HeaderRoll } from "@/src/assets";
@@ -90,7 +90,11 @@ const ReusableModal: React.FC<ReusableModalProps> = ({
             {onClose && (
               <Pressable onPress={onClose}>
                 <GradientWrapper style={styles.closeBtnBackground}>
-                  <EvilIcons name="close" color={colors.onImage} size={40} />
+                  <MaterialIcons
+                    name="close"
+                    color={colors.onImage}
+                    size={28}
+                  />
                 </GradientWrapper>
               </Pressable>
             )}
