@@ -30,6 +30,7 @@ service cloud.firestore {
       // docs tagged with a target uid and wedge the
       // `pruneInactiveUsers` cascade above Firestore's writeBatch cap.
       allow create, update: if request.auth != null
+        && request.resource.data.token == token
         && (
           request.resource.data.uid == null
           || request.resource.data.uid == request.auth.uid
@@ -92,9 +93,16 @@ service cloud.firestore {
         && request.resource.data.bestSingleGameScore >= resource.data.bestSingleGameScore
         && (request.resource.data.totalPoints - resource.data.totalPoints) <= 50000
         && (request.resource.data.gamesPlayed - resource.data.gamesPlayed) <= 1
+        && (request.resource.data.totalCorrect - resource.data.totalCorrect)
+            <= (request.resource.data.totalQuestions - resource.data.totalQuestions)
         && request.resource.data.createdAt == resource.data.createdAt
-        && (request.resource.data.weekPoints >= resource.data.weekPoints
-            || request.resource.data.weekStart != resource.data.weekStart);
+        && (
+             (request.resource.data.weekStart == resource.data.weekStart
+              && request.resource.data.weekPoints >= resource.data.weekPoints
+              && (request.resource.data.weekPoints - resource.data.weekPoints) <= 50000)
+             || (request.resource.data.weekStart != resource.data.weekStart
+                 && request.resource.data.weekPoints <= 50000)
+           );
 
       allow delete: if request.auth.uid == uid;
     }
@@ -118,6 +126,9 @@ service cloud.firestore {
         && id.matches(request.auth.uid + "_.*")
         && request.resource.data.score >= 0
         && request.resource.data.score <= 50000
+        && request.resource.data.correctCount >= 0
+        && request.resource.data.totalQuestions >= 0
+        && (request.resource.data.score == 0 || request.resource.data.correctCount > 0)
         && request.resource.data.correctCount <= request.resource.data.totalQuestions;
 
       allow update: if false;
