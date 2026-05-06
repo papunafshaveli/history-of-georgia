@@ -493,7 +493,7 @@ EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID=...
 - `android.googleServicesFile` — `./google-services.json` (gitignored; embeds FCM credentials at Android build time)
 - `extra.eas.projectId` — `27042bfa-ef74-4c27-89e1-395a3eef60df`
 - `updates.url` — EAS Update URL
-- `plugins[]` — `expo-splash-screen`, `expo-font`, `expo-notifications`, `expo-audio`, `expo-asset`, `@react-native-google-signin/google-signin` (with iOS reversed client ID), `expo-apple-authentication`
+- `plugins[]` — `expo-splash-screen`, `expo-font`, `expo-notifications`, `["expo-audio", { enableBackgroundPlayback: false }]`, `expo-asset`, `@react-native-google-signin/google-signin` (with iOS reversed client ID), `expo-apple-authentication`. The `expo-audio` config-form is required: the bare-string default would inject `FOREGROUND_SERVICE` + `FOREGROUND_SERVICE_MEDIA_PLAYBACK` permissions plus an `AudioControlsService` that we don't use (SFX only, no background playback). With `enableBackgroundPlayback: false` the manifest stays clean and Play Console doesn't demand a Foreground service declaration.
 
 ### `eas.json` — build/submit profiles
 
@@ -631,14 +631,40 @@ Did `runtimeVersion` change in app.config.ts since the last published binary?
 
 ### 19.2 Current release status (snapshot — keep updated)
 
-**As of 2026-05-04:**
+**As of 2026-05-06 (late evening):**
 
-- `app.config.ts` has `version: "1.1.0"`, `runtimeVersion: "2.0.0"`. These don't match because `runtimeVersion` was bumped in commit `3de2045` during the Expo SDK upgrade.
-- Existing prod users are on a `1.1.0` (or older `1.0.0`) native binary.
-- The next prod release **must be a native build** — `eas build --platform all --profile production` then submit to the stores.
-- After users install the new `2.0.0` binary, future `eas update` calls reach them normally.
+- `app.config.ts` has `version: "2.0.0"`, `runtimeVersion: "2.0.0"`. Bumped per the v2.0.0 release.
+- **v2.0.0 vc 15 LIVE on Play Store production** as of this evening (~2.4k installs, full rollout). Approved same-day by Google.
+- **🔴 P0**: Google Sign-In broken on vc 15 — DEVELOPER_ERROR (code 10). Root cause: vc 15 was built with `google-services.json` that contained only the Web Client (no Android OAuth clients), because no SHA-1 fingerprints were registered in Firebase at build time. v1.1.0 had no OAuth so it was never noticed. Fix path: register Play App Signing SHA-1 in Firebase → re-download `google-services.json` (now has 3 `client_type=1` entries) → update EAS env var → rebuild as vc 17 → submit + promote.
+- **vc 17 Android build in EAS queue right now** with the fix. Will supersede both vc 15 (production) and vc 16 (internal testing track, FGS-fix-only).
+- **Foreground service permissions** transitive permission from `expo-audio` was diagnosed via `bundletool dump manifest` and fixed by passing `{ enableBackgroundPlayback: false }` to the plugin in §16. Already in `app.config.ts` and bundled into vc 16 + vc 17.
+- **iOS v2.0.0 build COMPLETED + uploaded to App Store Connect** earlier this evening. Apple Developer Portal API recovered; fresh prov profile `8G68T2RT74` (valid through 2027-03-19) generated with Sign In with Apple capability. Pending App Store Connect work: App Privacy questionnaire, Age rating (4/9/13/16/18 scale, expect 9+), Privacy Manifest verification, What's New copy, Submit for Review.
+- All Play Console policy declarations completed today: Data Safety form (v2.0.0 data types), Account Deletion (folded into Data Safety), Privacy Policy URL replaced with proper `docs.google.com/document/d/e/.../pub` Publish-to-web URL.
+- Privacy policy Google Doc section 4 expanded with the email-deletion + 30-day SLA sentence.
 - Ship-prep is in flight. Full v2.0.0 plan, what's done, what's left, deferrals and risks: see [`publishingV2.md`](./publishingV2.md) at the repo root.
 - For urgent JS-only hotfixes that need to reach the existing `1.1.0` binary, branch from the last published commit (e.g. `09dd471`), cherry-pick fixes, run `npm ci` to match the pre-upgrade lockfile, then `eas update --branch production`. Reference: `hotfix/ui-fixes-1.1.x`.
+
+### 19.6 google-services.json maintenance lesson (post-vc15 P0)
+
+When Firebase's `google-services.json` is generated for a project that has no SHA-1 fingerprints registered, the file contains **only** the `client_type=3` Web Client and zero `client_type=1` Android OAuth clients. Apps that use Google Sign-In on Android need at least one `client_type=1` entry baked into the APK at build time (the Expo Google Sign-In plugin reads google-services.json at build time). Without it, the runtime GMS Auth library cannot identify the calling app to Google's OAuth servers and throws `DEVELOPER_ERROR` (code 10).
+
+**Always**, before building a production binary that exercises Google Sign-In:
+
+1. Register Play App Signing SHA-1 (Play Console → Test and release → App integrity → App signing → "App signing key certificate" SHA-1) in Firebase Console → Project Settings → Android app → SHA certificate fingerprints.
+2. Also register the upload key SHA-1 (same screen, "Upload key certificate") if you ever distribute non-Play-Store builds (preview, internal-track manual installs, etc.).
+3. Re-download `google-services.json` AFTER all relevant SHAs are registered.
+4. Verify the file contains `client_type=1` entries with `android_info.certificate_hash` matching each registered SHA:
+   ```bash
+   python3 -c "
+   import json
+   g = json.load(open('google-services.json'))
+   for c in g.get('client', []):
+       for o in c.get('oauth_client', []):
+           print(f'client_type={o.get(\"client_type\")} cert_hash={o.get(\"android_info\", {}).get(\"certificate_hash\", \"-\")}')
+   "
+   ```
+5. Update the EAS env var `GOOGLE_SERVICES_JSON` (file type, Secret) for `production`, `preview`, and `development` environments.
+6. Then run `eas build`.
 
 ### 19.3 Pre-release checklist (before the 2.0.0 native build)
 
