@@ -53,7 +53,12 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     ],
     "expo-font",
     "expo-notifications",
-    "expo-audio",
+    [
+      "expo-audio",
+      {
+        enableBackgroundPlayback: false,
+      },
+    ],
     "expo-asset",
     [
       "@react-native-google-signin/google-signin",
