@@ -72,6 +72,7 @@ export const getStyles = (theme: AppTheme) =>
       flex: 1,
       flexDirection: "row",
       alignItems: "center",
+      justifyContent: "center",
       gap: theme.spacing.x3,
     },
     accountRowLabel: {
