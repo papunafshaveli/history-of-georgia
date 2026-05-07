@@ -37,6 +37,16 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       "VIBRATE",
       "ACCESS_WIFI_STATE",
     ],
+    intentFilters: [
+      {
+        action: "VIEW",
+        data: {
+          scheme:
+            "com.googleusercontent.apps.394970199474-ig4qafdumg2utm0lbifdfinig6vdo7o2",
+        },
+        category: ["DEFAULT", "BROWSABLE"],
+      },
+    ],
   },
   web: {
     bundler: "metro",

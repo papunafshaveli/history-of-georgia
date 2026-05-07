@@ -17,14 +17,13 @@ import {
   signOut as firebaseSignOut,
   type User,
 } from "firebase/auth";
-import {
-  GoogleSignin,
-  isErrorWithCode,
-  isSuccessResponse,
-  statusCodes,
-} from "@react-native-google-signin/google-signin";
+import { GoogleSignin } from "@react-native-google-signin/google-signin";
 import * as AppleAuthentication from "expo-apple-authentication";
 import * as Crypto from "expo-crypto";
+import * as Google from "expo-auth-session/providers/google";
+import * as WebBrowser from "expo-web-browser";
+
+WebBrowser.maybeCompleteAuthSession();
 
 import { auth } from "@/firebase";
 import { IS_IOS } from "@/src/constants/platform";
@@ -140,6 +139,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const ensuringRef = useRef<string | null>(null);
   const googleConfiguredRef = useRef(false);
 
+  const [, , googlePromptAsync] = Google.useAuthRequest({
+    androidClientId:
+      "394970199474-ig4qafdumg2utm0lbifdfinig6vdo7o2.apps.googleusercontent.com",
+    iosClientId: process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID,
+    webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
+  });
+
   const showAccountExistsToast = useCallback(() => {
     showToast({
       type: "error",
@@ -218,16 +224,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const signInWithGoogle = useCallback(async (): Promise<SignInResult> => {
     setIsSigningIn(true);
     try {
-      await GoogleSignin.hasPlayServices();
-      const response = await GoogleSignin.signIn();
+      const result = await googlePromptAsync();
 
-      if (!isSuccessResponse(response)) {
+      if (result?.type !== "success") {
         return { wasFirstLink: false, displayName: null };
       }
 
-      const { idToken, user: providerUser } = response.data;
+      const idToken =
+        result.authentication?.idToken ?? result.params?.id_token;
       if (!idToken) {
-        throw new Error("[AuthProvider] Google response missing idToken");
+        throw new Error("[AuthProvider] Google response missing id_token");
       }
 
       const credential = GoogleAuthProvider.credential(idToken);
@@ -252,16 +258,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       bumpAuthVersion();
 
-      const resolvedDisplayName =
-        providerUser.name ?? signedIn.user.displayName ?? null;
-      const resolvedPhotoURL =
-        providerUser.photo ?? signedIn.user.photoURL ?? null;
+      const resolvedDisplayName = signedIn.user.displayName ?? null;
+      const resolvedPhotoURL = signedIn.user.photoURL ?? null;
 
-      // Best-effort profile sync. Auth has already succeeded; if this
-      // Firestore write fails (transient network, rule race) the user is
-      // still authenticated, and ConfirmNameModal collects the name on
-      // the wasFirstLink path. Don't surface a misleading "sign-in
-      // failed" toast for a profile-sync hiccup.
       try {
         await updateProviderProfile(signedIn.user.uid, {
           displayName: resolvedDisplayName,
@@ -276,13 +275,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       return { wasFirstLink, displayName: resolvedDisplayName };
     } catch (err) {
-      if (
-        isErrorWithCode(err) &&
-        (err.code === statusCodes.SIGN_IN_CANCELLED ||
-          err.code === statusCodes.IN_PROGRESS)
-      ) {
-        return { wasFirstLink: false, displayName: null };
-      }
       if (isEmailCollisionError(err)) {
         showAccountExistsToast();
         return { wasFirstLink: false, displayName: null };
@@ -292,7 +284,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     } finally {
       setIsSigningIn(false);
     }
-  }, [bumpAuthVersion, showAccountExistsToast]);
+  }, [bumpAuthVersion, googlePromptAsync, showAccountExistsToast]);
 
   const signInWithApple = useCallback(async (): Promise<SignInResult> => {
     setIsSigningIn(true);
@@ -421,14 +413,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const providerId = current.providerData[0]?.providerId;
 
     if (providerId === "google.com") {
-      await GoogleSignin.hasPlayServices();
-      const response = await GoogleSignin.signIn();
-      if (!isSuccessResponse(response)) {
+      const result = await googlePromptAsync();
+      if (result?.type !== "success") {
         throw new Error("[AuthProvider] Google reauth cancelled");
       }
-      const { idToken } = response.data;
+      const idToken =
+        result.authentication?.idToken ?? result.params?.id_token;
       if (!idToken) {
-        throw new Error("[AuthProvider] Google reauth missing idToken");
+        throw new Error("[AuthProvider] Google reauth missing id_token");
       }
       const credential = GoogleAuthProvider.credential(idToken);
       await reauthenticateWithCredential(current, credential);
@@ -464,7 +456,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     throw new Error(
       `[AuthProvider] reauthenticate not supported for provider ${providerId}`,
     );
-  }, []);
+  }, [googlePromptAsync]);
 
   const deleteAccount = useCallback(async () => {
     const current = auth.currentUser;
