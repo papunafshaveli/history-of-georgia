@@ -1,7 +1,7 @@
 # publishingV2.md — History of Georgia v2.0.0 Ship Plan
 
-**Last updated:** 2026-05-08 afternoon (iOS submitted for App Store review; Android Sign-In P0 still open with two hypotheses falsified today)
-**Status:** vc 17 LIVE on Play Store production. iOS v2.0.0 submitted for App Store Review on 2026-05-08 with Apple + Google sign-in buttons live on iOS via OTA `019e06ab` (residual risk noted — production sign-in not verified on real device because Gmail TestFlight delivery failed; OTA-revert to Apple-only is the contingency). Android Google Sign-In STILL BROKEN — multi-OAuth-client hypothesis (3→1 cleanup) falsified today, SHA-1 byte-mismatch hypothesis falsified today. Android production OTA replaced the "Soon" placeholder with localized "მალე" (`t.leaderboard_coming_soon`). vc 21 production rollout halted; vc 17 remains live.
+**Last updated:** 2026-05-08 evening (Android Sign-In P0 SOLVED, iOS submitted for App Store review)
+**Status:** **Android v2.0.0 vc 15 LIVE on Play Store** with Google Sign-In working end-to-end (~3.3k installs). **iOS v2.0.0 SUBMITTED for App Store review on 2026-05-08**, awaiting Apple outcome. Latest production OTAs: Android `019e0806` (UI polish on top of Sign-In re-enable), iOS `019e06ab` (anonGate restored with Apple + Google buttons). Remaining ship work: monitor Apple review, then bump Firestore `app_config/version` to `2.0.0` once iOS is approved.
 **Owner:** Papuna Fshaveli
 
 ---
@@ -85,48 +85,53 @@ Recap. Source of truth is git log + `bigChanges.md` §10. This list is the versi
 
 ---
 
-## 3. What's left before submission (UPDATED 2026-05-07 afternoon)
+## 3. What's left before submission (UPDATED 2026-05-08 evening)
 
-### 🔴 P0 STILL OPEN: Google Sign-In broken on Android (vc 17 production)
+### ✅ Android Sign-In P0 SOLVED (2026-05-08 evening)
 
-**Production state today**: vc 17 LIVE on Play Store. Google Sign-In throws DEVELOPER_ERROR (code 10) at runtime despite all configs verified end-to-end. vc 21 build attempted with `expo-auth-session/providers/google` migration — failed with Google OAuth `Error 400: invalid_request`. vc 21 production rollout halted; vc 17 remains live. Latest production OTA `019e01d9-001a-734f-991f-7b38597315ca` replaces the entire anonymous-Leaderboard gate (icon + headline + buttons) with a single "Soon" placeholder so users no longer hit the broken Sign-In path. Anonymous play continues normally for ~3.3k installs.
+**Production state today**: vc 15 LIVE on Play Store with Google Sign-In working end-to-end. Latest OTA `019e0806` adds tab bar safe-area + restart button padding + leaderboard refresh-on-auth-change polish on top.
 
-**Root cause unknown after exhausting standard troubleshooting:**
-- ✅ Play App Signing SHA-1 (`30:19:AA:C5:...:8E:7F`) registered in Firebase + matching Android OAuth client `394970199474-ig4qafdumg2utm0lbifdfinig6vdo7o2.apps.googleusercontent.com` visible in Cloud Console.
-- ✅ Web Client ID + package + Identity Toolkit API + OAuth consent screen verified correct via diagnostic OTA + multiple Cloud Console screenshots.
-- ✅ Three independent research streams (Codex agents) confirmed standard config is right.
-- ✅ Sister project `drosha` works in production with same library v16.1.2, same code shape, same Firebase pattern. Only structural difference: drosha has 1 Android OAuth client in its Cloud project; this project has 3 (Play App Signing + 2 upload-key SHAs from older builds).
-- ❌ Multi-SHA hypothesis was tested by deleting 2 non-Play-App-Signing SHAs from Firebase. Firebase deletion reportedly cascades to Cloud Console but Cloud Console screenshots showed the 3 OAuth clients still active afterwards. Sign-In still failed. Hypothesis inconclusive — Cloud Console deletion was never explicitly performed.
-- ❌ Migration to `expo-auth-session/providers/google` (vc 21) was a guess that introduced a different failure: Google OAuth `Error 400: invalid_request` when the OAuth flow hits accounts.google.com after account selection. Both `:/oauthredirect` and `:/oauth2redirect` redirect URI paths tested via OTA — same error.
+**Root cause**: Play App Signing SHA-1 was never correctly registered in Firebase. The originally-registered `30:19:AA:C5:F5:61:75:42:09:16:E7:41:45:14:1E:78:02:C5:8E:7F` was a visual transcription error from documentation; the actual runtime cert is `3D:19:A4:C5:F1:61:75:42:09:16:EE:F1:A5:14:1E:78:02:C5:BE:7F`. Cloud Console therefore had no Android OAuth client matching the runtime APK, and GMS Auth threw DEVELOPER_ERROR (code 10).
 
-**Open avenues for next session:**
-1. **Try drosha-matching cleanup**: delete the 2 non-Play-App-Signing Android OAuth clients DIRECTLY in Cloud Console (`394970199474-ns31...` May 1 + `394970199474-9ro5...` Apr 30 — both auto-created by Google Service). If empirical evidence is right and config research was wrong, this matches drosha's setup and might fix legacy GoogleSignin via the existing vc 17 binary (no rebuild needed — OTA-only re-enable). Risk: dev emulator Sign-In would break (was using one of the deleted SHAs).
-2. **Buy Universal Sign-In** ($89/yr at universal-sign-in.com) for the premium `GoogleOneTapSignIn` Credentials Manager class. Requires vc 22 native rebuild. User has stated they don't want to buy.
-3. **Escalate to Codex via /codex:rescue** with full session context for a fresh second-pair-of-eyes diagnostic pass.
+**How it was diagnosed**:
+1. Pulled the production APK off the emulator with `adb pull /data/app/.../base.apk`.
+2. Ran `apksigner verify --print-certs ./base.apk` — printed the actual runtime Signer #1 SHA-1 `3d19a4c5f16175420916eef1a5141e7802c5be7f`.
+3. Compared to Firebase Console fingerprint list — none of the registered SHAs matched.
 
-**Bad-decision audit (for future reference):**
-- The SHA-delete advice was based on a hypothesis my own research later disproved. Should have stopped after research findings instead of proceeding with deletion.
-- The `expo-auth-session` migration was untested locally (no dev emulator verification before commit) and pushed to production via vc 21 → caused a different error class that surfaced to all Internal track installs. Should have validated on dev emulator first.
-- Multiple OTAs pushed to production with bandwidth-of-thought changes. Should have rolled back to the stable broken state earlier and stopped iterating on production.
+**Fix applied**:
+1. Registered `3D:19:A4:...` in Firebase Console → Project Settings → Android app → SHA fingerprints.
+2. Firebase auto-synced to Cloud Console within ~30 seconds, creating a matching Android OAuth client server-side.
+3. Sign-In started working immediately on vc 15 — **no native rebuild required**. Confirmed via real-device install from Play Store + emulator test post-OTA.
+4. Reverted `src/context/AuthProvider.tsx` from a brief `expo-auth-session` workaround back to native `@react-native-google-signin/google-signin` (commit `ed9eadc`). Both libraries remain in `package.json` and `app.config.ts` plugins, so vc 15's APK has the native module compiled in either way.
+
+**Two falsified hypotheses recorded for posterity** (don't repeat):
+1. "Multiple Android OAuth clients in Cloud Console need cleanup (drosha works with 1)" — cleaning up to 1 client did nothing because the underlying issue was the SHA mismatch, not client count.
+2. "google-services.json bundled in vc 15 is missing `client_type=1` entries" — true but not the blocker; the legacy GoogleSignin library reads `webClientId` from JS, not the bundled JSON. The Cloud Console OAuth client matched against the runtime SHA is the actual auth path.
+
+**Bad-decision audit retained from earlier sessions**:
+- The original SHA was transcribed from a documentation screenshot rather than verified against the runtime APK. Lesson now codified in INFRASTRUCTURE.md §19.6: always run `apksigner verify --print-certs` against the runtime APK before registering any SHA.
+- The `expo-auth-session` migration was a guess that introduced a different failure class (`invalid_request`) and pushed to production without local verification. Lesson: test on dev emulator before any production OTA touching auth code.
+- Several OTAs pushed mid-investigation. Lesson: prefer rollback to the stable-broken state once iteration starts diverging.
 
 **Production OTA history (Android channel, runtime 2.0.0):**
-- `019dfeb0` — diagnostic Alert (capturing error code; later reverted).
-- `019dfebc` — revert diagnostic.
-- `019e008a` — second diagnostic Alert (full error fields capture); later reverted.
-- `019e0093` — revert second diagnostic.
-- `019e009f` — hide Google button via `showGoogle = !IS_ANDROID`.
-- `019e00a6` — re-enable Google button (test SHA cleanup; failed).
-- `019e00bf` — hide Google button again.
-- `019e011c` — restore button + legacy GoogleSignin (after vc 18 build failed).
-- `019e01c4` — expo-auth-session with `:/oauthredirect`; failed `invalid_request`.
-- `019e01cd` — expo-auth-session with `:/oauth2redirect`; same failure.
+
+Pre-fix iteration history:
+- `019dfeb0` / `019dfebc` — diagnostic Alert + revert.
+- `019e008a` / `019e0093` — second diagnostic + revert.
+- `019e009f` / `019e00a6` / `019e00bf` — hide / re-enable / hide Google button cycle.
+- `019e011c` — restore button + legacy GoogleSignin (after vc 18 build attempt).
+- `019e01c4` / `019e01cd` — expo-auth-session migration (`:/oauthredirect` and `:/oauth2redirect` variants); both failed `invalid_request`.
 - `019e01d7` — rollback to legacy GoogleSignin (stable broken state).
 - `019e01d9` — anonGate replaced with hardcoded English "Soon" placeholder.
-- **`<i18n OTA 2026-05-08>` (CURRENT)** — `Soon` → `t.leaderboard_coming_soon` ("მალე" / "Soon"). Localized.
+- `<i18n OTA 2026-05-08>` — `Soon` → `t.leaderboard_coming_soon` ("მალე" / "Soon"). Localized.
+
+Post-fix:
+- **`019e0797`** — restored the full anon-gate UI (icon + headline + Google + Apple buttons) after the SHA fix. This is the OTA that re-enabled Sign-In on Android.
+- **`019e0806` (CURRENT)** — UI polish: tab bar safe-area inset, restart button `paddingHorizontal`, leaderboard `refresh()` on auth state change. Group `9866437d-2379-4a89-9da2-5cb4ddf2eb9f`.
 
 **Production OTA history (iOS channel, runtime 2.0.0):**
-- All Android OTAs above also bundle for iOS where applicable (i.e. before iOS divergence on 2026-05-08).
-- **`019e06ab` (CURRENT)** — iOS-only OTA. Restores the full anonGate UI (icon + headline + Google button + Apple button) for iOS, gated by `IS_IOS`. Android branch keeps the "მალე" placeholder. Update group `d899ed1e-f27b-41c9-b806-df16c553a4f7`.
+- All Android OTAs above also bundled for iOS where applicable (i.e. before iOS divergence on 2026-05-08).
+- **`019e06ab` (CURRENT)** — iOS-only OTA. Restores the full anonGate UI for iOS, gated by `IS_IOS`. Group `d899ed1e-f27b-41c9-b806-df16c553a4f7`. (iOS still on its own OTA channel because of a bundling quirk: Expo SDK 55 + missing `react-native-web-webview` peer-dep in `react-native-youtube-iframe` breaks the web target, so updates need explicit `--platform ios|android`.)
 
 **App Store Connect submission state (2026-05-08):**
 - App Privacy questionnaire DONE — Name / Email / Gameplay Content / User ID / Device ID (all linked to user, App Functionality only, no tracking).
@@ -134,20 +139,10 @@ Recap. Source of truth is git log + `bigChanges.md` §10. This list is the versi
 - Description, Promotional Text, What's New copy filled in English (Georgian localization left to Owner).
 - Build 1.0.22 attached to v2.0.0 release.
 - Encryption export compliance answered "Standard encryption only — exempt".
-- Submitted for Review on 2026-05-08.
-- iOS Sign-In flow verified on dev build (iPhone 11 Pro) only. Production binary not verified on real device because TestFlight delivery to `papunafshaveli@gmail.com` failed (Apple → Gmail relay flaky). Residual risk accepted; OTA-revert to Apple-only is the 5-minute contingency if Apple Review surfaces an iOS Google Sign-In error.
+- **Submitted for Review on 2026-05-08.** Awaiting Apple outcome.
+- iOS Sign-In flow verified on dev build (iPhone 11 Pro) only. Production binary not verified on real device because TestFlight delivery to `papunafshaveli@gmail.com` kept failing (Apple → Gmail relay flaky). Residual risk accepted; OTA-revert to Apple-only is the 5-minute contingency if Apple Review surfaces an iOS Google Sign-In error.
 
-**Android P0 investigation state (2026-05-08 afternoon):**
-
-Two hypotheses falsified today:
-1. **Multi-OAuth-client (drosha=1, history=3)** — cleaned up to 1 Android OAuth client in Cloud Console (deleted `394970199474-ns31...` and `394970199474-9ro5...` directly, leaving only the May-6 Play App Signing client `394970199474-ig4qafdumg2utm0lbifdfinig6vdo7o2`). Sign-In still fails identically. Hypothesis dead.
-2. **SHA-1 byte mismatch** — verified Cloud Console + Firebase Console both store the full 20-byte SHA `30:19:AA:C5:F5:61:75:42:09:16:E7:41:45:14:1E:78:02:C5:8E:7F`. Hypothesis dead.
-
-Remaining hypotheses (untested):
-- (a) **May-6 Cloud OAuth client is in a half-broken state.** Test: delete the SHA in Firebase, re-add it; Firebase auto-creates a fresh Cloud OAuth client. If new client fixes Sign-In, original was orphaned/stale.
-- (b) **Play App Signing key SHA at runtime differs from what Play Console reports.** Test: ADB pull base.apk from a Google Play emulator with the production install + `keytool -printcert -jarfile` to read the actual runtime cert SHA. If different from `30:19:AA:...`, register the actual SHA in Firebase.
-
-Out of scope for v2.0.0 ship. Park behind iOS submission, return after iOS Review outcome.
+**Cosmetic Cloud Console state**: 3 Android OAuth clients exist (prod `3D:19:A4`, dev `5E:8F:16`, one orphan from the deleted wrong-SHA `30:19:AA`). Orphan is inert — kept until iOS approval to avoid mid-review changes to the OAuth client list.
 
 ### Already done
 
@@ -182,38 +177,24 @@ Out of scope for v2.0.0 ship. Park behind iOS submission, return after iOS Revie
 - ✅ **Both v2.0.0 builds queued on EAS as versionCode 16** via `production` profile `autoIncrement: true`. Free-tier queue ~20 min for iOS.
 - ✅ Store screenshots for Play Console uploaded (used a temporary `MOCK_LEADERBOARD_ENABLED` flag in `useLeaderboard.ts` to populate the leaderboard with believable Georgian names + scores; reverted via `git checkout` after capture).
 
-### Active hard ship blockers
+### Active ship blockers
 
-1. **vc 17 Android build (in EAS queue right now)** — Once it completes:
-   - `eas submit --platform android --profile production --latest` → uploads vc 17 AAB to Play Console.
-   - In Play Console: Production → Create new release → "Add from library" → pick vc 17 → release notes match vc 15 (or fresh copy) → Save → Review → **Start rollout to Production** at 100%.
-   - Wait for Google review (same-day approval today on vc 15).
-   - Once vc 17 is live, **install fresh from Play Store on a real device and verify Google Sign-In works**. This is the test that closes the P0.
+All hard blockers cleared. Remaining work is monitoring + a small post-approval Firestore tweak.
 
-2. **Play Console final steps** after vc 17 ships:
-   - Foreground service permissions "Need attention (1)" should auto-clear on next bundle scan since vc 17 has no FGS perms (matches vc 16 in that regard).
-   - Financial features + App access declarations: confirmed already correct from v1.1.0 (Save button disabled = no changes needed).
+1. **Wait for Apple App Store review outcome** on the iOS submission (build 1.0.22). Most likely outcomes:
+   - ✅ Approved → bump `app_config/version` (see "Post-binary-live" below).
+   - ❓ Rejected on iOS Sign-In path → OTA-revert iOS to Apple-only via the existing `IS_IOS` gate in `LeaderboardScreen.tsx`, then resubmit. ~5 min contingency.
+   - ❓ Rejected on Privacy Manifest / metadata → fix the flagged item, resubmit. No code change typically.
 
-3. **iOS v2.0.0 build + upload DONE** — pending App Store Connect work:
-   - **App Privacy questionnaire** for v2.0.0 (Name, Email, Gameplay Content, Other User Content, User ID, Device ID — all linked to user, not used for tracking, App Functionality only).
-   - **Age rating questionnaire** — Apple's new 4/9/13/16/18 scale is in effect since 2026-01-31. Educational quiz with historical battle questions likely lands at **9+**.
-   - **Privacy Manifest** verification: Expo SDK 55 auto-generates `PrivacyInfo.xcprivacy` for Expo modules. Defensive measure for v2.0.0: confirm AsyncStorage's NSUserDefaults usage (CA92.1) and Google Sign-In v16+ are covered. May need `expo.ios.privacyManifests` block in `app.config.ts` if Apple flags missing reasons after upload.
-   - **What's New / Promotional Text** for v2.0.0 — needs Georgian + English copy: Apple Sign In + Google Sign In + leaderboard + difficulty-weighted scoring + account deletion + font polish.
-   - **Submit for Review** on App Store Connect.
-   - **Important**: iOS first install testing should also verify Google Sign-In works. Apple Sign-In on real iOS device has never been verified end-to-end (all Phase 4-5 testing was Android emulator).
+2. **No active Android work** — vc 15 is live, Google Sign-In works, OTA `019e0806` is the current JS bundle. Foreground service "Need attention" auto-cleared.
 
-### Build + submit sequence
+### Build + submit sequence (historical reference)
 
 ```bash
-# In flight right now:
-eas build --platform android --profile production    # vc 17
-
-# When it finishes:
-eas submit --platform android --profile production --latest
-
-# iOS already done earlier this evening:
-# eas build --platform ios --profile production    ✅
-# eas submit --platform ios --profile production --latest    ✅ (uploaded to App Store Connect)
+# DONE 2026-05-06: Android prod build + submit + Play Store rollout (vc 15 live).
+# DONE 2026-05-08: iOS prod build + submit (App Store Connect submission).
+# DONE 2026-05-08: Android Sign-In P0 fix (Firebase Console SHA registration, no rebuild).
+# DONE 2026-05-08: Android UI polish OTA `019e0806`.
 ```
 
 ### Soft blockers (resolved)

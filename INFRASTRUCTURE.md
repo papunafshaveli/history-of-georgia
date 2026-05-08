@@ -631,45 +631,44 @@ Did `runtimeVersion` change in app.config.ts since the last published binary?
 
 ### 19.2 Current release status (snapshot — keep updated)
 
-**As of 2026-05-08 (afternoon):**
+**As of 2026-05-08 (evening — Android P0 SOLVED, iOS in App Store review):**
 
 - `app.config.ts` has `version: "2.0.0"`, `runtimeVersion: "2.0.0"`.
-- **v2.0.0 vc 17 LIVE on Play Store production** (full rollout, ~3.3k installs). Same-day approved by Google on 2026-05-06.
-- **iOS v2.0.0 (build 1.0.22) submitted for App Store review on 2026-05-08.** App Store Connect work completed today: App Privacy questionnaire (Name / Email / Gameplay Content / User ID / Device ID — all linked to user, App Functionality only, no tracking), Age Rating (4+, no overrides), Description + Promotional Text + What's New copy filled. iOS Sign-In flow tested on dev build only (iPhone 11 Pro); production binary not verified on a real device because TestFlight delivery to Gmail has been failing — accepted residual risk: if Apple Review surfaces an iOS Google Sign-In failure, OTA-revert to Apple-only and resubmit.
-- **🔴 P0 STILL OPEN: Google Sign-In broken on Android in production.** Despite registering the Play App Signing SHA-1 (`30:19:AA:C5:F5:61:75:42:09:16:E7:41:45:14:1E:78:02:C5:8E:7F`) in Firebase, the auto-created Android OAuth client `394970199474-ig4qafdumg2utm0lbifdfinig6vdo7o2.apps.googleusercontent.com` being visible in Cloud Console with the matching SHA, Identity Toolkit API enabled, OAuth consent in production, and runtime diagnostics confirming the correct webClientId + package, GMS Auth still throws DEVELOPER_ERROR (code 10) at runtime on Play-distributed builds. Sister project `drosha` (same library v16.1.2, same code shape, same Firebase pattern) works in production with single Android OAuth client — only structural difference between the two projects is OAuth client count (drosha=1, history-of-georgia=3).
-- **Failed migration attempt (vc 18→21)**: tried switching to `expo-auth-session/providers/google` (Custom Tab + PKCE web flow, bypasses GMS Auth). vc 21 binary built + landed in Internal testing. Browser opens, account picker works, Google then rejects with `Error 400: invalid_request`. Both `:/oauthredirect` and `:/oauth2redirect` redirect URI variants tested via OTA — same error. Root cause not yet diagnosed.
-- **Production state today (Android)**: localized "მალე" placeholder via `t.leaderboard_coming_soon` (i18n OTA pushed 2026-05-08, supersedes the earlier hardcoded English `019e01d9` "Soon" OTA). Anonymous play continues normally.
-- **Production state today (iOS)**: OTA `019e06ab-5579-7434-b6c3-4c5b5281b8f2` (group `d899ed1e-f27b-41c9-b806-df16c553a4f7`) restores the original anonGate UI (icon + headline + Google + Apple buttons) for iOS only, gated by `IS_IOS` in `LeaderboardScreen.tsx`. iOS-only push (web bundling broken on Expo SDK 55 due to `react-native-web-webview` peer-dep gap in `react-native-youtube-iframe`).
-- **vc 21 production rollout halted** in Play Console (vc 17 remains the production Android binary).
-- **2026-05-08 hypotheses falsified during continued investigation**:
-  1. **Multi-OAuth-client (drosha=1 client works, this had 3)** — falsified. The 2 non-Play-App-Signing Android OAuth clients were deleted directly in Cloud Console (not just Firebase). Cloud Console now shows 1 Android client matching drosha's setup. Sign-In still fails identically.
-  2. **SHA-1 byte mismatch** — falsified. Firebase + Cloud Console both store the full 20-byte Play App Signing SHA `30:19:AA:C5:F5:61:75:42:09:16:E7:41:45:14:1E:78:02:C5:8E:7F`. An earlier visual mis-read of a screenshot suggested 19 bytes; the actual stored value is the canonical 20.
-- Remaining Sign-In hypotheses (untested): (a) the May-6 auto-created Cloud OAuth client may be in a half-broken state — test by deleting + re-adding the SHA in Firebase to trigger fresh auto-creation; (b) Play App Signing key SHA at runtime may differ from what Play Console reports — test via ADB pull of base.apk from a Google Play emulator install + `keytool -printcert -jarfile`.
-- Play Console policy declarations all DONE: Data Safety form, Account Deletion, Privacy Policy URL, Privacy Policy section 4 (email-deletion + 30-day SLA).
-- Ship-prep is paused on the Sign-In root-cause investigation. Full v2.0.0 plan, what's done, what's left: see [`publishingV2.md`](./publishingV2.md).
-- For urgent JS-only hotfixes that need to reach the existing `1.1.0` binary, branch from the last published commit (e.g. `09dd471`), cherry-pick fixes, run `npm ci` to match the pre-upgrade lockfile, then `eas update --branch production`. Reference: `hotfix/ui-fixes-1.1.x`.
+- **Android v2.0.0 vc 15 LIVE on Play Store production** (~3.3k installs). Google Sign-In WORKING in production after the Firebase SHA-1 registration fix on 2026-05-08. Anonymous play also works normally.
+- **iOS v2.0.0 SUBMITTED for App Store review on 2026-05-08.** App Store Connect work complete: App Privacy questionnaire (Name / Email / Gameplay Content / User ID / Device ID — all linked to user, App Functionality only, no tracking), Age Rating (4+, no overrides), Description + Promotional Text + What's New copy filled. iOS Sign-In flow verified on dev build only (iPhone 11 Pro); production binary not verified on a real device because TestFlight delivery to Gmail kept failing — residual risk accepted. If Apple rejects on auth grounds, OTA-revert iOS to Apple-only via the existing `IS_IOS` gate in `LeaderboardScreen.tsx`.
+- **Latest production OTAs (runtime 2.0.0):**
+  - **Android** `019e0806-9e70-74f8-8d6b-094718119ca1` (group `9866437d-2379-4a89-9da2-5cb4ddf2eb9f`) — UI polish: tab bar safe-area inset (no overlap with system 3-button nav), restart button `paddingHorizontal` so Georgian script doesn't touch the border, leaderboard `refresh()` on auth state change so weekly entries appear immediately. Predecessor `019e0797-...` is the OTA that re-enabled Sign-In after the SHA fix.
+  - **iOS** `019e06ab-5579-7434-b6c3-4c5b5281b8f2` (group `d899ed1e-f27b-41c9-b806-df16c553a4f7`) — restored Apple + Google sign-in buttons in the anon-gate via `IS_IOS` (Android keeps the same buttons too post-Sign-In-fix). iOS-only push because web bundling is broken on Expo SDK 55 (peer-dep gap in `react-native-youtube-iframe → react-native-web-webview`); use `--platform ios` or `--platform android` explicitly.
+- **Google Sign-In P0 root cause + fix** (resolved 2026-05-08):
+  - **Symptom**: tapping Google Sign-In on vc 15 → DEVELOPER_ERROR (code 10) → Georgian failure toast. Anonymous mode worked; only OAuth upgrade was broken.
+  - **Root cause**: the Play App Signing SHA-1 (`3D:19:A4:C5:F1:61:75:42:09:16:EE:F1:A5:14:1E:78:02:C5:BE:7F`) was never registered in Firebase → Cloud Console had no Android OAuth client matching the runtime APK's signature → GMS Auth couldn't identify the calling app. The originally-registered `30:19:AA:...` SHA (which earlier docs cited as the Play App Signing fingerprint) was a visual transcription error from documentation, not the actual runtime cert.
+  - **Diagnosis**: pulled the Play Store APK to disk via `adb pull` then ran `apksigner verify --print-certs ./base.apk`, which printed the actual runtime SHA. It matched none of the fingerprints in Firebase Console.
+  - **Fix**: registered the correct SHA in Firebase Console → Project Settings → Android app → SHA fingerprints. Firebase auto-synced to Cloud Console which created the matching Android OAuth client server-side. **No native rebuild needed** — the OAuth client lookup happens at runtime against Cloud Console, not against bundled `google-services.json`. Sign-In started working immediately on vc 15 after Firebase auto-sync (~30 seconds).
+  - **JS code change**: reverted `src/context/AuthProvider.tsx` from a brief `expo-auth-session/providers/google` workaround back to native `@react-native-google-signin/google-signin` (commit `ed9eadc`). Both libraries remain in `package.json` + `app.config.ts` plugins so vc 15's APK has the native module compiled in either way.
+  - **Two falsified hypotheses recorded for posterity** (don't repeat):
+    1. "Multiple Android OAuth clients in Cloud Console need cleanup" — only one was ever active for the runtime APK. Cleanup didn't change anything.
+    2. "google-services.json bundled in vc 15 is missing `client_type=1` entries" — true but not the blocker; the legacy GoogleSignin library only reads `webClientId` from JS, not the bundled JSON.
+- **Local debug keystore SHA also registered in Firebase**: `5E:8F:16:06:2E:A3:CD:2C:4A:0D:54:78:76:BA:A6:F3:8C:AB:F6:25` was added on 2026-05-08 so Sign-In works on the local dev client (`npx expo run:android`-built APK is signed by this keystore, not Play App Signing). Cloud Console now shows 3 Android OAuth clients: prod (3D:19:A4), dev (5E:8F:16), and one orphan from the deleted wrong-SHA `30:19:AA:...` entry. Orphan is inert (no SHA matches it at runtime); rename pattern in Cloud Console: `Android - prod (Play App Signing)` / `Android - dev (debug keystore)` / `Android - unused (orphan, safe to delete)`.
+- Play Console policy declarations all DONE: Data Safety form, Account Deletion, Privacy Policy URL, Privacy Policy section 4 (email-deletion + 30-day SLA). Foreground service "Need attention" auto-cleared on vc 15's manifest.
+- **Pending after iOS approval**: update Firestore `app_config/version` doc → `minSupportedVersion: "2.0.0"`, `latestVersion: "2.0.0"`. Doing this earlier would push the hard force-update modal at users who don't yet have a `2.0.0` binary to install. (Android holdouts on v1.1.0 have auto-updated to vc 15 already; iOS holdouts will only get pushed once App Store approves vc 15.)
+- Full v2.0.0 plan + what's done + what's left: see [`publishingV2.md`](./publishingV2.md).
+- For urgent JS-only hotfixes that need to reach any v1.1.0 holdouts, branch from the last published commit (e.g. `09dd471`), cherry-pick fixes, run `npm ci` to match the pre-upgrade lockfile, then `eas update --branch production`. Reference: `hotfix/ui-fixes-1.1.x`.
 
-### 19.6 google-services.json maintenance lesson (post-vc15 P0)
+### 19.6 Google Sign-In SHA-1 maintenance lesson (post-vc15 P0)
 
-When Firebase's `google-services.json` is generated for a project that has no SHA-1 fingerprints registered, the file contains **only** the `client_type=3` Web Client and zero `client_type=1` Android OAuth clients. Apps that use Google Sign-In on Android need at least one `client_type=1` entry baked into the APK at build time (the Expo Google Sign-In plugin reads google-services.json at build time). Without it, the runtime GMS Auth library cannot identify the calling app to Google's OAuth servers and throws `DEVELOPER_ERROR` (code 10).
+**The lesson, in one line:** the runtime APK's SHA-1 must be registered in Firebase Console BEFORE any user attempts Google Sign-In. The Cloud Console Android OAuth client that Firebase auto-creates from that SHA is what GMS Auth checks at runtime — not the bundled `google-services.json`.
 
-**Always**, before building a production binary that exercises Google Sign-In:
+The vc 15 P0 had two compounding failures: (a) a wrong SHA was originally registered (visual transcription error from a screenshot — the documented `30:19:AA:...` was actually `3D:19:A4:...` for a similar-looking byte pattern), and (b) we initially blamed the bundled `google-services.json` rather than the auto-created Cloud Console OAuth client. Diagnosis only converged after pulling the runtime APK with `adb pull` and reading the actual cert SHA via `apksigner verify --print-certs`.
 
-1. Register Play App Signing SHA-1 (Play Console → Test and release → App integrity → App signing → "App signing key certificate" SHA-1) in Firebase Console → Project Settings → Android app → SHA certificate fingerprints.
-2. Also register the upload key SHA-1 (same screen, "Upload key certificate") if you ever distribute non-Play-Store builds (preview, internal-track manual installs, etc.).
-3. Re-download `google-services.json` AFTER all relevant SHAs are registered.
-4. Verify the file contains `client_type=1` entries with `android_info.certificate_hash` matching each registered SHA:
-   ```bash
-   python3 -c "
-   import json
-   g = json.load(open('google-services.json'))
-   for c in g.get('client', []):
-       for o in c.get('oauth_client', []):
-           print(f'client_type={o.get(\"client_type\")} cert_hash={o.get(\"android_info\", {}).get(\"certificate_hash\", \"-\")}')
-   "
-   ```
-5. Update the EAS env var `GOOGLE_SERVICES_JSON` (file type, Secret) for `production`, `preview`, and `development` environments.
-6. Then run `eas build`.
+**Before building a production binary that exercises Google Sign-In:**
+
+1. **Get the runtime SHA-1 from the APK itself, not from documentation or screenshots.** For Play-distributed builds: download the AAB → install on a Google Play emulator → `adb pull /data/app/.../base.apk ./base.apk` → `apksigner verify --print-certs ./base.apk`. The "Signer #1 certificate SHA-1 digest" is the value to register. (For local dev clients built by `npx expo run:android`, the keystore is at `android/app/debug.keystore`; SHA via `keytool -list -v -keystore android/app/debug.keystore -alias androiddebugkey -storepass android`.)
+2. **Register that SHA in Firebase Console** → Project Settings → Android app → SHA certificate fingerprints. Firebase auto-syncs to Cloud Console within ~30s and creates a matching Android OAuth client. This is the runtime auth path.
+3. (Optional) Re-download `google-services.json` after step 2 so it picks up the new `client_type=1` entries — useful for local Firebase SDK debugging, but not required for OAuth to work since the OAuth client lookup is server-side.
+4. (Optional) Update the EAS env var `GOOGLE_SERVICES_JSON` (file type, Secret) for `production`, `preview`, and `development` environments if you re-downloaded the file in step 3.
+5. Verify by running Sign-In on a build signed with that SHA. If it still throws DEVELOPER_ERROR, double-check that the SHA in Firebase exactly matches the apksigner output — not what Play Console "App signing key" displays (which can be stale or differ from the actual runtime cert in some account states).
+
+**For dev workflow:** every developer who runs `npx expo run:android` produces a debug-keystore-signed APK with their own unique SHA. Each dev's SHA needs to be registered in Firebase (or use a shared keystore checked into a private team store). Currently the only registered debug-keystore SHA is `5E:8F:16:06:2E:A3:CD:2C:4A:0D:54:78:76:BA:A6:F3:8C:AB:F6:25` (the project owner's local).
 
 ### 19.3 Pre-release checklist (before the 2.0.0 native build)
 
