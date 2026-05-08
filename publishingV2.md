@@ -1,7 +1,7 @@
 # publishingV2.md — History of Georgia v2.0.0 Ship Plan
 
-**Last updated:** 2026-05-06 late evening (vc 15 LIVE on Play Store but Google Sign-In broken; vc 17 rebuilding to fix)
-**Status:** Android v2.0.0 vc 15 published to Play production today and reached ~2.4k installs, but Google Sign-In throws DEVELOPER_ERROR (code 10) because vc 15's bundled `google-services.json` had ZERO Android OAuth clients (only Web client). Diagnostic OTA confirmed the error code; fresh `google-services.json` now has 3 Android OAuth clients (Play App Signing SHA-1 added to Firebase tonight); vc 17 building with the fresh file. iOS v2.0.0 build completed + uploaded to App Store Connect — pending App Privacy + age rating + What's New + Submit for Review.
+**Last updated:** 2026-05-08 afternoon (iOS submitted for App Store review; Android Sign-In P0 still open with two hypotheses falsified today)
+**Status:** vc 17 LIVE on Play Store production. iOS v2.0.0 submitted for App Store Review on 2026-05-08 with Apple + Google sign-in buttons live on iOS via OTA `019e06ab` (residual risk noted — production sign-in not verified on real device because Gmail TestFlight delivery failed; OTA-revert to Apple-only is the contingency). Android Google Sign-In STILL BROKEN — multi-OAuth-client hypothesis (3→1 cleanup) falsified today, SHA-1 byte-mismatch hypothesis falsified today. Android production OTA replaced the "Soon" placeholder with localized "მალე" (`t.leaderboard_coming_soon`). vc 21 production rollout halted; vc 17 remains live.
 **Owner:** Papuna Fshaveli
 
 ---
@@ -85,24 +85,69 @@ Recap. Source of truth is git log + `bigChanges.md` §10. This list is the versi
 
 ---
 
-## 3. What's left before submission (UPDATED 2026-05-06 LATE evening)
+## 3. What's left before submission (UPDATED 2026-05-07 afternoon)
 
-### 🔴 P0 in flight: Google Sign-In broken on production vc 15
+### 🔴 P0 STILL OPEN: Google Sign-In broken on Android (vc 17 production)
 
-vc 15 is LIVE on Play Store (~2.4k installs). Google Sign-In throws DEVELOPER_ERROR (code 10). vc 17 is rebuilding with the fix. Full diagnosis:
+**Production state today**: vc 17 LIVE on Play Store. Google Sign-In throws DEVELOPER_ERROR (code 10) at runtime despite all configs verified end-to-end. vc 21 build attempted with `expo-auth-session/providers/google` migration — failed with Google OAuth `Error 400: invalid_request`. vc 21 production rollout halted; vc 17 remains live. Latest production OTA `019e01d9-001a-734f-991f-7b38597315ca` replaces the entire anonymous-Leaderboard gate (icon + headline + buttons) with a single "Soon" placeholder so users no longer hit the broken Sign-In path. Anonymous play continues normally for ~3.3k installs.
 
-- **Bug**: vc 15's bundled `google-services.json` had only Web Client (`client_type=3`), zero Android OAuth clients (`client_type=1`). Without Android OAuth clients in the file, GMS Auth library can't authenticate the calling app to Google's OAuth servers → DEVELOPER_ERROR.
-- **Why now and not v1.1.0**: v1.1.0 had no OAuth at all. v2.0.0 vc 15 was built before any SHA-1 fingerprint was registered in Firebase, so Firebase's `google-services.json` generator returned a file with no Android entries. Tonight added the Play App Signing SHA → Firebase regenerated the file with 3 Android OAuth clients embedded.
-- **Diagnostic OTA dropped on production channel** to surface the error code: `019dfeb0-4976-77e8-b052-dfbbe6b252f0`. Confirmed `SIGNIN ERR: 10 | DEVELOPER_ERROR`. Then reverted via `019dfebc-0658-7105-a89a-b87a17412cc0`. Source code in `LeaderboardScreen.tsx` is back to clean state.
-- **Fix sequence** (mostly applied):
-  1. ✅ Added Play App Signing SHA-1 (`30:19:AA:C5:F5:61:75:42:09:16:E7:41:45:14:1E:78:02:C5:8E:7F`) to Firebase Project Settings → Android app fingerprints.
-  2. ✅ Re-downloaded `google-services.json` (now has 3 `client_type=1` entries).
-  3. ✅ Replaced local `./google-services.json` with the fresh file. Old broken file at `./google-services.json.bak-vc15`. Original download at `./google-services2.json`.
-  4. ✅ `eas env:update --variable-name GOOGLE_SERVICES_JSON --variable-environment production` (file type, Secret visibility).
-  5. ⏳ `eas build --platform android --profile production` — vc 17 building right now.
-  6. Pending: `eas submit --platform android --profile production --latest`.
-  7. Pending: Promote vc 17 from internal → production track in Play Console (Production → Create new release → Add from library → vc 17).
-  8. Pending: Verify Google Sign-In works on a fresh Play Store install of vc 17.
+**Root cause unknown after exhausting standard troubleshooting:**
+- ✅ Play App Signing SHA-1 (`30:19:AA:C5:...:8E:7F`) registered in Firebase + matching Android OAuth client `394970199474-ig4qafdumg2utm0lbifdfinig6vdo7o2.apps.googleusercontent.com` visible in Cloud Console.
+- ✅ Web Client ID + package + Identity Toolkit API + OAuth consent screen verified correct via diagnostic OTA + multiple Cloud Console screenshots.
+- ✅ Three independent research streams (Codex agents) confirmed standard config is right.
+- ✅ Sister project `drosha` works in production with same library v16.1.2, same code shape, same Firebase pattern. Only structural difference: drosha has 1 Android OAuth client in its Cloud project; this project has 3 (Play App Signing + 2 upload-key SHAs from older builds).
+- ❌ Multi-SHA hypothesis was tested by deleting 2 non-Play-App-Signing SHAs from Firebase. Firebase deletion reportedly cascades to Cloud Console but Cloud Console screenshots showed the 3 OAuth clients still active afterwards. Sign-In still failed. Hypothesis inconclusive — Cloud Console deletion was never explicitly performed.
+- ❌ Migration to `expo-auth-session/providers/google` (vc 21) was a guess that introduced a different failure: Google OAuth `Error 400: invalid_request` when the OAuth flow hits accounts.google.com after account selection. Both `:/oauthredirect` and `:/oauth2redirect` redirect URI paths tested via OTA — same error.
+
+**Open avenues for next session:**
+1. **Try drosha-matching cleanup**: delete the 2 non-Play-App-Signing Android OAuth clients DIRECTLY in Cloud Console (`394970199474-ns31...` May 1 + `394970199474-9ro5...` Apr 30 — both auto-created by Google Service). If empirical evidence is right and config research was wrong, this matches drosha's setup and might fix legacy GoogleSignin via the existing vc 17 binary (no rebuild needed — OTA-only re-enable). Risk: dev emulator Sign-In would break (was using one of the deleted SHAs).
+2. **Buy Universal Sign-In** ($89/yr at universal-sign-in.com) for the premium `GoogleOneTapSignIn` Credentials Manager class. Requires vc 22 native rebuild. User has stated they don't want to buy.
+3. **Escalate to Codex via /codex:rescue** with full session context for a fresh second-pair-of-eyes diagnostic pass.
+
+**Bad-decision audit (for future reference):**
+- The SHA-delete advice was based on a hypothesis my own research later disproved. Should have stopped after research findings instead of proceeding with deletion.
+- The `expo-auth-session` migration was untested locally (no dev emulator verification before commit) and pushed to production via vc 21 → caused a different error class that surfaced to all Internal track installs. Should have validated on dev emulator first.
+- Multiple OTAs pushed to production with bandwidth-of-thought changes. Should have rolled back to the stable broken state earlier and stopped iterating on production.
+
+**Production OTA history (Android channel, runtime 2.0.0):**
+- `019dfeb0` — diagnostic Alert (capturing error code; later reverted).
+- `019dfebc` — revert diagnostic.
+- `019e008a` — second diagnostic Alert (full error fields capture); later reverted.
+- `019e0093` — revert second diagnostic.
+- `019e009f` — hide Google button via `showGoogle = !IS_ANDROID`.
+- `019e00a6` — re-enable Google button (test SHA cleanup; failed).
+- `019e00bf` — hide Google button again.
+- `019e011c` — restore button + legacy GoogleSignin (after vc 18 build failed).
+- `019e01c4` — expo-auth-session with `:/oauthredirect`; failed `invalid_request`.
+- `019e01cd` — expo-auth-session with `:/oauth2redirect`; same failure.
+- `019e01d7` — rollback to legacy GoogleSignin (stable broken state).
+- `019e01d9` — anonGate replaced with hardcoded English "Soon" placeholder.
+- **`<i18n OTA 2026-05-08>` (CURRENT)** — `Soon` → `t.leaderboard_coming_soon` ("მალე" / "Soon"). Localized.
+
+**Production OTA history (iOS channel, runtime 2.0.0):**
+- All Android OTAs above also bundle for iOS where applicable (i.e. before iOS divergence on 2026-05-08).
+- **`019e06ab` (CURRENT)** — iOS-only OTA. Restores the full anonGate UI (icon + headline + Google button + Apple button) for iOS, gated by `IS_IOS`. Android branch keeps the "მალე" placeholder. Update group `d899ed1e-f27b-41c9-b806-df16c553a4f7`.
+
+**App Store Connect submission state (2026-05-08):**
+- App Privacy questionnaire DONE — Name / Email / Gameplay Content / User ID / Device ID (all linked to user, App Functionality only, no tracking).
+- Age Rating DONE — 4+, no category overrides, all chance-based / restrictive toggles set to NONE / NO.
+- Description, Promotional Text, What's New copy filled in English (Georgian localization left to Owner).
+- Build 1.0.22 attached to v2.0.0 release.
+- Encryption export compliance answered "Standard encryption only — exempt".
+- Submitted for Review on 2026-05-08.
+- iOS Sign-In flow verified on dev build (iPhone 11 Pro) only. Production binary not verified on real device because TestFlight delivery to `papunafshaveli@gmail.com` failed (Apple → Gmail relay flaky). Residual risk accepted; OTA-revert to Apple-only is the 5-minute contingency if Apple Review surfaces an iOS Google Sign-In error.
+
+**Android P0 investigation state (2026-05-08 afternoon):**
+
+Two hypotheses falsified today:
+1. **Multi-OAuth-client (drosha=1, history=3)** — cleaned up to 1 Android OAuth client in Cloud Console (deleted `394970199474-ns31...` and `394970199474-9ro5...` directly, leaving only the May-6 Play App Signing client `394970199474-ig4qafdumg2utm0lbifdfinig6vdo7o2`). Sign-In still fails identically. Hypothesis dead.
+2. **SHA-1 byte mismatch** — verified Cloud Console + Firebase Console both store the full 20-byte SHA `30:19:AA:C5:F5:61:75:42:09:16:E7:41:45:14:1E:78:02:C5:8E:7F`. Hypothesis dead.
+
+Remaining hypotheses (untested):
+- (a) **May-6 Cloud OAuth client is in a half-broken state.** Test: delete the SHA in Firebase, re-add it; Firebase auto-creates a fresh Cloud OAuth client. If new client fixes Sign-In, original was orphaned/stale.
+- (b) **Play App Signing key SHA at runtime differs from what Play Console reports.** Test: ADB pull base.apk from a Google Play emulator with the production install + `keytool -printcert -jarfile` to read the actual runtime cert SHA. If different from `30:19:AA:...`, register the actual SHA in Firebase.
+
+Out of scope for v2.0.0 ship. Park behind iOS submission, return after iOS Review outcome.
 
 ### Already done
 
