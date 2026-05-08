@@ -157,32 +157,33 @@ const LeaderboardScreen: React.FC = () => {
     try {
       const result = await signInWithGoogle();
       openConfirmNameIfFirstLink(result);
+      refresh();
     } catch {
       showSignInFailureToast(t.signin_failure_toast);
     }
-  }, [signInWithGoogle, openConfirmNameIfFirstLink, t.signin_failure_toast]);
+  }, [signInWithGoogle, openConfirmNameIfFirstLink, refresh, t.signin_failure_toast]);
 
   const handleApplePress = useCallback(async () => {
     try {
       const result = await signInWithApple();
       openConfirmNameIfFirstLink(result);
+      refresh();
     } catch {
       showSignInFailureToast(t.signin_failure_toast);
     }
-  }, [signInWithApple, openConfirmNameIfFirstLink, t.signin_failure_toast]);
+  }, [signInWithApple, openConfirmNameIfFirstLink, refresh, t.signin_failure_toast]);
 
   const handleConfirmNameSaved = useCallback(() => {
     setConfirmNameOpen(false);
     setConfirmNameInitial(null);
-  }, []);
+    refresh();
+  }, [refresh]);
 
   useFocusEffect(
     useCallback(() => {
       refresh();
     }, [refresh]),
   );
-
-  const showApple = IS_IOS;
 
   const ownRank = useMemo<number | null>(() => {
     if (!uid) return null;
@@ -250,47 +251,49 @@ const LeaderboardScreen: React.FC = () => {
     listEmpty = <EmptyState title={emptyTitle} description={emptyDesc} />;
   }
 
+  const anonGate = (
+    <View style={styles.anonGate}>
+      <View style={styles.anonIconCircle}>
+        <MaterialCommunityIcons
+          name="script-text-outline"
+          size={getAdjustedWidth(36)}
+          color={colors.bronzeDark}
+        />
+      </View>
+      <AppText
+        type="title"
+        fontFamily="serif"
+        color={colors.bronzeDark}
+        style={styles.anonHeadline}
+      >
+        {t.leaderboard_anon_headline}
+      </AppText>
+      <View style={styles.anonButtonsStack}>
+        <ProviderButton
+          label={t.signin_button_google}
+          iconName="google"
+          onPress={handleGooglePress}
+          disabled={isSigningIn}
+        />
+        {IS_IOS ? (
+          <ProviderButton
+            label={t.signin_button_apple}
+            iconName="logo-apple"
+            onPress={handleApplePress}
+            disabled={isSigningIn}
+          />
+        ) : null}
+      </View>
+    </View>
+  );
+
   return (
     <SafeAreaView edges={[]} style={styles.safeArea}>
       <View style={styles.fixedTitleContainer}>
         <ScreenTitle title={t.leaderboard_title} />
       </View>
 
-      {isAnonymous ? (
-        <View style={styles.anonGate}>
-          <View style={styles.anonIconCircle}>
-            <MaterialCommunityIcons
-              name="script-text-outline"
-              size={getAdjustedWidth(36)}
-              color={colors.bronzeDark}
-            />
-          </View>
-          <AppText
-            type="title"
-            fontFamily="serif"
-            color={colors.bronzeDark}
-            style={styles.anonHeadline}
-          >
-            {t.leaderboard_anon_headline}
-          </AppText>
-          <View style={styles.anonButtonsStack}>
-            <ProviderButton
-              label={t.signin_button_google}
-              iconName="google"
-              onPress={handleGooglePress}
-              disabled={isSigningIn}
-            />
-            {showApple ? (
-              <ProviderButton
-                label={t.signin_button_apple}
-                iconName="logo-apple"
-                onPress={handleApplePress}
-                disabled={isSigningIn}
-              />
-            ) : null}
-          </View>
-        </View>
-      ) : (
+      {isAnonymous ? anonGate : (
         <FlatList
           data={listData}
           keyExtractor={listKeyExtractor}
