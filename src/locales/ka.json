@@ -28,7 +28,7 @@
   "game_sign_out_confirmation": "ნამდვილად გსურს აპლიკაციიდან გასვლა?",
   "game_continue": "თამაშის გაგრძელება",
   "game_your_result": "შენი შედეგი",
-  "game_restart": "თავიდან დაწყება",
+  "game_restart": "თავიდან დაწყებაი",
   "game_best_score": "საუკეთესო შედეგი:",
   "game_failed_to_load": "კითხვის ჩატვირთვა ვერ მოხერხდა",
   "game_retry": "თავიდან ცდა",
@@ -62,6 +62,7 @@
   "leaderboard_empty_alltime_desc": "გახდი პირველი.",
   "leaderboard_your_rank": "შენი ადგილი: #{rank}",
   "leaderboard_self_tag": "შენ",
+  "leaderboard_coming_soon": "მალე",
 
   "signin_button_google": "Google-ით შესვლა",
   "signin_button_apple": "Apple-ით შესვლა",

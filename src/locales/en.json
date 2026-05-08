@@ -63,6 +63,7 @@
   "leaderboard_empty_alltime_desc": "Be the first on the leaderboard!",
   "leaderboard_your_rank": "Your rank: #{rank}",
   "leaderboard_self_tag": "YOU",
+  "leaderboard_coming_soon": "Soon",
 
 
   "signin_button_google": "Sign in with Google",
