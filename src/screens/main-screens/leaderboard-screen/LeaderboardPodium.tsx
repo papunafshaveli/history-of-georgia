@@ -1,8 +1,9 @@
 import React from "react";
 import { Image, View } from "react-native";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 import { AppText } from "@/src/components";
-import { useAppTheme, useStyles, useTranslation } from "@/src/hooks";
+import { useAppTheme, useStyles } from "@/src/hooks";
 import type { LeaderboardEntry } from "@/src/types";
 
 import { getStyles } from "./styles";
@@ -31,7 +32,6 @@ type PodiumCardProps = {
 };
 
 const PodiumCard: React.FC<PodiumCardProps> = ({ rank, entry, isSelf }) => {
-  const t = useTranslation();
   const { colors } = useAppTheme();
   const styles = useStyles(getStyles);
 
@@ -68,6 +68,13 @@ const PodiumCard: React.FC<PodiumCardProps> = ({ rank, entry, isSelf }) => {
         >
           {String(rank)}
         </AppText>
+        {isSelf ? (
+          <MaterialCommunityIcons
+            name="crown"
+            size={14}
+            color={colors.textOnPrimary}
+          />
+        ) : null}
       </View>
 
       <View style={avatarStyle}>
@@ -89,6 +96,8 @@ const PodiumCard: React.FC<PodiumCardProps> = ({ rank, entry, isSelf }) => {
         fontFamily="serif"
         color={colors.bronzeDark}
         numberOfLines={1}
+        adjustsFontSizeToFit
+        minimumFontScale={0.7}
         style={styles.podiumName}
       >
         {entry.displayName}
@@ -102,17 +111,6 @@ const PodiumCard: React.FC<PodiumCardProps> = ({ rank, entry, isSelf }) => {
       >
         {String(entry.points)}
       </AppText>
-
-      {isSelf ? (
-        <AppText
-          type="caption"
-          fontFamily="serif"
-          color={colors.bronzeDark}
-          style={styles.podiumSelfTag}
-        >
-          {t.leaderboard_self_tag}
-        </AppText>
-      ) : null}
     </View>
   );
 };

@@ -140,13 +140,13 @@ const getStyles = (theme: AppTheme, props: { bottomInset: number }) =>
   StyleSheet.create({
     tabBar: {
       backgroundColor: theme.colors.chromeBg,
-      height: getAdjustedHeight(90) + props.bottomInset,
+      height: getAdjustedHeight(80) + props.bottomInset,
       paddingBottom: props.bottomInset,
       borderTopColor: theme.colors.chromeBg,
       borderTopWidth: 1,
     },
     tabBarLabel: {
-      fontSize: 14,
+      fontSize: 11,
       fontWeight: "bold",
       fontFamily: theme.fonts.serif,
     },

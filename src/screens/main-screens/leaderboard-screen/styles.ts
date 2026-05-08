@@ -187,6 +187,9 @@ export const getStyles = (theme: AppTheme) =>
       backgroundColor: theme.colors.parchmentTint,
     },
     podiumRankRibbon: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: theme.spacing.x1,
       backgroundColor: theme.colors.bronze,
       paddingHorizontal: theme.spacing.x3,
       paddingVertical: theme.spacing.x1,
