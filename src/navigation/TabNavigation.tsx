@@ -4,6 +4,7 @@ import {
   BottomTabNavigationOptions,
 } from "@react-navigation/bottom-tabs";
 import { StyleSheet } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 
@@ -33,8 +34,12 @@ const TabNavigation: React.FC<TabNavigationProps> = ({
   const t = useTranslation();
   const theme = useAppTheme();
   const { isThemeDark } = useThemeMode();
+  const { bottom: bottomInset } = useSafeAreaInsets();
 
-  const styles = useMemo(() => getStyles(theme), [theme]);
+  const styles = useMemo(
+    () => getStyles(theme, { bottomInset }),
+    [theme, bottomInset],
+  );
 
   const commonOptions: BottomTabNavigationOptions = useMemo(
     () => ({
@@ -131,11 +136,12 @@ const TabNavigation: React.FC<TabNavigationProps> = ({
 
 export default TabNavigation;
 
-const getStyles = (theme: AppTheme) =>
+const getStyles = (theme: AppTheme, props: { bottomInset: number }) =>
   StyleSheet.create({
     tabBar: {
       backgroundColor: theme.colors.chromeBg,
-      height: getAdjustedHeight(90),
+      height: getAdjustedHeight(90) + props.bottomInset,
+      paddingBottom: props.bottomInset,
       borderTopColor: theme.colors.chromeBg,
       borderTopWidth: 1,
     },

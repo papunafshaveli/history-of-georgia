@@ -28,7 +28,7 @@ export const getStyles = (theme: AppTheme) =>
     },
 
     button: {
-      width: getAdjustedWidth(150),
+      minWidth: getAdjustedWidth(150),
       height: getAdjustedHeight(56),
 
       flexDirection: "row-reverse",
@@ -36,6 +36,8 @@ export const getStyles = (theme: AppTheme) =>
 
       alignItems: "center",
       justifyContent: "center",
+
+      paddingHorizontal: getAdjustedWidth(16),
 
       borderRadius: theme.borderRadius.lg,
       borderWidth: 3,
