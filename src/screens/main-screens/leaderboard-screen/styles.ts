@@ -175,11 +175,11 @@ export const getStyles = (theme: AppTheme) =>
       ...theme.shadows.default,
     },
     podiumCardCenter: {
-      height: getAdjustedHeight(200),
+      height: getAdjustedHeight(220),
       borderWidth: 3,
     },
     podiumCardSide: {
-      height: getAdjustedHeight(170),
+      height: getAdjustedHeight(190),
       borderWidth: 2,
     },
     podiumCardSelf: {

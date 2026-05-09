@@ -14,11 +14,14 @@ import LeaderboardScreen from "@/src/screens/main-screens/leaderboard-screen/Lea
 import StatsScreen from "@/src/screens/main-screens/stats-screen/StatsScreen";
 
 import { CustomHeader } from "@/src/components";
+import { IS_IOS } from "@/src/constants";
 import type { AppTheme } from "@/src/theme";
 import { ScreenName, TabParamList } from "@/src/types";
 
 import { useAppTheme, useThemeMode, useTranslation } from "../hooks";
 import { getAdjustedHeight } from "../helpers";
+
+const TAB_BAR_BASE_HEIGHT = IS_IOS ? 55 : 80;
 
 const Tab = createBottomTabNavigator<TabParamList>();
 
@@ -140,7 +143,7 @@ const getStyles = (theme: AppTheme, props: { bottomInset: number }) =>
   StyleSheet.create({
     tabBar: {
       backgroundColor: theme.colors.chromeBg,
-      height: getAdjustedHeight(80) + props.bottomInset,
+      height: getAdjustedHeight(TAB_BAR_BASE_HEIGHT) + props.bottomInset,
       paddingBottom: props.bottomInset,
       borderTopColor: theme.colors.chromeBg,
       borderTopWidth: 1,
