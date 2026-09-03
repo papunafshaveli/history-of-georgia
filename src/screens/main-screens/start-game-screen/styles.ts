@@ -12,7 +12,7 @@ export const getStyles = (theme: AppTheme) =>
       flex: 1,
     },
     overlayBase: {
-      ...StyleSheet.absoluteFillObject,
+      ...StyleSheet.absoluteFill,
     },
     overlayDark: {
       backgroundColor: theme.colors.overlayLight,

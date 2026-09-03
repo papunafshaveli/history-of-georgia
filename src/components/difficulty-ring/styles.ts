@@ -20,7 +20,7 @@ export const getStyles = (theme: AppTheme) =>
       justifyContent: "center",
     },
     outerEdge: {
-      ...StyleSheet.absoluteFillObject,
+      ...StyleSheet.absoluteFill,
       borderRadius: WRAPPER_SIZE / 2,
       borderWidth: EDGE_WIDTH,
       borderColor: theme.colors.ringEdge,
@@ -37,7 +37,7 @@ export const getStyles = (theme: AppTheme) =>
     },
 
     segmentsWrapper: {
-      ...StyleSheet.absoluteFillObject,
+      ...StyleSheet.absoluteFill,
       transform: [{ rotate: "-45deg" }],
     },
     segmentMask: {
@@ -93,7 +93,7 @@ export const getStyles = (theme: AppTheme) =>
     },
 
     labelCentering: {
-      ...StyleSheet.absoluteFillObject,
+      ...StyleSheet.absoluteFill,
       alignItems: "center",
       justifyContent: "center",
     },

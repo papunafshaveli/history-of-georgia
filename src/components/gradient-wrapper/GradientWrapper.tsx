@@ -36,7 +36,7 @@ const GradientWrapper: React.FC<GradientWrapperProps> = ({
         locations={locations}
         start={start}
         end={end}
-        style={StyleSheet.absoluteFillObject}
+        style={StyleSheet.absoluteFill}
       />
       {children}
     </View>
