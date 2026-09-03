@@ -45,7 +45,7 @@ export const getStyles = (theme: AppTheme) =>
     },
 
     darkTint: {
-      ...StyleSheet.absoluteFillObject,
+      ...StyleSheet.absoluteFill,
       backgroundColor: theme.colors.darkTint,
     },
   });

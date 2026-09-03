@@ -21,11 +21,11 @@ Apple Sign In needs no env var — uses the native `expo-apple-authentication` S
 ## Install latest node
 
 ```
-nvm install 20.19.4
+nvm install 22.23.1
 nvm use
 ```
 
-This project requires Node >= 20.19.4.
+This project requires Node >= 22.23.1 (matches the Node version on EAS Build's SDK 57 image).
 
 ## Install dependencies
 
@@ -131,7 +131,9 @@ When you change native modules (e.g. adding Google Sign-In, Apple Authentication
 RCT_USE_PREBUILT_RNCORE=0 RCT_USE_RN_DEP=0 npx expo run:ios
 ```
 
-The two `RCT_USE_*` env vars disable React Native 0.83's prebuilt-pod path, which currently has a broken podspec (`Missing required attribute 'source'`). Disabling them forces a from-source compile. First build takes ~15 min; subsequent JS-only changes hot-reload in seconds.
+The two `RCT_USE_*` env vars disable React Native 0.83's prebuilt-pod path, which had a broken podspec (`Missing required attribute 'source'`). Disabling them forces a from-source compile. First build takes ~15 min; subsequent JS-only changes hot-reload in seconds.
+
+> **Unverified on RN 0.86 (SDK 57).** The workaround above was diagnosed on RN 0.83 and has not been re-tested since the SDK 57 upgrade — no local native build was run. Try `npx expo run:ios` without the two env vars first; only fall back to them if the podspec error reappears.
 
 If `pod install` succeeds but Xcode hangs for >20 min on `Pods-Hermes-engine`, kill the build (`Ctrl+C`, then `rm -rf ios`) and use the EAS dev-client path above.
 
@@ -234,9 +236,9 @@ eas submit --platform android --profile production
 
 In `app.config.ts`:
 
-- Bump `version` (e.g. `"1.1.0"` → `"2.0.0"`).
+- Bump `version` (e.g. `"2.0.0"` → `"2.1.0"`).
 - Bump `runtimeVersion` if there are native module changes — that forces a native build for the next prod release rather than an OTA.
-- `ios.buildNumber` and `android.versionCode` are auto-incremented by EAS.
+- Build numbers are owned by EAS (`appVersionSource: "remote"` in `eas.json`) and auto-increment on the production profile. `ios.buildNumber` / `android.versionCode` are deliberately absent from `app.config.ts` — setting them there has no effect and only creates a second, stale source of truth.
 
 ## OTA update
 

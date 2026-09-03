@@ -78,3 +78,8 @@ CLAUDE.md
 #Firebase functions build output
 functions/lib/
 functions/node_modules/
+#stray compiled output beside .ts sources
+src/types/*.js
+
+#raw agent research dumps (plan doc is committed, these are not)
+docs/upgrade/expo-57-recon-findings*.txt
