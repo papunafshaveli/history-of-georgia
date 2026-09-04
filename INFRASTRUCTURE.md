@@ -34,18 +34,18 @@ For commands (build, deploy, lint, run), see [`README.md`](./README.md). This do
 
 | Layer | Choice | Version |
 | --- | --- | --- |
-| Runtime | React Native | 0.83.6 |
-| Framework | Expo SDK | 55 |
-| Language | TypeScript | 5.8.x |
+| Runtime | React Native | 0.86.3 |
+| Framework | Expo SDK | 57 |
+| Language | TypeScript | 6.0.x |
 | Navigation | React Navigation (native-stack + bottom-tabs) | 7.x |
-| Backend | Firebase (Auth + Firestore + Cloud Functions) | client 11.1.0 / admin 13.6.1 |
+| Backend | Firebase (Auth + Firestore + Cloud Functions) | client 12.18.0 / admin 13.10.0 |
 | Local storage | `@react-native-async-storage/async-storage` | 2.2.0 |
 | Auth providers | Firebase Anonymous + Google Sign-In + Apple Authentication | — |
-| Push | Expo Notifications + `expo-server-sdk` (functions side) | 55.x / 3.x |
-| Build & OTA | EAS Build + EAS Update | CLI ≥ 14.4.0 |
+| Push | Expo Notifications + `expo-server-sdk` (functions side) | 57.x / 3.x |
+| Build & OTA | EAS Build + EAS Update | CLI ≥ 23.2.0 |
 | Test runner | Jest (`jest-expo` preset) | 29.x |
 | Linter | `expo lint` (ESLint 9) | — |
-| Node | required `>= 20.19.4` | (see `.nvmrc`) |
+| Node | required `>= 22.23.1` | (see `.nvmrc`) |
 
 **Other notable packages:** `expo-apple-authentication`, `@react-native-google-signin/google-signin`, `expo-audio`, `expo-haptics`, `expo-linear-gradient`, `expo-notifications`, `expo-store-review`, `expo-updates`, `dayjs`, `react-native-reanimated`, `react-native-webview`, `react-native-youtube-iframe`, `react-native-toast-message`, `firebase-admin` (dev only — used by `upload.ts`).
 
@@ -499,6 +499,41 @@ EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID=...
 
 Profiles: `development`, `development-simulator` (extends `development` with `ios.simulator: true`), `preview`, `production`. Submit profile pinned to App Store Connect ID `6741484980` and Apple Team `M39YBKH9L5`. Android submit uses `android-service-account-key/history-of-georgia-43551-f5aff86366af.json`.
 
+### GCP service accounts & keys (audited 2026-09-04 — cleanup OPEN, not yet done)
+
+Four service accounts exist in the `history-of-georgia` GCP project. **Two are Google-managed
+defaults that must not be touched** — `history-of-georgia-43551@appspot.gserviceaccount.com`
+(App Engine) and `394970199474-compute@developer.gserviceaccount.com` (Compute). Both hold **no
+keys**. Cloud Functions authenticate through these via Application Default Credentials
+(`functions/src/index.ts` calls a bare `admin.initializeApp()`), so disabling or deleting them
+would break the deployed functions.
+
+The two project-owned accounts hold downloadable JSON keys. Every consumer on the dev machine
+was traced; only two keys are actually referenced:
+
+| Service account | Key ID prefix | Created | Used by |
+| --- | --- | --- | --- |
+| `firebase-adminsdk-s9u1w@…` | `b00923ff6d…` | Mar 15 | **IN USE** — `upload.ts:5`, `scripts/wipe-auth.ts:19` |
+| `firebase-adminsdk-s9u1w@…` | `8b6b6d67…` | Dec 25 | orphan |
+| `firebase-adminsdk-s9u1w@…` | `3e5310ef…` | May 5 | orphan — see caveat |
+| `hofge-play-store-aacount@…` | `f5aff86366af…` | Mar 19 | **IN USE** — `eas.json` Android submit |
+| `hofge-play-store-aacount@…` | `a94b0030ba5f…` | Jan 28 | orphan (matches the dead `.gitignore` entry) |
+
+Verified clear: no `.github/workflows`, no service-account key in any EAS environment
+(`production` / `preview` / `development` hold only `EXPO_PUBLIC_*` plus the
+`GOOGLE_SERVICES_JSON` secret), no `GOOGLE_APPLICATION_CREDENTIALS` anywhere, and `eas.json`
+submits from the **local** key file rather than an EAS-stored one.
+
+**Caveat on `3e5310ef…`:** it was created *after* the key actually in use, during the v2.0.0
+release window. It does not fit the "leftover from a rotation" pattern, so it may live on
+another machine or in an external tool. A `firebase-adminsdk` key grants full Firestore
+read/write — confirm its origin before removing it.
+
+**Recommended procedure when this is picked up:** *disable* each orphaned key first (Cloud
+Console → service account → **KEYS** tab → ⋮ → Disable), leave it disabled ~1 week, and delete
+only after nothing breaks. Disabling is instantly reversible; deletion is permanent. Scope is
+individual **keys** only — never the service accounts themselves.
+
 ### Sensitive assets — gitignored, NEVER commit
 
 - `.env`
@@ -631,6 +666,18 @@ Did `runtimeVersion` change in app.config.ts since the last published binary?
 
 ### 19.2 Current release status (snapshot — keep updated)
 
+**As of 2026-09-03 — v2.1.0 (Expo SDK 57) upgraded on branch `upgrade/expo-57`, NOT yet built or shipped.**
+
+- Expo SDK 55 → 57 in one hop (SDK 56 skipped: Hermes v1 memory regression, fixed only in RN 0.86.2 / `expo@57.0.9`). RN 0.83.6 → 0.86.3, React 19.2.0 → 19.2.3, TypeScript 5.9 → 6.0.3, firebase 11 → 12.18.0.
+- `app.config.ts` now has `version: "2.1.0"`, `runtimeVersion: "2.1.0"`. **The live installed base is still on runtime `2.0.0` — never publish an SDK 57 OTA to that runtime.** Tag `sdk55-runtime-2.0.0` (commit `1f7686a`) is the hotfix point for those users.
+- Verification run: `tsc` 0 errors · `jest` 40/40 · `expo lint` clean · `expo-doctor` 21/21 · `expo export` succeeds for ios and android.
+- **Native builds pass on both platforms** (EAS, production profile): iOS `.ipa` and Android `.aab` + preview `.apk`.
+- **Device-verified on an Android emulator** (preview APK, release build, `versionCode 22`): launches with no fatal exceptions, home/leaderboard/game screens render, anonymous auth + Firestore question loading work, the full quiz loop and the `react-native-reanimated` score animation work, and **Google Sign-In reaches Firebase Auth over SDK 56's new `expo/fetch` HTTP stack** — the single biggest risk of this upgrade, now cleared.
+- Still unverified: Apple Sign-In and iOS layout (needs a simulator or TestFlight build).
+- **Android builds can fail spuriously with `EAS_BUILD_UNKNOWN_GRADLE_ERROR`.** Root cause: SDK 57 resolves Expo's Android modules as precompiled AARs from a local Maven repo inside `node_modules`, but `mavenCentral()` is consulted first and legitimately 404s for those coordinates. If Maven Central returns **429 Too Many Requests** instead of 404, Gradle disables the repository build-wide and aborts resolution rather than falling through. Triggered by running two Android builds concurrently. **Fix: retry, one Android build at a time.**
+- **iOS minimum rises 15.1 → 16.4** (forced by SDK 56). iPhone 6s/7/SE-1st-gen and iPad Air 2/mini 4 stop receiving updates and are stranded on 2.0.0 permanently. Do **not** raise `minSupportedVersion` past 2.0.0 in Firestore `app_config/version` or those users hit the hard force-update modal with no way out — bump only `latestVersion`.
+- Full plan and the research behind it: [`docs/upgrade/expo-57-upgrade-plan.md`](./docs/upgrade/expo-57-upgrade-plan.md).
+
 **As of 2026-05-09 — v2.0.0 fully shipped, both platforms LIVE.**
 
 - `app.config.ts` has `version: "2.0.0"`, `runtimeVersion: "2.0.0"`.
@@ -647,7 +694,7 @@ Did `runtimeVersion` change in app.config.ts since the last published binary?
   - iOS `019e06ab-5579-7434-b6c3-4c5b5281b8f2` — restored Apple + Google sign-in buttons in the anon-gate via `IS_IOS` (Android keeps the same buttons post-Sign-In-fix).
   - Android `019e08e8-d366-7879-8ded-ba846842e9f7` + iOS `019e0b30-728c-77d0-9764-3dca6f215161` (commit `e5afddc`) — leaderboard podium polish: crown icon for self in rank ribbon (replaces bottom "შენ" text), `adjustsFontSizeToFit` on display name, bottom tab `tabBarLabel` fontSize 14→11 so "სტატისტიკა" fits.
   - Android `019e0b46-96c4-7b72-bb52-85ae44407d84` + iOS `019e0b44-30cd-7da3-868f-1a460f6d4755` (commit `c19b113`) — leaderboard podium card heights bumped (170→190 side, 200→220 center) so points have breathing room above bottom border; iOS-only tab bar base height 80→55 gated by `IS_IOS` constant.
-- **Web bundling caveat**: explicit `--platform ios` / `--platform android` is required for `eas update`; `--platform all` fails because web bundling is broken on Expo SDK 55 (peer-dep gap: `react-native-youtube-iframe → react-native-web-webview`).
+- **Web bundling caveat**: explicit `--platform ios` / `--platform android` is required for `eas update`; `--platform all` fails because web bundling is broken (peer-dep gap: `react-native-youtube-iframe → react-native-web-webview`). Diagnosed on SDK 55 and **not re-tested on SDK 57** — the upgrade's bundle verification deliberately exported ios and android separately. Re-test `--platform all` once before relaxing this rule.
 - **Parallel-update gotcha**: do NOT run two `eas update --platform <p>` invocations in parallel from the same checkout. Both processes share the local `dist/` directory; whichever finishes its export second wins, and the loser's upload step will fail with `--platform="X" not found in metadata.json`. Run sequentially (iOS, then Android, or vice versa).
 - **Google Sign-In SHA-1 lesson**: the runtime APK's SHA-1 — extracted via `adb pull` + `apksigner verify --print-certs ./base.apk` — must be registered in Firebase Console for Android OAuth to work. Full diagnostic procedure in §19.6 below.
 - **Cloud Console Android OAuth clients**: prod (`3D:19:A4`, Play App Signing) and dev (`5E:8F:16`, project owner's debug keystore). One orphan from a deleted wrong-SHA `30:19:AA` entry remains inert — safe to delete when convenient.
@@ -671,21 +718,42 @@ The vc 15 P0 had two compounding failures: (a) a wrong SHA was originally regist
 
 **For dev workflow:** every developer who runs `npx expo run:android` produces a debug-keystore-signed APK with their own unique SHA. Each dev's SHA needs to be registered in Firebase (or use a shared keystore checked into a private team store). Currently the only registered debug-keystore SHA is `5E:8F:16:06:2E:A3:CD:2C:4A:0D:54:78:76:BA:A6:F3:8C:AB:F6:25` (the project owner's local).
 
-### 19.3 Pre-release checklist (before the 2.0.0 native build)
+**For EAS preview/internal APKs (added 2026-09-04):** an APK installed *directly* (not via Play) keeps the **EAS upload key** signature, not the Play App Signing one — so Google Sign-In fails with `DEVELOPER_ERROR` / "This android application is not registered to use OAuth2.0" until that SHA is registered too. The EAS upload key SHA-1 is
+`78:CF:C5:76:7C:E9:64:82:DC:5D:58:B0:B7:8C:B2:37:BF:75:BA:A4` and is now registered in Firebase.
+Three fingerprints are therefore expected in the console: Play App Signing (`3D:19:A4…`), the owner's debug keystore (`5E:8F:16…`), and the EAS upload key (`78:CF:C5…`).
 
-1. Bump `version` to `"2.0.0"` in `app.config.ts`.
-2. Confirm `runtimeVersion` is `"2.0.0"`.
-3. `ios.buildNumber` and `android.versionCode` auto-increment via EAS.
-4. Update Firestore `app_config/version`:
-   ```
-   minSupportedVersion: "2.0.0"
-   latestVersion:        "2.0.0"
-   ```
-   **After** the binary is live in stores, not before — otherwise pre-2.0.0 users see the hard force-update modal.
-5. Run lint + type-check + tests: `npm run lint && npx tsc --noEmit && npx jest --no-watchAll`.
-6. Tag the release commit.
+**⚠️ The local `google-services.json` is stale and does not match the Firebase console.** It contains three fingerprints — `70cfc576…`, `3019aac5…` (the inert orphan noted above), `78cfc576…` — and *none* of the two that were actually registered before 2026-09-04. Two of them look like hand-typed corruptions of real values (`3019aac5f56175420916e74145141e7802c58e7f` vs the real `3d19a4c5f16175420916eef1a5141e7802c5be7f`). EAS builds are unaffected because they inject the `GOOGLE_SERVICES_JSON` secret, but local `expo run:android` builds use this file. **Re-download it from Firebase Console → Project settings → Android app, and prune the stray `google-services2.json` / `google-services.json.bak-vc15` copies.**
+
+**Known pre-existing auth gap:** `signInWithGoogle` recovers from `auth/credential-already-in-use` by falling back to `signInWithCredential`, but an email collision (`auth/email-already-in-use` / `auth/account-exists-with-different-credential`) only shows the "account already exists" toast with no path forward. A user who first signed up with Apple can therefore never sign in with Google on the same email. Unrelated to the SDK 57 upgrade.
+
+### 19.3 Pre-release checklist (runtime-changing release, e.g. the 2.1.0 / SDK 57 build)
+
+Ordering matters: a release that changes `runtimeVersion` must reach the stores as a binary
+**before** any OTA is published on the new runtime.
+
+1. Bump `version` in `app.config.ts` (e.g. `"2.1.0"`).
+2. Bump `runtimeVersion` to the identical string, then **prove it resolves**:
+   `npx expo config --type public | grep runtimeVersion` must print the new value, not the old one.
+3. Build numbers auto-increment via EAS (`appVersionSource: "remote"`). Do not add
+   `ios.buildNumber` / `android.versionCode` back to `app.config.ts`.
+4. Run the gates: `npm run lint && npx tsc --noEmit && npx jest --ci && npx expo-doctor@latest`.
+5. Confirm EAS has the env vars the build needs:
+   `eas env:list --environment production` — all nine `EXPO_PUBLIC_*` plus file-type
+   `GOOGLE_SERVICES_JSON`. `eas update` on SDK ≥ 55 requires `--environment`, and passing it
+   makes the local `.env` invisible, so a missing var ships an unconfigured Firebase client.
+6. Tag the release commit, and tag the **previous** runtime too (e.g. `sdk55-runtime-2.0.0`) —
+   that tag is the only way to hotfix users stranded on the old runtime.
 7. `eas build --platform all --profile production`.
-8. `eas submit --platform ios --profile production` and `eas submit --platform android --profile production` (or `--auto-submit` on the build).
+8. `eas submit --platform ios --profile production` and
+   `eas submit --platform android --profile production` (or `--auto-submit` on the build).
+9. **Only after the binary is live in both stores**, update Firestore `app_config/version`:
+   ```
+   latestVersion:        "2.1.0"
+   minSupportedVersion:  (leave at "2.0.0")
+   ```
+   Raising `minSupportedVersion` to a release whose OS floor climbed (SDK 57 → iOS 16.4) hard-blocks
+   every user who *cannot* install it. Bump `latestVersion` for the soft nudge; leave the hard gate alone.
+10. Publish OTAs on the new runtime only, `preview` channel first, then `production`.
 
 ### 19.4 OTA cadence (post-2.0.0)
 
