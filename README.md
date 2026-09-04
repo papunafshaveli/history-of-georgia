@@ -133,7 +133,18 @@ RCT_USE_PREBUILT_RNCORE=0 RCT_USE_RN_DEP=0 npx expo run:ios
 
 The two `RCT_USE_*` env vars disable React Native 0.83's prebuilt-pod path, which had a broken podspec (`Missing required attribute 'source'`). Disabling them forces a from-source compile. First build takes ~15 min; subsequent JS-only changes hot-reload in seconds.
 
-> **Unverified on RN 0.86 (SDK 57).** The workaround above was diagnosed on RN 0.83 and has not been re-tested since the SDK 57 upgrade — no local native build was run. Try `npx expo run:ios` without the two env vars first; only fall back to them if the podspec error reappears.
+> **Local iOS builds are currently broken by the space in the project path.** On SDK 57,
+> `npx expo run:ios` fails in the `[CP-User] Generate app.config for prebuilt Constants.manifest`
+> CocoaPods script with `No such file or directory: /Users/macbookpro/Desktop/my` — the path
+> `.../Desktop/my personal projects/...` is passed unquoted and truncates at the first space.
+> EAS builds are unaffected (they build in `/home/expo/workingdir/build`, no spaces), which is
+> why production iOS builds succeed.
+>
+> To build iOS locally, either move the checkout to a path with no spaces, or use
+> `eas build --profile development-simulator --platform ios` + `eas build:run -p ios`.
+>
+> The `RCT_USE_*` workaround above therefore remains **unverified on RN 0.86** — the build never
+> reaches the pod-compile stage locally. Try without the env vars first if you do move the repo.
 
 If `pod install` succeeds but Xcode hangs for >20 min on `Pods-Hermes-engine`, kill the build (`Ctrl+C`, then `rm -rf ios`) and use the EAS dev-client path above.
 
