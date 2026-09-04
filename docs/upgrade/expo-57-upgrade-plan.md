@@ -5,7 +5,16 @@ Phases 0–3, 5 and 6 are done and verified; phase 4 (local prebuild) and phase 
 are the remaining steps. Kept as the record of why each choice was made.
 
 Outcome: `tsc` 0 errors · `jest` 40/40 · `expo lint` clean · `expo-doctor` 21/21 ·
-`expo export` succeeds for ios and android. **No native build has been run.**
+`expo export` succeeds for ios and android · **EAS native builds pass on both platforms**
+(iOS `.ipa`, Android `.aab` + preview `.apk`) · **device-verified on an Android emulator**:
+launch, render, anonymous auth, Firestore question loading, full quiz loop, reanimated score
+animation, and Google Sign-In reaching Firebase Auth over the new `expo/fetch` stack.
+
+Still unverified: Apple Sign-In, iOS layout (needs a simulator/TestFlight build).
+
+Two non-upgrade issues surfaced during device testing, both documented in INFRASTRUCTURE §19.6:
+the EAS upload-key SHA-1 had to be registered in Firebase for Google Sign-In to work on
+directly-installed APKs, and the local `google-services.json` is stale/corrupted.
 
 Resolved since writing: shipped as **`2.1.0`**, not `3.0.0` — no user-facing feature change, so
 the major slot stays free. TypeScript 6.0.3 accepted (Expo's pin; `"types": ["jest"]` took tsc

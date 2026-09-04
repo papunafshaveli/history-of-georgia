@@ -635,7 +635,11 @@ Did `runtimeVersion` change in app.config.ts since the last published binary?
 
 - Expo SDK 55 → 57 in one hop (SDK 56 skipped: Hermes v1 memory regression, fixed only in RN 0.86.2 / `expo@57.0.9`). RN 0.83.6 → 0.86.3, React 19.2.0 → 19.2.3, TypeScript 5.9 → 6.0.3, firebase 11 → 12.18.0.
 - `app.config.ts` now has `version: "2.1.0"`, `runtimeVersion: "2.1.0"`. **The live installed base is still on runtime `2.0.0` — never publish an SDK 57 OTA to that runtime.** Tag `sdk55-runtime-2.0.0` (commit `1f7686a`) is the hotfix point for those users.
-- Verification run: `tsc` 0 errors · `jest` 40/40 · `expo lint` clean · `expo-doctor` 21/21 · `expo export` succeeds for ios and android. **No native build has been run** — neither local nor EAS.
+- Verification run: `tsc` 0 errors · `jest` 40/40 · `expo lint` clean · `expo-doctor` 21/21 · `expo export` succeeds for ios and android.
+- **Native builds pass on both platforms** (EAS, production profile): iOS `.ipa` and Android `.aab` + preview `.apk`.
+- **Device-verified on an Android emulator** (preview APK, release build, `versionCode 22`): launches with no fatal exceptions, home/leaderboard/game screens render, anonymous auth + Firestore question loading work, the full quiz loop and the `react-native-reanimated` score animation work, and **Google Sign-In reaches Firebase Auth over SDK 56's new `expo/fetch` HTTP stack** — the single biggest risk of this upgrade, now cleared.
+- Still unverified: Apple Sign-In and iOS layout (needs a simulator or TestFlight build).
+- **Android builds can fail spuriously with `EAS_BUILD_UNKNOWN_GRADLE_ERROR`.** Root cause: SDK 57 resolves Expo's Android modules as precompiled AARs from a local Maven repo inside `node_modules`, but `mavenCentral()` is consulted first and legitimately 404s for those coordinates. If Maven Central returns **429 Too Many Requests** instead of 404, Gradle disables the repository build-wide and aborts resolution rather than falling through. Triggered by running two Android builds concurrently. **Fix: retry, one Android build at a time.**
 - **iOS minimum rises 15.1 → 16.4** (forced by SDK 56). iPhone 6s/7/SE-1st-gen and iPad Air 2/mini 4 stop receiving updates and are stranded on 2.0.0 permanently. Do **not** raise `minSupportedVersion` past 2.0.0 in Firestore `app_config/version` or those users hit the hard force-update modal with no way out — bump only `latestVersion`.
 - Full plan and the research behind it: [`docs/upgrade/expo-57-upgrade-plan.md`](./docs/upgrade/expo-57-upgrade-plan.md).
 
@@ -678,6 +682,14 @@ The vc 15 P0 had two compounding failures: (a) a wrong SHA was originally regist
 5. Verify by running Sign-In on a build signed with that SHA. If it still throws DEVELOPER_ERROR, double-check that the SHA in Firebase exactly matches the apksigner output — not what Play Console "App signing key" displays (which can be stale or differ from the actual runtime cert in some account states).
 
 **For dev workflow:** every developer who runs `npx expo run:android` produces a debug-keystore-signed APK with their own unique SHA. Each dev's SHA needs to be registered in Firebase (or use a shared keystore checked into a private team store). Currently the only registered debug-keystore SHA is `5E:8F:16:06:2E:A3:CD:2C:4A:0D:54:78:76:BA:A6:F3:8C:AB:F6:25` (the project owner's local).
+
+**For EAS preview/internal APKs (added 2026-09-04):** an APK installed *directly* (not via Play) keeps the **EAS upload key** signature, not the Play App Signing one — so Google Sign-In fails with `DEVELOPER_ERROR` / "This android application is not registered to use OAuth2.0" until that SHA is registered too. The EAS upload key SHA-1 is
+`78:CF:C5:76:7C:E9:64:82:DC:5D:58:B0:B7:8C:B2:37:BF:75:BA:A4` and is now registered in Firebase.
+Three fingerprints are therefore expected in the console: Play App Signing (`3D:19:A4…`), the owner's debug keystore (`5E:8F:16…`), and the EAS upload key (`78:CF:C5…`).
+
+**⚠️ The local `google-services.json` is stale and does not match the Firebase console.** It contains three fingerprints — `70cfc576…`, `3019aac5…` (the inert orphan noted above), `78cfc576…` — and *none* of the two that were actually registered before 2026-09-04. Two of them look like hand-typed corruptions of real values (`3019aac5f56175420916e74145141e7802c58e7f` vs the real `3d19a4c5f16175420916eef1a5141e7802c5be7f`). EAS builds are unaffected because they inject the `GOOGLE_SERVICES_JSON` secret, but local `expo run:android` builds use this file. **Re-download it from Firebase Console → Project settings → Android app, and prune the stray `google-services2.json` / `google-services.json.bak-vc15` copies.**
+
+**Known pre-existing auth gap:** `signInWithGoogle` recovers from `auth/credential-already-in-use` by falling back to `signInWithCredential`, but an email collision (`auth/email-already-in-use` / `auth/account-exists-with-different-credential`) only shows the "account already exists" toast with no path forward. A user who first signed up with Apple can therefore never sign in with Google on the same email. Unrelated to the SDK 57 upgrade.
 
 ### 19.3 Pre-release checklist (runtime-changing release, e.g. the 2.1.0 / SDK 57 build)
 
