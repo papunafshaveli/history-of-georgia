@@ -499,6 +499,41 @@ EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID=...
 
 Profiles: `development`, `development-simulator` (extends `development` with `ios.simulator: true`), `preview`, `production`. Submit profile pinned to App Store Connect ID `6741484980` and Apple Team `M39YBKH9L5`. Android submit uses `android-service-account-key/history-of-georgia-43551-f5aff86366af.json`.
 
+### GCP service accounts & keys (audited 2026-09-04 — cleanup OPEN, not yet done)
+
+Four service accounts exist in the `history-of-georgia` GCP project. **Two are Google-managed
+defaults that must not be touched** — `history-of-georgia-43551@appspot.gserviceaccount.com`
+(App Engine) and `394970199474-compute@developer.gserviceaccount.com` (Compute). Both hold **no
+keys**. Cloud Functions authenticate through these via Application Default Credentials
+(`functions/src/index.ts` calls a bare `admin.initializeApp()`), so disabling or deleting them
+would break the deployed functions.
+
+The two project-owned accounts hold downloadable JSON keys. Every consumer on the dev machine
+was traced; only two keys are actually referenced:
+
+| Service account | Key ID prefix | Created | Used by |
+| --- | --- | --- | --- |
+| `firebase-adminsdk-s9u1w@…` | `b00923ff6d…` | Mar 15 | **IN USE** — `upload.ts:5`, `scripts/wipe-auth.ts:19` |
+| `firebase-adminsdk-s9u1w@…` | `8b6b6d67…` | Dec 25 | orphan |
+| `firebase-adminsdk-s9u1w@…` | `3e5310ef…` | May 5 | orphan — see caveat |
+| `hofge-play-store-aacount@…` | `f5aff86366af…` | Mar 19 | **IN USE** — `eas.json` Android submit |
+| `hofge-play-store-aacount@…` | `a94b0030ba5f…` | Jan 28 | orphan (matches the dead `.gitignore` entry) |
+
+Verified clear: no `.github/workflows`, no service-account key in any EAS environment
+(`production` / `preview` / `development` hold only `EXPO_PUBLIC_*` plus the
+`GOOGLE_SERVICES_JSON` secret), no `GOOGLE_APPLICATION_CREDENTIALS` anywhere, and `eas.json`
+submits from the **local** key file rather than an EAS-stored one.
+
+**Caveat on `3e5310ef…`:** it was created *after* the key actually in use, during the v2.0.0
+release window. It does not fit the "leftover from a rotation" pattern, so it may live on
+another machine or in an external tool. A `firebase-adminsdk` key grants full Firestore
+read/write — confirm its origin before removing it.
+
+**Recommended procedure when this is picked up:** *disable* each orphaned key first (Cloud
+Console → service account → **KEYS** tab → ⋮ → Disable), leave it disabled ~1 week, and delete
+only after nothing breaks. Disabling is instantly reversible; deletion is permanent. Scope is
+individual **keys** only — never the service accounts themselves.
+
 ### Sensitive assets — gitignored, NEVER commit
 
 - `.env`
