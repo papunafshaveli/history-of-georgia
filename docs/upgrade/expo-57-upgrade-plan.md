@@ -1,8 +1,11 @@
 # Expo SDK 55 → 57 upgrade plan
 
-Status: **EXECUTED 2026-09-03** on branch `upgrade/expo-57`.
-Phases 0–3, 5 and 6 are done and verified; phase 4 (local prebuild) and phase 7 (EAS build)
-are the remaining steps. Kept as the record of why each choice was made.
+Status: **EXECUTED and SUBMITTED.** Upgrade landed 2026-09-03 on branch `upgrade/expo-57`;
+built and submitted to both stores 2026-09-04, awaiting review. All phases 0–7 are complete.
+Kept as the record of why each choice was made.
+
+Backing research lives at `docs/upgrade/expo-57-recon-findings*.txt`, which are **gitignored** —
+they exist only on the machine that ran the recon, so a fresh clone will not have them.
 
 Outcome: `tsc` 0 errors · `jest` 40/40 · `expo lint` clean · `expo-doctor` 21/21 ·
 `expo export` succeeds for ios and android · **EAS native builds pass on both platforms**

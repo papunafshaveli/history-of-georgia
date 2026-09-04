@@ -254,10 +254,30 @@ In `app.config.ts`:
 ## OTA update
 
 ```
-eas update --branch production --message "your message"
+eas update --branch production --platform ios     --environment production --message "your message"
+eas update --branch production --platform android --environment production --message "your message"
 ```
 
-OTA updates only reach users whose installed binary's `runtimeVersion` matches `main`. If you bump `runtimeVersion`, the next prod release must be a native build (not an OTA), and existing users won't see the JS bundle until they install the new binary from the store.
+**`--environment` is required on SDK ≥ 55, and passing it makes the local `.env` invisible.** The
+bundle is built from the EAS environment's variables instead, so confirm the nine
+`EXPO_PUBLIC_*` vars exist there first — a missing one ships a silently unconfigured Firebase
+client, not an error:
+
+```
+eas env:list --environment production
+```
+
+Run the two platforms **sequentially, never `--platform all`**: both invocations share the local
+`dist/` directory, so running them in parallel makes the second export clobber the first and the
+loser fails with `--platform="X" not found in metadata.json`. `--platform all` additionally fails
+outright on the web-bundling peer gap (`react-native-youtube-iframe → react-native-web-webview`).
+
+OTA updates only reach users whose installed binary's `runtimeVersion` matches. If you bump
+`runtimeVersion`, the next prod release must be a native build (not an OTA), and existing users
+won't see the JS bundle until they install the new binary from the store.
+
+Delivery is not instant: `EXUpdatesCheckOnLaunch=ALWAYS` with `EXUpdatesLaunchWaitMs=0` means a
+user *downloads* the update on one launch and *runs* it on the next — budget two app opens.
 
 ## Firebase — Deploy Security Rules & Indexes
 
