@@ -38,14 +38,14 @@ For commands (build, deploy, lint, run), see [`README.md`](./README.md). This do
 | Framework | Expo SDK | 57 |
 | Language | TypeScript | 6.0.x |
 | Navigation | React Navigation (native-stack + bottom-tabs) | 7.x |
-| Backend | Firebase (Auth + Firestore + Cloud Functions) | client 12.18.0 / admin 13.10.0 |
+| Backend | Firebase (Auth + Firestore + Cloud Functions) | client 12.18.0 / admin 13.10.0 (root, for `upload.ts`) / admin 12.7.0 (`functions/`) |
 | Local storage | `@react-native-async-storage/async-storage` | 2.2.0 |
 | Auth providers | Firebase Anonymous + Google Sign-In + Apple Authentication | — |
 | Push | Expo Notifications + `expo-server-sdk` (functions side) | 57.x / 3.x |
 | Build & OTA | EAS Build + EAS Update | CLI ≥ 23.2.0 |
 | Test runner | Jest (`jest-expo` preset) | 29.x |
 | Linter | `expo lint` (ESLint 9) | — |
-| Node | required `>= 22.23.1` | (see `.nvmrc`) |
+| Node | app `>= 22.23.1` (see `.nvmrc`); `functions/` runtime pinned to Node 20 | |
 
 **Other notable packages:** `expo-apple-authentication`, `@react-native-google-signin/google-signin`, `expo-audio`, `expo-haptics`, `expo-linear-gradient`, `expo-notifications`, `expo-store-review`, `expo-updates`, `dayjs`, `react-native-reanimated`, `react-native-webview`, `react-native-youtube-iframe`, `react-native-toast-message`, `firebase-admin` (dev only — used by `upload.ts`).
 
@@ -666,7 +666,13 @@ Did `runtimeVersion` change in app.config.ts since the last published binary?
 
 ### 19.2 Current release status (snapshot — keep updated)
 
-**As of 2026-09-03 — v2.1.0 (Expo SDK 57) upgraded on branch `upgrade/expo-57`, NOT yet built or shipped.**
+**As of 2026-09-04 — v2.1.0 (Expo SDK 57) built and SUBMITTED to both stores, awaiting review.**
+
+- iOS build 1.0.23 uploaded to App Store Connect; Android versionCode 23 submitted to the Play
+  **internal** track and promoted to a production release. Neither is live yet.
+- Firestore `app_config/version` deliberately left at `latestVersion: "2.0.0"` /
+  `minSupportedVersion: "2.0.0"` — this release has no user-visible changes, so neither the soft
+  nor the hard update modal should fire. Users receive 2.1.0 through normal store auto-update.
 
 - Expo SDK 55 → 57 in one hop (SDK 56 skipped: Hermes v1 memory regression, fixed only in RN 0.86.2 / `expo@57.0.9`). RN 0.83.6 → 0.86.3, React 19.2.0 → 19.2.3, TypeScript 5.9 → 6.0.3, firebase 11 → 12.18.0.
 - `app.config.ts` now has `version: "2.1.0"`, `runtimeVersion: "2.1.0"`. **The live installed base is still on runtime `2.0.0` — never publish an SDK 57 OTA to that runtime.** Tag `sdk55-runtime-2.0.0` (commit `1f7686a`) is the hotfix point for those users.
