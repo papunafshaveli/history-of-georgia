@@ -1,4 +1,29 @@
+<p align="center"><img src="src/assets/images/hofGeLogo.png" width="120" alt="History of Georgia icon"></p>
+
 # History of Georgia
+
+An educational quiz game about Georgian history for iOS and Android. **10K+ downloads**, rated **4.8★ on Google Play** and **4.9★ on the App Store**.
+
+<a href="https://apps.apple.com/ge/app/history-of-georgia/id6741484980"><img src="https://img.shields.io/badge/App_Store-0D96F6?style=for-the-badge&logo=appstore&logoColor=white" alt="App Store"></a>
+<a href="https://play.google.com/store/apps/details?id=com.papunafshaveli.historyofgeorgia"><img src="https://img.shields.io/badge/Google_Play-34A853?style=for-the-badge&logo=googleplay&logoColor=white" alt="Google Play"></a>
+
+## Features
+
+- Hundreds of questions across easy, medium and hard levels, with weighted scoring
+- Weekly and all-time leaderboards
+- Sign in with Apple or Google to save progress
+- Sections on Georgian rulers, public figures and historical battles, with embedded YouTube videos
+- Push notifications with history facts
+- Personal stats, dark and light themes
+- Over-the-air updates for JS-only releases
+
+## Tech stack
+
+- **Expo SDK 57**, **React Native 0.86**, **React 19**, **TypeScript**
+- **Firebase**: Auth (Apple, Google, anonymous), Firestore, Cloud Functions
+- **EAS Build** and **EAS Update** for store builds and OTA releases
+
+---
 
 ## Setup
 
