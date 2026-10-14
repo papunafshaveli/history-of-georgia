@@ -23,3 +23,4 @@ export { default as ScoreChangeIndicator } from "./score-change-indicator/ScoreC
 export { default as ConfirmNameModal } from "./sign-in/ConfirmNameModal";
 export { default as ForceUpdateModal } from "./sign-in/ForceUpdateModal";
 export { default as SoftUpdateModal } from "./sign-in/SoftUpdateModal";
+export { default as OtherAppsCarousel } from "./other-apps-carousel/OtherAppsCarousel";

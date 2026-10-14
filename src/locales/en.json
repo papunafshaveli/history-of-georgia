@@ -104,6 +104,12 @@
 
   "learn_about_geo_history": "Learn about Georgian history",
 
+  "other_apps_title": "Our other apps",
+  "other_apps_krossi_description": "Georgian crosswords",
+  "other_apps_drosha_description": "Guess the flag",
+  "other_apps_krossi_accessibility": "Open the Krossi store page",
+  "other_apps_drosha_accessibility": "Open the Drosha store page",
+
   "game_share_message": "I scored {score} on History of Georgia! Can you beat me?",
 
   "stats_title": "Statistics",

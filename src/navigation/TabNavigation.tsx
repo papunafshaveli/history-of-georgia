@@ -22,6 +22,7 @@ import { useAppTheme, useThemeMode, useTranslation } from "../hooks";
 import { getAdjustedHeight } from "../helpers";
 
 const TAB_BAR_BASE_HEIGHT = IS_IOS ? 55 : 80;
+const TAB_BAR_MIN_HEIGHT = 58;
 
 const Tab = createBottomTabNavigator<TabParamList>();
 
@@ -143,7 +144,9 @@ const getStyles = (theme: AppTheme, props: { bottomInset: number }) =>
   StyleSheet.create({
     tabBar: {
       backgroundColor: theme.colors.chromeBg,
-      height: getAdjustedHeight(TAB_BAR_BASE_HEIGHT) + props.bottomInset,
+      height:
+        Math.max(getAdjustedHeight(TAB_BAR_BASE_HEIGHT), TAB_BAR_MIN_HEIGHT) +
+        props.bottomInset,
       paddingBottom: props.bottomInset,
       borderTopColor: theme.colors.chromeBg,
       borderTopWidth: 1,

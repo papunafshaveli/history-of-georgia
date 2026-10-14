@@ -26,6 +26,7 @@ export enum AnalyticsEvent {
   HINT_USED = "hint_used",
   TOPIC_VIEW = "topic_view",
   QUESTION_ANSWERED = "question_answered",
+  OTHER_APP_OPEN = "other_app_open",
 }
 
 type EventParams = Record<string, string | number | boolean>;

@@ -16,7 +16,7 @@ import { RootStackParamList, ScreenName } from "@/src/types";
 import { Difficulty } from "@/src/types/quizQuestion";
 import { ClickSound, Shield, StartScreenBack } from "@/src/assets";
 import { vibrateImpact } from "@/src/helpers";
-import { AppText, DifficultyRing } from "@/src/components";
+import { AppText, DifficultyRing, OtherAppsCarousel } from "@/src/components";
 
 import { getStyles } from "./styles";
 
@@ -59,46 +59,52 @@ const StartGameScreen = () => {
             pointerEvents="none"
             style={[styles.overlayBase, overlayStyle]}
           />
-          <DifficultyRing
-            selectedDifficulty={selectedDifficulty}
-            onSelectDifficulty={setSelectedDifficulty}
-          >
-            <Pressable
-              android_ripple={{
-                color: colors.border,
-                borderless: true,
-              }}
-              onPress={handlePressStart}
-              style={styles.startGameBtn}
-              accessibilityRole="button"
-              accessibilityLabel={t.common_start}
-            >
-              <ImageBackground
-                source={Shield}
-                resizeMode="cover"
-                style={styles.shieldBackContainer}
-                imageStyle={styles.imageBackStyles}
+          <View style={styles.homeContent}>
+            <View style={styles.gameControl}>
+              <DifficultyRing
+                selectedDifficulty={selectedDifficulty}
+                onSelectDifficulty={setSelectedDifficulty}
               >
-                <View style={styles.textAndIcon}>
-                  <AppText
-                    color={colors.bronzeLight}
-                    type="display"
-                    fontFamily="display"
-                    lineHeight={100}
-                    style={isThemeDark ? styles.darkOpacity : undefined}
+                <Pressable
+                  android_ripple={{
+                    color: colors.border,
+                    borderless: true,
+                  }}
+                  onPress={handlePressStart}
+                  style={styles.startGameBtn}
+                  accessibilityRole="button"
+                  accessibilityLabel={t.common_start}
+                >
+                  <ImageBackground
+                    source={Shield}
+                    resizeMode="cover"
+                    style={styles.shieldBackContainer}
+                    imageStyle={styles.imageBackStyles}
                   >
-                    {t.common_start}
-                  </AppText>
-                  <MaterialCommunityIcons
-                    name="sword-cross"
-                    color={colors.bronzeLight}
-                    size={40}
-                    style={isThemeDark ? styles.darkOpacity : undefined}
-                  />
-                </View>
-              </ImageBackground>
-            </Pressable>
-          </DifficultyRing>
+                    <View style={styles.textAndIcon}>
+                      <AppText
+                        color={colors.bronzeLight}
+                        type="display"
+                        fontFamily="display"
+                        lineHeight={100}
+                        style={isThemeDark ? styles.darkOpacity : undefined}
+                      >
+                        {t.common_start}
+                      </AppText>
+                      <MaterialCommunityIcons
+                        name="sword-cross"
+                        color={colors.bronzeLight}
+                        size={40}
+                        style={isThemeDark ? styles.darkOpacity : undefined}
+                      />
+                    </View>
+                  </ImageBackground>
+                </Pressable>
+              </DifficultyRing>
+            </View>
+
+            <OtherAppsCarousel />
+          </View>
         </ImageBackground>
       </View>
     </SafeAreaView>

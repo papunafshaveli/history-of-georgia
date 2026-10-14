@@ -23,7 +23,6 @@ export const getStyles = (theme: AppTheme) =>
     imageBackContainer: {
       flex: 1,
       alignItems: "center",
-      justifyContent: "center",
       marginTop: -18,
     },
     imageBackStyles: {
@@ -62,5 +61,14 @@ export const getStyles = (theme: AppTheme) =>
     },
     darkOpacity: {
       opacity: 0.7,
+    },
+    homeContent: {
+      flex: 1,
+      width: "100%",
+    },
+    gameControl: {
+      flex: 1,
+      alignItems: "center",
+      justifyContent: "center",
     },
   });

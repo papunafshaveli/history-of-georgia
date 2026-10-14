@@ -188,6 +188,7 @@ All components live in `src/components/<folder>/<File>.tsx` and are barrel-expor
 | `SettingToggle` | Icon + label + switch row (`iconName`, `label`, `value`, `onValueChange`) |
 | `StatisticsCard` | Card with icon + numeric title + description (`iconName`, `title`, `description`) |
 | `DifficultyRing` | Animated ring selector for easy/medium/hard (`selectedDifficulty`, `onDifficultyChange`) |
+| `OtherAppsCarousel` | Main-menu peek carousel for user-initiated discovery of Krossi and Drosha; opens the platform-specific store page |
 | `ScoreChangeIndicator` | Reanimated "+N" floater that overlays the score on correct answers; props `value` (points earned, null when idle) + `changeKey` (incrementing trigger) |
 | `SearchInput` | Text input with search icon (`placeholder`, `value`, `onChangeText`) |
 

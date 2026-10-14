@@ -18,3 +18,5 @@ export const ShieldAndSword = require("./shieldAndSword.png");
 export const Ink = require("./Ink.png");
 export const HofGeLogo = require("./hofGeLogo.png");
 export const EmptyStateImg = require("./empty-state-img.png");
+export const KrossiIcon = require("./other-apps/krossi-icon.png");
+export const DroshaIcon = require("./other-apps/drosha-icon.png");

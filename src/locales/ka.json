@@ -101,6 +101,12 @@
 
   "learn_about_geo_history": "გაეცანი საქართველოს ისტორიას",
 
+  "other_apps_title": "ჩვენი სხვა აპლიკაციები",
+  "other_apps_krossi_description": "ქართული კროსვორდები",
+  "other_apps_drosha_description": "გამოიცანი დროშა",
+  "other_apps_krossi_accessibility": "Krossi-ის მაღაზიის გვერდის გახსნა",
+  "other_apps_drosha_accessibility": "Drosha-ს მაღაზიის გვერდის გახსნა",
+
   "game_share_message": "საქართველოს ისტორიის თამაშში {score} ქულა დავაგროვე! შეგიძლია დამამარცხო?",
 
   "stats_title": "სტატისტიკა",
