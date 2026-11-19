@@ -48,6 +48,13 @@
   "rules_scoring_medium": "– Medium — +10 points",
   "rules_scoring_hard": "– Hard — +20 points",
   "rules_scoring_outro": "• Climb the leaderboard!",
+  "rules_daily_title": "Daily challenge",
+  "rules_daily_questions": "• 10 questions every day, the same for everyone",
+  "rules_daily_all_questions": "• You answer all 10: mistakes don't end the game, and there are no hints",
+  "rules_daily_one_attempt": "• One attempt per day",
+  "rules_daily_ranking": "• Today's leaderboard ranks by correct answers, then by time",
+  "rules_daily_separate": "• Daily results don't add points to the weekly or all-time leaderboard",
+  "rules_daily_streak": "• Play every day to keep your streak going",
 
   "common_score": "Score",
 

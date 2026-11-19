@@ -81,4 +81,10 @@ export const getStyles = (theme: AppTheme) =>
       fontStyle: "italic",
       marginTop: theme.spacing.x1,
     },
+
+    sectionTitle: {
+      textAlign: "center",
+      marginTop: theme.spacing.x6,
+      marginBottom: theme.spacing.x2,
+    },
   });
