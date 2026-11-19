@@ -6,6 +6,7 @@ import { AppText } from "@/src/components";
 import { useAppTheme, useStyles } from "@/src/hooks";
 import type { LeaderboardEntry } from "@/src/types";
 
+import LeaderboardScore from "./LeaderboardScore";
 import { getStyles } from "./styles";
 
 const PODIUM_MIN_ENTRIES = 3;
@@ -103,14 +104,9 @@ const PodiumCard: React.FC<PodiumCardProps> = ({ rank, entry, isSelf }) => {
         {entry.displayName}
       </AppText>
 
-      <AppText
-        type="caption"
-        fontFamily="sans"
-        color={colors.bronzeDark}
-        style={styles.podiumPoints}
-      >
-        {String(entry.points)}
-      </AppText>
+      <View style={styles.podiumScore}>
+        <LeaderboardScore entry={entry} compact />
+      </View>
     </View>
   );
 };

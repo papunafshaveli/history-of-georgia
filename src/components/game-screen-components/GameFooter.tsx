@@ -17,6 +17,8 @@ type GameFooterProps = {
   onSettings: () => void;
   hintsCount: number;
   isHintDisabled: boolean;
+  // The daily challenge has no hints; the spacer keeps back/settings in place.
+  showHint?: boolean;
 };
 
 const GameFooter: React.FC<GameFooterProps> = ({
@@ -25,6 +27,7 @@ const GameFooter: React.FC<GameFooterProps> = ({
   onSettings,
   hintsCount,
   isHintDisabled,
+  showHint = true,
 }) => {
   const t = useTranslation();
   const { colors } = useAppTheme();
@@ -48,33 +51,37 @@ const GameFooter: React.FC<GameFooterProps> = ({
         />
       </GradientWrapper>
 
-      <Pressable
-        disabled={isDisabled}
-        onPress={onHint}
-        accessibilityRole="button"
-        accessibilityLabel={`${t.common_hint} (${hintsCount})`}
-        accessibilityState={{ disabled: isDisabled }}
-        style={styles.hintPressable}
-      >
-        <GradientWrapper style={styles.helpGradient} colors={hintWrapperColor}>
-          <View style={styles.helpIconAdnText}>
-            <MaterialCommunityIcons
-              name="lightbulb-on"
-              size={24}
-              color={colors.text}
-            />
+      {showHint ? (
+        <Pressable
+          disabled={isDisabled}
+          onPress={onHint}
+          accessibilityRole="button"
+          accessibilityLabel={`${t.common_hint} (${hintsCount})`}
+          accessibilityState={{ disabled: isDisabled }}
+          style={styles.hintPressable}
+        >
+          <GradientWrapper style={styles.helpGradient} colors={hintWrapperColor}>
+            <View style={styles.helpIconAdnText}>
+              <MaterialCommunityIcons
+                name="lightbulb-on"
+                size={24}
+                color={colors.text}
+              />
 
-            <AppText
-              color={colors.text}
-              type="title"
-              fontFamily="script"
-              style={styles.hintText}
-            >
-              {t.common_hint} ({hintsCount})
-            </AppText>
-          </View>
-        </GradientWrapper>
-      </Pressable>
+              <AppText
+                color={colors.text}
+                type="title"
+                fontFamily="script"
+                style={styles.hintText}
+              >
+                {t.common_hint} ({hintsCount})
+              </AppText>
+            </View>
+          </GradientWrapper>
+        </Pressable>
+      ) : (
+        <View style={styles.hintPressable} />
+      )}
 
       <GradientWrapper style={styles.iconButtonContainer}>
         <IconButton

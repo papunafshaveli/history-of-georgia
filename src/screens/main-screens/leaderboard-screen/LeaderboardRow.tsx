@@ -5,6 +5,7 @@ import { AppText } from "@/src/components";
 import { useAppTheme, useStyles } from "@/src/hooks";
 import type { LeaderboardEntry } from "@/src/types";
 
+import LeaderboardScore from "./LeaderboardScore";
 import { getStyles } from "./styles";
 
 type LeaderboardRowProps = {
@@ -55,14 +56,7 @@ const LeaderboardRow: React.FC<LeaderboardRowProps> = ({ entry, isSelf }) => {
         {entry.displayName}
       </AppText>
 
-      <AppText
-        type="subHeadline"
-        fontFamily="serif"
-        color={colors.bronzeDark}
-        style={styles.rowPoints}
-      >
-        {entry.points}
-      </AppText>
+      <LeaderboardScore entry={entry} />
     </View>
   );
 };

@@ -45,7 +45,7 @@ For commands (build, deploy, lint, run), see [`README.md`](./README.md). This do
 | Build & OTA | EAS Build + EAS Update | CLI ≥ 23.2.0 |
 | Test runner | Jest (`jest-expo` preset) | 29.x |
 | Linter | `expo lint` (ESLint 9) | — |
-| Node | app `>= 22.23.1` (see `.nvmrc`); `functions/` runtime pinned to Node 20 | |
+| Node | app `>= 22.23.1` (see `.nvmrc`); `functions/` runtime pinned to Node 22 (Google decommissioned Node 20 for Cloud Functions on 2026-10-30) | |
 
 **Other notable packages:** `expo-apple-authentication`, `@react-native-google-signin/google-signin`, `expo-audio`, `expo-haptics`, `expo-linear-gradient`, `expo-notifications`, `expo-store-review`, `expo-updates`, `dayjs`, `react-native-reanimated`, `react-native-webview`, `react-native-youtube-iframe`, `react-native-toast-message`, `firebase-admin` (dev only — used by `upload.ts`).
 
@@ -70,7 +70,7 @@ history-of-georgia/
 ├── README.md                   # Developer commands
 ├── INFRASTRUCTURE.md           # This document
 ├── android-service-account-key/  # GITIGNORED — Play Store submission key
-├── functions/                  # Cloud Functions source (Node 20 + TS)
+├── functions/                  # Cloud Functions source (Node 22 + TS)
 │   ├── src/index.ts            # All Cloud Function definitions
 │   └── package.json            # Functions deps (firebase-admin, firebase-functions, expo-server-sdk)
 ├── scripts/
@@ -140,10 +140,12 @@ AppNavigation (native-stack)
 | Screen | Purpose | Key state | Key handlers | In ← / Out → |
 | --- | --- | --- | --- | --- |
 | `CustomSplashScreen` | Splash + version-gate check | `fontsLoaded`, `updateGate` | dismiss soft modal, navigate forward | initial → tabs |
-| `StartGameScreen` | Pick difficulty + start game | `selectedDifficulty` | `handlePressStart` | tabs default → `GAME_SCREEN` |
+| `StartGameScreen` | Pick difficulty + start game; daily card above the other-apps carousel (scrolls, no bounce, on short phones) | `selectedDifficulty`, `useDailyChallenge()` | `handlePressStart`, `handlePlayDaily`, `handleOpenTodayBoard` | tabs default → `GAME_SCREEN` / `DAILY_GAME_SCREEN` |
 | `GameScreen` | Quiz loop | from `useGameScreen()` | from `useGameScreen.actions` | `START_GAME_SCREEN` → back to start (or summary modal) |
+| `DailyGameScreen` | Daily challenge: today's 10 shared questions, visible stopwatch, no crowns/hints, one attempt (resumes) | `useDailyLoad` → `DailyRun` (`useDailyRun`) | `handleOptionPress`, exit modal (attempt kept) | home `DailyCard` / 20:00 reminder tap → `DAILY_RESULT_SCREEN` |
+| `DailyResultScreen` | Score, time, swords, streak, today's place, Share | local record + streak; place from the Today board | share, open Today board, close | `DAILY_GAME_SCREEN` → tabs (`LEADERBOARD_SCREEN` with `initialTab: TODAY`) |
 | `HistoricalTopicsScreen` | Cards: rulers / battles / figures | none | `handleTopicPress(screenName)` | tabs → `RULERS_SCREEN` / `BATTLES_SCREENS` / `PUBLIC_FIGURES` |
-| `LeaderboardScreen` | Weekly + alltime leaderboard, podium top 3, sign-in CTA | `currentTab`, `showSignInNudge`, `isConfirmNameVisible` | tab toggle, refresh on focus, Google/Apple sign-in, confirm-name | tabs → none (sign-in / confirm-name modals only) |
+| `LeaderboardScreen` | Today (daily: score then time) + weekly + alltime leaderboard, podium top 3, sign-in CTA | `currentTab`, `showSignInNudge`, `isConfirmNameVisible` | tab toggle, refresh on focus, Google/Apple sign-in, confirm-name | tabs → none (sign-in / confirm-name modals only) |
 | `StatsScreen` | Lifetime + recent games, sourced from AsyncStorage | from `useLifetimeStats` + `useRecentGames` | refresh on focus | tabs → none |
 
 ### Topic lists (`src/screens/historical-topic-screens/`)
@@ -226,6 +228,8 @@ All components live in `src/components/<folder>/<File>.tsx` and are barrel-expor
 | `TopicDetailsContent` | Detail-screen body (title, description, era, optional YouTube embed) |
 | `YoutubePlayer` | Wraps `react-native-youtube-iframe` |
 | `ErrorBoundary` | Class component, catches render errors at App root |
+| `DailyCard` | Home card for the daily (other-apps card style): play/continue with streak, or the quieter "done" card with score, time and countdown |
+| `DailyProgress` | Row of swords: whole = correct, broken (two clipped `sword` glyphs) = wrong, current, upcoming |
 
 ---
 
@@ -239,7 +243,7 @@ All in `src/hooks/`, exported via `src/hooks/index.ts`.
 | `useSettings()` | `{ isMuted, isVibrationOff, isPushEnabled, setIsMuted, setIsVibrationOff, setIsPushEnabled }` | `GameScreen`, `StartGameScreen`, audio/haptic helpers |
 | `useTranslation()` | Current-language strings object (en or ka JSON) | every screen / component with text |
 | `useGameScreen()` | `{ gameState, actions, modalHandlers }` | `GameScreen` only |
-| `useLeaderboard({ tab })` | `{ entries, isLoading, isRefreshing, error, refresh }` | `LeaderboardScreen` |
+| `useLeaderboard({ tab })` | `{ entries, isLoading, isRefreshing, error, refresh, reload }` (`reload` honours the cache; Today cache and responses must match the current Tbilisi date). Also exports `invalidateLeaderboardCache`, `primeLeaderboardCache` (the daily result screen hands its Today fetch over) | `LeaderboardScreen` |
 | `useUserStats({ uid? })` | `{ stats, isLoading, error, refresh }` | `StatsScreen`, `LeaderboardScreen` |
 | `useLifetimeStats()` | `{ stats, isLoading, refresh }` (local, AsyncStorage-backed) | `StatsScreen` |
 | `useRecentGames()` | `{ games, isLoading }` | `StatsScreen` |
@@ -250,6 +254,10 @@ All in `src/hooks/`, exported via `src/hooks/index.ts`.
 | `useNotifications()` | `void` (registers handlers + Expo push token) | `App.tsx` |
 | `usePendingResultsReplay()` | `void` (watches auth + net state, replays queued results) | `App.tsx` (via `BootEffects`) |
 | `useBackHandler(onBackPress)` | `void` (Android hardware back) | `App.tsx`, `LeaderboardScreen`, others |
+| `useDailyChallenge()` | `{ kind, date, streak, correct, elapsedMs, msToNext }`; refreshes on focus, on app resume and at Tbilisi midnight (one refresh at a time); finishes an attempt killed after its 10th answer; also prefetches tomorrow, prunes old sets and records, retries sync, reschedules the reminder | `StartGameScreen` |
+| `useDailyLoad(date)` / `useDailyRun(...)` | load the attempt before the run mounts / the run itself (answers, stopwatch, swords, finish) | `DailyGameScreen` |
+| `useStopwatch(initialMs)` | `{ displayMs, pauseClock, resumeClock, readMs }` — paused during answer feedback | `useDailyRun` |
+| `useDailyReminderTap()` | `void` — opens the daily when the 20:00 reminder is tapped (cold start too) | `StartGameScreen` |
 
 ---
 
@@ -268,6 +276,11 @@ All in `src/helpers/`, pure functions or thin wrappers.
 | `openAppOrUrl.ts` | `openAppOrUrl(appUrl, websiteUrl)` | Try opening native app URL, fallback to website |
 | `logger.ts` | `logger.log/warn/error(tag, msg, data?)` | DEV-gated console logger |
 | `date.ts` | date-formatting helpers (locale-aware via dayjs) | leaderboard week boundary, formatted timestamps |
+| `dailyStreak.ts` | `nextStreak`, `visibleStreak`, `EMPTY_STREAK` | Streak maths on Tbilisi dates |
+| `stopwatch.ts` | `startStopwatch`, `pauseStopwatch`, `resumeStopwatch`, `elapsedMs`, `formatClock`, `formatCountdown` | Pausable time accumulator |
+| `dailyShare.ts` | `buildDailyShare(template, input)` | Share text: score, time, ✅/❌ marks, streak, link — never questions or answers |
+| `dailyReminder.ts` | `nextReminderAt`, `refreshDailyReminder` | Schedules one local 20:00 reminder for an unplayed challenge. `SettingsProvider` refreshes it on launch, foreground, completion and Tbilisi midnight, and cancels it when notifications are switched off. |
+| `storeLink.ts` | `storeLink()` | Platform store URL (game summary + daily share) |
 
 ---
 
@@ -279,11 +292,14 @@ All in `src/helpers/`, pure functions or thin wrappers.
 | --- | --- | --- |
 | `firestore-user.ts` | Firestore `users/{uid}` | `ensureUserDoc(uid, isAnon)` (creates with zeroed stats), `updateDisplayName(uid, name)`, `updateProviderProfile(uid, { displayName, photoURL })` |
 | `firestore-game-result.ts` | Firestore `game_results/{uid}_{resultId}` + `users/{uid}` (transactional) | `saveGameAndUpdateStats(uid, resultId, payload)` — idempotent transaction (upserts user stats, creates result doc); error classes `GameResultRulesError` (permission denied / rule rejection) and `GameResultTransientError` (retryable network) |
-| `firestore-leaderboard.ts` | Firestore `users` (filtered by `displayName != null`) | `getLeaderboard(tab: LeaderboardTab)` — sorts by `weekPoints` (WEEKLY) or `totalPoints` (ALLTIME), top 50 |
+| `firestore-leaderboard.ts` | Firestore `users` | `getLeaderboard(tab: LeaderboardTab)` — WEEKLY by `weekPoints`, ALLTIME by `totalPoints` (both `displayName != null`); TODAY by `dailyDate == today`, `dailyCorrect` desc, `dailyTimeMs` asc (no inequality filter, nameless players dropped client-side), top 20 |
 | `local-recent-games.ts` | AsyncStorage | `addLocalRecentGame(game)`, `getRecentGames()` — independent of auth, always written |
 | `local-lifetime-stats.ts` | AsyncStorage | `recordGame({ score, correctCount, totalQuestions })`, `getLifetimeStats()` — independent of Firestore, fires on every game |
 | `pending-results.ts` | AsyncStorage queue (cap = `PENDING_RESULTS_QUEUE_CAP` = 20) | `enqueuePendingResult(...)`, `replayPendingResults(uid)` — offline queue, replayed when online + authed. Each entry stores the `uid` it was played under; replay refuses to attribute a queued result to any other uid (sign-out / sign-in / auto-prune transitions silently drop mismatched entries rather than re-credit them). |
 | `appConfig.ts` | Firestore `app_config/version` (public read) | `getAppConfig()` → `{ minSupportedVersion, latestVersion }` — drives force-update gate |
+| `daily-challenge.ts` | Firestore `daily_challenges/{date}` + `tickets`; AsyncStorage `daily:set:{date}` | `loadDailySet(date, { preferCache? })` (network first, cache offline; a started attempt keeps its cached set; re-reads only the day doc and fetches the 10 tickets only when its ids differ from the cache), `prefetchTomorrow` (skipped once cached), `pruneOldDailySets` |
+| `local-daily-progress.ts` | AsyncStorage `daily:record:{date}`, `daily:streak` | `startDaily`, `markQuestionShown`, `saveAnswer`, `finishDaily`, `subscribeToDailyCompletion`, `resumeElapsed`, `unsyncedDoneRecords(uid)`, `markSynced(date, uid)`, `pruneOldRecords` (keeps 7 days) — source of truth on the device; `finishDaily` writes record + streak in one `multiSet`; each record stores the `syncedUid` it was uploaded to, so switching accounts uploads it again. Deliberately also after account deletion: daily records and the streak are device-local like lifetime stats (§17.2), so up to 7 days re-upload to the replacement guest account; guests never appear on the Today board, and the streak stays continuous on that device |
+| `firestore-daily.ts` | `submitDailyResult` callable | `syncDailyResults(uid)` sends saved selections and elapsed time oldest first. Transient failures retry on the next sync. Older local records without selections remain visible on the device. |
 
 **Why dual write to Firestore + AsyncStorage?** The local services (`local-recent-games`, `local-lifetime-stats`) are the source of truth for `StatsScreen` so signing out doesn't wipe the user's view. Firestore writes are the source of truth for the leaderboard and survive device reset.
 
@@ -424,8 +440,9 @@ Persistence: `getReactNativePersistence(AsyncStorage)` (see `firebase.ts`).
 | Collection | Purpose | Rules summary |
 | --- | --- | --- |
 | `tickets/{id}` | Quiz question pool (~1,564 docs). Fields: `question`, `options[]`, `correctAnswer`, `hint`, `difficulty`, `randomField` | Read: public. Write: forbidden via rules; only via `upload.ts` (Admin SDK). |
-| `users/{uid}` | Per-user stats. Fields: `displayName`, `photoURL`, `isAnonymous`, `totalPoints`, `gamesPlayed`, `totalCorrect`, `totalQuestions`, `bestSingleGameScore`, `weekPoints`, `weekStart`, `hasSeenSignInNudge`, `lastSeenAt` (refreshed by `touchLastSeen`, drives §17.3), `createdAt`, `updatedAt` | Read: any authed user (leaderboard query). Create: owner only, all stats zeroed. Update: owner only, lifetime stats can only grow with anti-cheat caps per write (≤ +50 000 `totalPoints`, ≤ +1 `gamesPlayed`, ≤ +50 000 `weekPoints` while `weekStart` is unchanged or `≤ 50 000` absolute on rollover, ±5 jitter on `totalPoints` for retries); `(totalCorrect Δ) <= (totalQuestions Δ)` so claimed correctness can't outpace claimed questions; `createdAt` immutable. Delete: owner only (Apple Guideline 5.1.1(v) — see §17.4). |
+| `users/{uid}` | Per-user stats. Fields: `displayName`, `photoURL`, `isAnonymous`, `totalPoints`, `gamesPlayed`, `totalCorrect`, `totalQuestions`, `bestSingleGameScore`, `weekPoints`, `weekStart`, `hasSeenSignInNudge`, daily fields `dailyDate` / `dailyCorrect` / `dailyTimeMs` / `currentStreak` / `longestStreak` (absent until the first daily syncs), `lastSeenAt` (refreshed by `touchLastSeen`, drives §17.3), `createdAt`, `updatedAt` | Read: any authed user (leaderboard query). Create: owner only, all stats zeroed. Update: owner only, lifetime stats can only grow with anti-cheat caps per write (≤ +50 000 `totalPoints`, ≤ +1 `gamesPlayed`, ≤ +50 000 `weekPoints` while `weekStart` is unchanged or `≤ 50 000` absolute on rollover, ±5 jitter on `totalPoints` for retries); `(totalCorrect Δ) <= (totalQuestions Δ)` so claimed correctness can't outpace claimed questions; `createdAt` immutable; only the `submitDailyResult` function can populate or change the daily result fields. Delete: owner only (Apple Guideline 5.1.1(v) — see §17.4). |
 | `game_results/{uid}_{resultId}` | Immutable per-game result. Fields: `userId`, `score`, `correctCount`, `totalQuestions`, `selectedDifficulty`, `scoreByDifficulty`, `createdAt` | Read: owner only (allows the idempotency check inside the save transaction to read non-existent docs). Create: owner only, doc id matches `{uid}_*`, `score >= 0 && <= 50 000`, `correctCount >= 0`, `totalQuestions >= 0`, `correctCount <= totalQuestions`, and `score == 0 || correctCount > 0` (couples claimed score to actual correctness, blocks the "0 correct, 50k score" inflation pattern). Update / delete: forbidden. |
+| `daily_challenges/{date}` | Daily challenge set per Tbilisi date (`YYYY-MM-DD`). Fields: `date`, `ticketIds[10]` (play order easy → hard), `createdAt`, `source` (`scheduler` / `manual`) | Read: public. Write: forbidden via clients; written by `ensureDailyChallenges` (Admin SDK) or by hand in the Console. |
 | `app_config/version` | Force-update gate. Fields: `minSupportedVersion`, `latestVersion` | Read: public (gate runs before auth resolves). Write: forbidden via clients; Firebase Console / Admin SDK only. |
 | `notifications/{id}` | Push-notification triggers. Fields: `title`, `body`, `status` (`pending` / `processing` / `sent` / `failed`) | Read + write: forbidden via clients; Firebase Console manual entry only. |
 | `push_tokens/{token}` | Expo push tokens registered per device. Fields: `token`, `uid` (added 2026-05-03 — null for anon, owner uid otherwise; lets `pruneInactiveUsers` cascade clean up tokens of pruned users), `platform`, `updatedAt` | Read: authenticated owner only (`resource.data.uid == request.auth.uid`) — required by `deleteUserData`'s multi-device cascade per §17.4; pre-uid grandfather docs (`uid == null`) remain client-unreadable. Cloud Functions use Admin SDK and bypass rules. Write: authenticated users may write only when tagging the token with their own uid (or leaving uid blank, for compatibility with v1.1.0 binaries) AND the body's `token` field equals the document id (closes the token-squatting / fan-out attribution vector — `sendPushNotification` deletes by snapshot ref, but the rule binding eliminates the class). Delete: authenticated owner only (or pre-uid grandfather case). |
@@ -434,19 +451,33 @@ Rules file: `firestore.rules`. Deploy via `firebase deploy --only firestore:rule
 
 ### 14.3 Composite indexes
 
-Defined in `firestore.indexes.json` (in repo, deployed via `firebase deploy --only firestore:indexes`):
+Defined in `firestore.indexes.json` (in repo, deployed via `firebase deploy --only firestore:indexes`).
+The first three mirror production exactly as listed in the Firebase Console on 2026-11-19; before
+that the file had a stale field order for the two leaderboard indexes and lacked the `tickets` one.
 
-1. `users` collection — `(displayName ASC, totalPoints DESC, gamesPlayed ASC)` — alltime leaderboard.
-2. `users` collection — `(displayName ASC, weekStart ASC, weekPoints DESC)` — weekly leaderboard.
+1. `tickets` — `(difficulty ASC, randomField ASC)` — `fetchRandomQuestion` (every normal game).
+2. `users` — `(totalPoints DESC, gamesPlayed ASC, displayName ASC)` — all-time leaderboard.
+3. `users` — `(weekStart ASC, weekPoints DESC, displayName DESC)` — weekly leaderboard.
+4. `users` — `(dailyDate ASC, isAnonymous ASC, dailyCorrect DESC, dailyTimeMs ASC)` — Today (daily)
+   leaderboard: score, then the faster time.
 
-The `displayName` filter in both indexes is what excludes anonymous accounts (they have `displayName == null`) from the leaderboard.
+The `displayName != null` filter in the weekly and all-time queries excludes anonymous accounts; in
+the live indexes it sits **after** the points fields, so those boards are ordered by points, not
+by name. The Today query uses only equality filters (`dailyDate`, `isAnonymous == false`) so its
+order is exactly score-then-time; the rare signed-in player without a name is dropped client-side
+from the 40-row page.
+
+**Deploy safety:** if `firebase deploy --only firestore:indexes` ever asks to delete indexes that
+are not in this file, answer **No** — deleting index 1 breaks question loading for the whole app.
 
 ### 14.4 Cloud Functions
 
-`functions/src/index.ts` — Node 20 runtime, deploy via `cd functions && npm run deploy`.
+`functions/src/index.ts` — Node 22 runtime (`engines.node` in `functions/package.json`), deploy via `cd functions && npm run deploy`. Node 20 was decommissioned on 2026-10-30: functions on it can no longer be created or updated. The live `sendPushNotification` was redeployed on Node 22 on 2026-11-19 (`functions:list` shows `nodejs22`); that deploy also enabled the Cloud Scheduler API, which `ensureDailyChallenges` needs.
 
 | Function | Trigger | Purpose |
 | --- | --- | --- |
+| `ensureDailyChallenges` | `onSchedule("5 0 * * *", Asia/Tbilisi)` | Makes sure `daily_challenges/{date}` exists for today, tomorrow and the day after (Tbilisi dates). Each new day gets 3 easy / 4 medium / 3 hard `tickets` ids, avoiding ids used in the previous 150 days (least-recently-used first when a difficulty runs short). Never overwrites an existing day, so a hand-edited day stays. Selection logic: `functions/src/dailySelection.ts` (unit-tested). |
+| `submitDailyResult` | Authenticated callable | Checks the Tbilisi challenge date and selected options against the official set, calculates the score and streak, and commits one result per account and date in a Firestore transaction (the guard is the user doc's `dailyDate`, so an owner who deletes and re-creates their doc could resubmit; accepted). A question whose correct answer isn't one of its options, or an option that no longer matches (edited after the device cached the set), counts as wrong instead of refusing the day. A missing user profile returns `unavailable` (retried). A date one day ahead (fast device clock) returns `failed-precondition` so the app retries later. Elapsed time is measured on device and validated against the accepted range; correct answers are publicly readable, so scores are as trustworthy as the weekly board. |
 | `sendPushNotification` | `onDocumentCreated("notifications/{notificationId}")` | Reads `push_tokens` collection, chunks via `expo-server-sdk`, sends to all valid tokens, prunes `DeviceNotRegistered` tokens, updates `notifications/{id}.status` to `sent` / `failed`. |
 
 ### 14.5 Admin tooling
@@ -486,6 +517,8 @@ EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID=...
 ```
 
 `EXPO_PUBLIC_*` vars are bundled into the JS at build time and available client-side.
+
+Optional, never in `.env`: `EXPO_PUBLIC_FIREBASE_EMULATOR_HOST=127.0.0.1` set on the Metro command line points a **dev** build at local Firestore (8080), Auth (9099) and Functions (5001) emulators (`firebase.ts`, `__DEV__` only). See README → "Run the app against local emulators".
 
 ### `app.config.ts` — non-secret runtime config
 

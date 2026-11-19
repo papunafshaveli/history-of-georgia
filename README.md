@@ -341,6 +341,76 @@ cd functions && npx firebase-tools deploy --only functions
 
 Requires the Blaze (pay-as-you-go) plan.
 
+## Daily challenge — release order
+
+The daily challenge needs its server side live **before** the app update reaches players.
+
+**Live in production since 2026-11-19** (all functions on `nodejs22`): the server-scored
+`firestore.rules`, the four indexes in `firestore.indexes.json` (Today index Enabled),
+`ensureDailyChallenges` (first three days force-run), `submitDailyResult`, and the existing
+`sendPushNotification`. Players see nothing until the app update below.
+
+Commands on this Mac use `firebase-tools@13` (14+ needs Java 21) and `nvm use 22`. Always pass
+`--only` and `--project`; if an index deploy asks to delete indexes, answer **No**. When rules and
+`submitDailyResult` both change, deploy the function first.
+
+```bash
+# Server changes after 2026-11-19 (redeploy both functions; rules and indexes unchanged)
+nvm use 22
+(cd functions && npm run build) \
+  && npx firebase-tools@13 deploy --only functions:submitDailyResult,functions:ensureDailyChallenges --project history-of-georgia-43551
+
+# Question data check (read-only): every Firestore ticket vs data.json
+cd functions && node ../scripts/fix-broken-tickets.cjs --scan && cd ..
+# Done 2026-11-19: six broken tickets fixed (fix-broken-tickets.cjs --apply) and 15 Firestore-only
+# leftovers removed (remove-orphan-tickets.cjs --apply; backup tickets-orphans-backup-2026-11-19.json,
+# undo with --restore). The scan then showed 1564 tickets, identical to data.json, 0 problems.
+```
+
+Roll the rules back with
+`git show main:firestore.rules > /tmp/r && cp /tmp/r firestore.rules && npx firebase-tools@13 deploy --only firestore:rules --project history-of-georgia-43551`.
+
+**First-time setup (done 2026-11-19, kept for a fresh project):**
+
+1. `npx firebase-tools@13 deploy --only firestore:indexes,functions:ensureDailyChallenges,functions:submitDailyResult --project <id>`, then `--only firestore:rules`.
+2. Create the first three days now instead of waiting for 00:05 Tbilisi: Google Cloud Console →
+   Cloud Scheduler → `firebase-schedule-ensureDailyChallenges-…` → **Force run**. Check that
+   `daily_challenges/{today}`, `{tomorrow}` and `{day after}` exist in Firestore.
+3. Wait until the new `users (dailyDate, isAnonymous, dailyCorrect, dailyTimeMs)` index shows
+   **Enabled** (Firebase Console → Firestore → Indexes).
+4. Check who an OTA can reach. It only reaches installs of the **runtime `2.1.0`** binary (v2.1.0,
+   submitted to both stores 2026-09-04 — INFRASTRUCTURE.md §19.2). Confirm v2.1.0 is live in Play
+   Console and App Store Connect. If it is not live on a platform, that platform needs a store build
+   instead (`eas build --platform <p> --profile production`, then submit). Players still on 2.0.0,
+   including iPhones below iOS 16.4, never get the daily. Once 2.1.0 is live on both stores, set
+   Firestore `app_config/version.latestVersion` to `2.1.0` (it was still `2.0.0` on 2026-11-19), so
+   2.0.0 installs get the soft update prompt and then the daily. Keep `minSupportedVersion` at
+   `2.0.0`: raising it hard-blocks the iPhones that can't install 2.1.0.
+5. Only after every `daily_*` / `leaderboard_*today*` string in `src/locales/ka.json` has the
+   owner's Georgian, publish the OTA (see "OTA update" above — one platform at a time):
+
+   ```bash
+   eas update --branch production --platform ios     --environment production --message "daily challenge"
+   eas update --branch production --platform android --environment production --message "daily challenge"
+   ```
+
+A day can be replaced by hand: edit `daily_challenges/{YYYY-MM-DD}.ticketIds` (10 `tickets` ids,
+easy → hard) in the Console; the scheduler never overwrites an existing day. Only replace days at
+least **two days ahead**: phones download tomorrow's set a day early and keep the set of an attempt
+they started, so results for a replaced today/tomorrow can't be ranked. A hand-created day also needs
+a `date` field (`"YYYY-MM-DD"`), or the 150-day no-repeat window ignores it.
+
+## Run the app against local emulators (no production data)
+
+```bash
+# Terminal 1 — compile the callable, then start Firestore (8080), Auth (9099) and Functions (5001)
+npm --prefix functions run build
+npx firebase-tools@13 emulators:start --only firestore,auth,functions --project <projectId>
+
+# Terminal 2 — Metro pointed at them (dev builds only; release builds ignore the variable)
+EXPO_PUBLIC_FIREBASE_EMULATOR_HOST=127.0.0.1 npx expo start --dev-client
+```
+
 ## Firebase — Send Push Notification
 
 Add a document to Firestore `notifications` collection (via Firebase Console):

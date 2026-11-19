@@ -11,3 +11,4 @@ export * from "./language";
 export * from "./timing";
 export * from "./questionPrefixes";
 export * from "./scoring";
+export * from "./daily";

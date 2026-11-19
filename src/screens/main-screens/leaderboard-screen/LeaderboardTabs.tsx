@@ -37,6 +37,7 @@ const LeaderboardTabs: React.FC<LeaderboardTabsProps> = ({
   );
 
   const tabs: { key: LeaderboardTab; label: string }[] = [
+    { key: LeaderboardTab.TODAY, label: t.leaderboard_tab_today },
     { key: LeaderboardTab.WEEKLY, label: t.leaderboard_tab_week },
     { key: LeaderboardTab.ALLTIME, label: t.leaderboard_tab_alltime },
   ];
@@ -55,7 +56,14 @@ const LeaderboardTabs: React.FC<LeaderboardTabsProps> = ({
             style={buttonStyleFor(isActive)}
             onPress={handleTabPress(key)}
           >
-            <AppText type="subHeadline" fontFamily="serif" color={labelColor}>
+            <AppText
+              type="subHeadline"
+              fontFamily="serif"
+              color={labelColor}
+              numberOfLines={1}
+              adjustsFontSizeToFit
+              minimumFontScale={0.7}
+            >
               {label}
             </AppText>
           </Pressable>

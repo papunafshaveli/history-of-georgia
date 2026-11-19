@@ -24,3 +24,5 @@ export { default as ConfirmNameModal } from "./sign-in/ConfirmNameModal";
 export { default as ForceUpdateModal } from "./sign-in/ForceUpdateModal";
 export { default as SoftUpdateModal } from "./sign-in/SoftUpdateModal";
 export { default as OtherAppsCarousel } from "./other-apps-carousel/OtherAppsCarousel";
+export { default as DailyProgress } from "./daily-progress/DailyProgress";
+export { default as DailyCard } from "./daily-card/DailyCard";

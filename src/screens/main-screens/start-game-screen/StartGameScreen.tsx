@@ -1,22 +1,30 @@
-import React, { useState } from "react";
-import { View, ImageBackground, Pressable } from "react-native";
+import React, { useCallback, useState } from "react";
+import { View, ImageBackground, Pressable, ScrollView } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import {
   useAppTheme,
+  useDailyChallenge,
+  useDailyReminderTap,
   usePlaySound,
   useSettings,
   useStyles,
   useThemeMode,
   useTranslation,
 } from "@/src/hooks";
-import { RootStackParamList, ScreenName } from "@/src/types";
+import { LeaderboardTab, RootStackParamList, ScreenName } from "@/src/types";
 import { Difficulty } from "@/src/types/quizQuestion";
 import { ClickSound, Shield, StartScreenBack } from "@/src/assets";
 import { vibrateImpact } from "@/src/helpers";
-import { AppText, DifficultyRing, OtherAppsCarousel } from "@/src/components";
+import { todayTbilisi } from "@/src/utils/tbilisiDate";
+import {
+  AppText,
+  DailyCard,
+  DifficultyRing,
+  OtherAppsCarousel,
+} from "@/src/components";
 
 import { getStyles } from "./styles";
 
@@ -45,6 +53,22 @@ const StartGameScreen = () => {
   };
 
   const t = useTranslation();
+  const daily = useDailyChallenge();
+  useDailyReminderTap();
+
+  const handlePlayDaily = useCallback(() => {
+    if (!isVibrationOff) vibrateImpact();
+    playSound(ClickSound, isMuted);
+    // The tap's own day, in case the card hasn't rolled over yet.
+    navigation.navigate(ScreenName.DAILY_GAME_SCREEN, { date: todayTbilisi() });
+  }, [isVibrationOff, playSound, isMuted, navigation]);
+
+  const handleOpenTodayBoard = useCallback(() => {
+    navigation.navigate("tabs", {
+      screen: ScreenName.LEADERBOARD_SCREEN,
+      params: { initialTab: LeaderboardTab.TODAY },
+    });
+  }, [navigation]);
 
   return (
     <SafeAreaView edges={[]} style={styles.safeArea}>
@@ -59,7 +83,14 @@ const StartGameScreen = () => {
             pointerEvents="none"
             style={[styles.overlayBase, overlayStyle]}
           />
-          <View style={styles.homeContent}>
+          {/* Short phones scroll the card and carousel up instead of squeezing the shield. */}
+          <ScrollView
+            style={styles.homeContent}
+            contentContainerStyle={styles.scrollContent}
+            bounces={false}
+            overScrollMode="never"
+            showsVerticalScrollIndicator={false}
+          >
             <View style={styles.gameControl}>
               <DifficultyRing
                 selectedDifficulty={selectedDifficulty}
@@ -103,8 +134,18 @@ const StartGameScreen = () => {
               </DifficultyRing>
             </View>
 
+            <DailyCard
+              kind={daily.kind}
+              streak={daily.streak}
+              correct={daily.correct}
+              elapsedMs={daily.elapsedMs}
+              msToNext={daily.msToNext}
+              onPlay={handlePlayDaily}
+              onOpenLeaderboard={handleOpenTodayBoard}
+            />
+
             <OtherAppsCarousel />
-          </View>
+          </ScrollView>
         </ImageBackground>
       </View>
     </SafeAreaView>

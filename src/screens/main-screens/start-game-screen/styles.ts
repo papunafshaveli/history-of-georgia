@@ -66,9 +66,15 @@ export const getStyles = (theme: AppTheme) =>
       flex: 1,
       width: "100%",
     },
+    scrollContent: {
+      flexGrow: 1,
+    },
     gameControl: {
-      flex: 1,
+      flexGrow: 1,
       alignItems: "center",
       justifyContent: "center",
+      // The content sits 18pt under the header (imageBackContainer), so the top needs more room.
+      paddingTop: theme.spacing.x8,
+      paddingBottom: theme.spacing.x4,
     },
   });
