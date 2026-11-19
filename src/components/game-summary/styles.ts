@@ -3,6 +3,9 @@ import { StyleSheet } from "react-native";
 import type { AppTheme } from "@/src/theme";
 import { getAdjustedHeight, getAdjustedWidth } from "@/src/helpers";
 
+const SCORE_LIFT = 9;
+const SCORE_SIDE_BALANCE = 2;
+
 export const getStyles = (theme: AppTheme) =>
   StyleSheet.create({
     container: {
@@ -25,6 +28,13 @@ export const getStyles = (theme: AppTheme) =>
     imageBackground: {
       width: "100%",
       height: "100%",
+    },
+    scoreText: {
+      // Balances the display font's one-sided right padding so the number sits centred.
+      paddingLeft: getAdjustedWidth(SCORE_SIDE_BALANCE),
+      textAlign: "center",
+      // The display font draws its digits low in the line box; lift them to the circle's centre.
+      transform: [{ translateY: -getAdjustedWidth(SCORE_LIFT) }],
     },
 
     button: {
