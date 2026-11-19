@@ -76,8 +76,8 @@ const DailyCard: React.FC<DailyCardProps> = ({
           accessibilityLabel={a11y}
         >
           <View style={styles.cardBody}>
-            <View style={styles.iconFrameDone}>
-              <MaterialCommunityIcons name="check-bold" size={28} color={colors.correctBorder} />
+            <View style={styles.iconFrame}>
+              <MaterialCommunityIcons name="check-decagram" size={32} color={colors.bronzeDark} />
             </View>
             <View style={styles.copy}>
               <AppText type="headline" fontFamily="serif" color={colors.textOnPrimary} numberOfLines={1}>

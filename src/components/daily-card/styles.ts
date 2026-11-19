@@ -55,16 +55,6 @@ export const getStyles = (theme: AppTheme) =>
       borderRadius: theme.borderRadius.md,
       backgroundColor: theme.colors.surfaceSunken,
     },
-    iconFrameDone: {
-      width: getAdjustedWidth(56),
-      height: getAdjustedWidth(56),
-      alignItems: "center",
-      justifyContent: "center",
-      borderWidth: 2,
-      borderColor: theme.colors.correctBorder,
-      borderRadius: theme.borderRadius.md,
-      backgroundColor: theme.colors.correctBg,
-    },
     streakNumber: {
       maxWidth: "100%",
       paddingHorizontal: theme.spacing.x1,
