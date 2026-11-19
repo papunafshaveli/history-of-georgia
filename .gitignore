@@ -83,3 +83,5 @@ src/types/*.js
 
 #raw agent research dumps (plan doc is committed, these are not)
 docs/upgrade/expo-57-recon-findings*.txt
+# Backups written by scripts/remove-orphan-tickets.cjs (question content, like data.json)
+tickets-orphans-backup-*.json
