@@ -1,6 +1,7 @@
+import { doc, getDoc } from "firebase/firestore";
 import { httpsCallable } from "firebase/functions";
 
-import { functions } from "@/firebase";
+import { db, functions } from "@/firebase";
 import {
   DAILY_MAX_TIME_MS,
   DAILY_MIN_TIME_MS,
@@ -9,9 +10,12 @@ import {
 import { logger } from "@/src/helpers/logger";
 import { todayTbilisi } from "@/src/utils/tbilisiDate";
 import {
+  adoptCloudStreak,
   markSynced,
+  needsCloudStreak,
   unsyncedDoneRecords,
 } from "@/src/services/local-daily-progress";
+import type { DailyStreak } from "@/src/types";
 
 type DailySubmission = {
   uid: string;
@@ -61,5 +65,32 @@ export const syncDailyResults = async (uid: string): Promise<void> => {
     }
   } catch (error) {
     logger.warn("syncDailyResults failed; retrying on next open", error);
+  }
+};
+
+// After a reinstall or on a new phone, join the streak the server kept for this account.
+export const restoreCloudStreak = async (
+  uid: string,
+  isCurrent: () => boolean = () => true,
+): Promise<boolean> => {
+  try {
+    if (!(await needsCloudStreak(uid))) return false;
+    const data = (await getDoc(doc(db, "users", uid))).data();
+    // The account changed while reading; this one is checked again when it is next active.
+    if (!isCurrent()) return false;
+    const current = data?.currentStreak;
+    const lastDate = data?.dailyDate;
+    const cloud: DailyStreak | null =
+      typeof current === "number" && typeof lastDate === "string"
+        ? {
+            current,
+            longest: Math.max(Number(data?.longestStreak) || 0, current),
+            lastDate,
+          }
+        : null;
+    return await adoptCloudStreak(uid, cloud);
+  } catch (error) {
+    logger.warn("restoreCloudStreak failed; retrying on next open", error);
+    return false;
   }
 };

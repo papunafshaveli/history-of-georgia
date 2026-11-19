@@ -6,6 +6,8 @@ export const dailySetKey = (date: string) => `${DAILY_SET_PREFIX}${date}`;
 export const dailyRecordKey = (date: string) =>
   `${DAILY_STORAGE_PREFIX}record:${date}`;
 export const DAILY_STREAK_KEY = `${DAILY_STORAGE_PREFIX}streak`;
+export const dailyStreakCheckedKey = (uid: string) =>
+  `${DAILY_STORAGE_PREFIX}streak-checked:${uid}`;
 export const DAILY_REMINDER_ID = "daily-reminder";
 export const DAILY_REMINDER_HOUR = 20;
 export const DAILY_NOTIFICATION_TARGET = "daily";

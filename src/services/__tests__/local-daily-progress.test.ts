@@ -7,9 +7,11 @@ jest.mock("@react-native-async-storage/async-storage", () =>
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { DailyStatus } from "@/src/types";
 import {
+  adoptCloudStreak,
   finishDaily,
   markQuestionShown,
   markSynced,
+  needsCloudStreak,
   pruneOldRecords,
   readRecord,
   readStreak,
@@ -101,4 +103,42 @@ it("retries the last answer after completion storage fails without appending it 
   } finally {
     unsubscribe();
   }
+});
+
+describe("cloud streak", () => {
+  const CLOUD = { current: 12, longest: 20, lastDate: "2026-11-17" };
+
+  it("takes the server streak once on a fresh install, then counts on from it", async () => {
+    expect(await needsCloudStreak("g1")).toBe(true);
+    expect(await adoptCloudStreak("g1", CLOUD)).toBe(true);
+    expect(await needsCloudStreak("g1")).toBe(false);
+    await startDaily(DAY);
+    await finishDaily(DAY, 30_000);
+    expect(await readStreak()).toEqual({ current: 13, longest: 20, lastDate: DAY });
+  });
+
+  it("joins a streak played on the phone before the server answered", async () => {
+    await startDaily(DAY);
+    await finishDaily(DAY, 30_000);
+    expect(await needsCloudStreak("g1")).toBe(true);
+    expect(await adoptCloudStreak("g1", CLOUD)).toBe(true);
+    expect(await readStreak()).toEqual({ current: 13, longest: 20, lastDate: DAY });
+  });
+
+  it.each([
+    ["restore first", true],
+    ["finish first", false],
+  ])("restore and finish running together never lose a day (%s)", async (_label, restoreFirst) => {
+    await startDaily(DAY);
+    const restore = () => adoptCloudStreak("g1", CLOUD);
+    const finish = () => finishDaily(DAY, 30_000);
+    await Promise.all(restoreFirst ? [restore(), finish()] : [finish(), restore()]);
+    expect(await readStreak()).toEqual({ current: 13, longest: 20, lastDate: DAY });
+  });
+
+  it("checks each account once, even when the server has no streak", async () => {
+    expect(await adoptCloudStreak("a1", null)).toBe(false);
+    expect(await needsCloudStreak("a1")).toBe(false);
+    expect(await needsCloudStreak("g1")).toBe(true);
+  });
 });

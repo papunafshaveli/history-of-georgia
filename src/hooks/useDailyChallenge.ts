@@ -9,7 +9,10 @@ import {
   pruneOldDailySets,
 } from "@/src/services/daily-challenge";
 import { DAILY_QUESTION_COUNT } from "@/src/constants/daily";
-import { syncDailyResults } from "@/src/services/firestore-daily";
+import {
+  restoreCloudStreak,
+  syncDailyResults,
+} from "@/src/services/firestore-daily";
 import {
   correctCount,
   finishDaily,
@@ -121,6 +124,18 @@ export const useDailyChallenge = () => {
       return () => sub.remove();
     }, [refresh]),
   );
+
+  // Runs beside the first load so a slow network never delays the card.
+  useEffect(() => {
+    if (!uid) return undefined;
+    let active = true;
+    restoreCloudStreak(uid, () => active).then((restored) => {
+      if (restored && active) refresh();
+    });
+    return () => {
+      active = false;
+    };
+  }, [uid, refresh]);
 
   // Rolls the card over at midnight while the app stays open.
   useEffect(() => {

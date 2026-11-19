@@ -4,8 +4,9 @@ import {
   DAILY_MAX_TIME_MS,
   DAILY_STREAK_KEY,
   dailyRecordKey,
+  dailyStreakCheckedKey,
 } from "@/src/constants/daily";
-import { EMPTY_STREAK, nextStreak } from "@/src/helpers/dailyStreak";
+import { EMPTY_STREAK, mergeStreaks, nextStreak } from "@/src/helpers/dailyStreak";
 import { addDaysToDate } from "@/src/utils/tbilisiDate";
 import {
   DailyStatus,
@@ -38,6 +39,33 @@ export const readStreak = async (): Promise<DailyStreak> => {
   const raw = await AsyncStorage.getItem(DAILY_STREAK_KEY);
   return raw ? (JSON.parse(raw) as DailyStreak) : EMPTY_STREAK;
 };
+
+// The server's streak is read once per account on this phone, so a reinstall keeps it.
+export const needsCloudStreak = async (uid: string): Promise<boolean> =>
+  (await AsyncStorage.getItem(dailyStreakCheckedKey(uid))) === null;
+
+// Streak updates read, then write; one at a time so a restore and a finish can't overwrite each other.
+let streakQueue: Promise<unknown> = Promise.resolve();
+const serializeStreak = <T>(task: () => Promise<T>): Promise<T> => {
+  const run = streakQueue.then(task, task);
+  streakQueue = run.catch(() => undefined);
+  return run;
+};
+
+// Returns true when merging in the server's streak changed the phone's.
+export const adoptCloudStreak = (
+  uid: string,
+  cloud: DailyStreak | null,
+): Promise<boolean> =>
+  serializeStreak(async () => {
+    const local = await readStreak();
+    const merged = cloud ? mergeStreaks(local, cloud) : local;
+    const changed = JSON.stringify(merged) !== JSON.stringify(local);
+    const writes: [string, string][] = [[dailyStreakCheckedKey(uid), "1"]];
+    if (changed) writes.push([DAILY_STREAK_KEY, JSON.stringify(merged)]);
+    await AsyncStorage.multiSet(writes);
+    return changed;
+  });
 
 // Starting counts as the day's one attempt; a second call returns the same attempt.
 export const startDaily = async (date: string): Promise<DailyRecord> => {
@@ -95,7 +123,12 @@ export const saveAnswer = async (
   return next;
 };
 
-export const finishDaily = async (
+export const finishDaily = (
+  date: string,
+  elapsedMs: number,
+): Promise<DailyRecord> => serializeStreak(() => finishDailyNow(date, elapsedMs));
+
+const finishDailyNow = async (
   date: string,
   elapsedMs: number,
 ): Promise<DailyRecord> => {
