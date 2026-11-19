@@ -1,21 +1,39 @@
 {
   "indexes": [
     {
-      "collectionGroup": "users",
+      "collectionGroup": "tickets",
       "queryScope": "COLLECTION",
       "fields": [
-        { "fieldPath": "displayName", "order": "ASCENDING" },
-        { "fieldPath": "totalPoints", "order": "DESCENDING" },
-        { "fieldPath": "gamesPlayed", "order": "ASCENDING" }
+        { "fieldPath": "difficulty", "order": "ASCENDING" },
+        { "fieldPath": "randomField", "order": "ASCENDING" }
       ]
     },
     {
       "collectionGroup": "users",
       "queryScope": "COLLECTION",
       "fields": [
-        { "fieldPath": "displayName", "order": "ASCENDING" },
+        { "fieldPath": "totalPoints", "order": "DESCENDING" },
+        { "fieldPath": "gamesPlayed", "order": "ASCENDING" },
+        { "fieldPath": "displayName", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "users",
+      "queryScope": "COLLECTION",
+      "fields": [
         { "fieldPath": "weekStart", "order": "ASCENDING" },
-        { "fieldPath": "weekPoints", "order": "DESCENDING" }
+        { "fieldPath": "weekPoints", "order": "DESCENDING" },
+        { "fieldPath": "displayName", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "users",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "dailyDate", "order": "ASCENDING" },
+        { "fieldPath": "isAnonymous", "order": "ASCENDING" },
+        { "fieldPath": "dailyCorrect", "order": "DESCENDING" },
+        { "fieldPath": "dailyTimeMs", "order": "ASCENDING" }
       ]
     }
   ],
