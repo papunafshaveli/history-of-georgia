@@ -700,7 +700,14 @@ Did `runtimeVersion` change in app.config.ts since the last published binary?
 
 ### 19.2 Current release status (snapshot — keep updated)
 
-**As of 2026-11-20 — v2.2.0 (daily challenge) prepared on `feat/daily-challenge`, not built yet.**
+**As of 2026-11-20 — v2.2.0 (daily challenge) merged to `main` (PR #9) and building on EAS:
+iOS 1.0.24 (delivered to App Store Connect), Android versionCode 24.**
+
+- ⚠️ **Deadline April 2027: iOS 27 SDK.** Apple's ITMS-90725 warning on 1.0.24 (built with the
+  iOS 26.5 SDK): from April 2027 uploads must be built with the iOS 27 SDK / Xcode 27. Before the
+  first iOS build after that date, move EAS to an Xcode 27 image (`eas.json` `build.*.ios.image`, or
+  EAS's default once it is Xcode 27) and expect an Expo SDK upgrade to one that supports it — plan it
+  as its own task in early 2027. 1.0.24 itself is unaffected.
 
 - `app.config.ts`: `version: "2.2.0"`, `runtimeVersion: "2.2.0"`. No native changes since 2.1.0;
   the runtime moves with the version, as for 2.0.0 and 2.1.0. Ships as a store build, not an OTA.
