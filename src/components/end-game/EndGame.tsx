@@ -6,7 +6,7 @@ import { CloseIcon } from "@/src/assets";
 import { useAppTheme, useStyles } from "@/src/hooks";
 
 import GradientWrapper from "../gradient-wrapper/GradientWrapper";
-import { AppText } from "../text";
+import { AppText, type TextType } from "../text";
 
 import { getStyles } from "./styles";
 
@@ -16,6 +16,8 @@ type EndgameProps = {
   title: string;
   continueBtnText: string;
   closeBtnText: string;
+  // A short question reads large; a longer explanation needs a smaller size to fit above the buttons.
+  titleType?: TextType;
 };
 
 const Endgame: React.FC<EndgameProps> = ({
@@ -24,6 +26,7 @@ const Endgame: React.FC<EndgameProps> = ({
   title,
   continueBtnText,
   closeBtnText,
+  titleType = "display",
 }) => {
   const { colors } = useAppTheme();
   const styles = useStyles(getStyles);
@@ -38,7 +41,7 @@ const Endgame: React.FC<EndgameProps> = ({
       />
       <AppText
         fontFamily="script"
-        type="display"
+        type={titleType}
         color={colors.onImage}
         style={styles.question}
       >

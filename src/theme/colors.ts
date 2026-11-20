@@ -68,6 +68,10 @@ type ColorScheme = {
   dailyGhostBg: string;
   dailyGhostText: string;
   dailySealText: string;
+  parchmentSwordWhole: string;
+  parchmentSwordBroken: string;
+  parchmentSwordCurrent: string;
+  parchmentSwordUpcoming: string;
 };
 
 export const lightColors: ColorScheme = {
@@ -163,6 +167,11 @@ export const lightColors: ColorScheme = {
   dailyGhostBg: "rgba(43, 32, 24, 0.35)",
   dailyGhostText: "#F1D6AE",
   dailySealText: "#F6D7C4",
+  // Swords drawn on the parchment image, which stays light in both themes
+  parchmentSwordWhole: "#6D4B36",
+  parchmentSwordBroken: "#B7A392",
+  parchmentSwordCurrent: "#B07A52",
+  parchmentSwordUpcoming: "#D2C1B0",
 };
 
 export const darkColors: ColorScheme = {
@@ -258,4 +267,9 @@ export const darkColors: ColorScheme = {
   dailyGhostBg: "rgba(43, 32, 24, 0.35)",
   dailyGhostText: "#F1D6AE",
   dailySealText: "#F6D7C4",
+  // Swords drawn on the parchment image, which stays light in both themes
+  parchmentSwordWhole: "#6D4B36",
+  parchmentSwordBroken: "#B7A392",
+  parchmentSwordCurrent: "#B07A52",
+  parchmentSwordUpcoming: "#D2C1B0",
 };

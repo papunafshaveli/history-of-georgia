@@ -161,6 +161,7 @@ const DailyRun: React.FC<DailyRunProps> = ({ date, set, record, startMs }) => {
             onPressExit={handleLeave}
             onPressContinue={closeExit}
             title={t.daily_exit_body}
+            titleType="subHeadline"
             continueBtnText={t.game_continue}
             closeBtnText={t.common_logout}
           />

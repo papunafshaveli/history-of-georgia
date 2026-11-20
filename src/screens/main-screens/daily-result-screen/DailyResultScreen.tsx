@@ -109,6 +109,16 @@ const DailyResultScreen = () => {
     () => answers.map((ok) => (ok ? SwordState.WHOLE : SwordState.BROKEN)),
     [answers],
   );
+  // The parchment stays light in both themes, so its swords use fixed ink colours.
+  const parchmentSwords = useMemo(
+    () => ({
+      [SwordState.WHOLE]: colors.parchmentSwordWhole,
+      [SwordState.BROKEN]: colors.parchmentSwordBroken,
+      [SwordState.CURRENT]: colors.parchmentSwordCurrent,
+      [SwordState.UPCOMING]: colors.parchmentSwordUpcoming,
+    }),
+    [colors],
+  );
   const correct = record ? correctCount(record) : 0;
   const elapsed = record?.elapsedMs ?? 0;
   const scoreLabel = `${correct}/${DAILY_QUESTION_COUNT}`;
@@ -196,6 +206,7 @@ const DailyResultScreen = () => {
             states={swordStates}
             size={getAdjustedWidth(28)}
             columns={5}
+            palette={parchmentSwords}
           />
         </ImageBackground>
 
@@ -229,9 +240,9 @@ const DailyResultScreen = () => {
             <MaterialCommunityIcons
               name="share-variant"
               size={getAdjustedWidth(20)}
-              color={colors.text}
+              color={colors.onImage}
             />
-            <AppText type="headline" fontFamily="script" color={colors.text}>
+            <AppText type="headline" fontFamily="script" color={colors.onImage}>
               {t.daily_share}
             </AppText>
           </Pressable>
