@@ -1,6 +1,11 @@
-import React, { createContext, useEffect, useState } from "react";
+import React, { createContext, useEffect, useRef, useState } from "react";
+import { AppState } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Constants from "expo-constants";
+import { refreshDailyReminder } from "@/src/helpers/dailyReminder";
+import { useTranslation } from "@/src/hooks/useTranslation";
+import { subscribeToDailyCompletion } from "@/src/services/local-daily-progress";
+import { msUntilNextTbilisiMidnight } from "@/src/utils/tbilisiDate";
 import { SettingsContextType } from "../types";
 
 const STORAGE_KEYS = {
@@ -19,7 +24,9 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({
   const [isMuted, setIsMutedState] = useState(false);
   const [isVibrationOff, setIsVibrationOffState] = useState(false);
   const [isPushEnabled, setIsPushEnabledState] = useState(true);
+  const pushEnabledRef = useRef(true);
   const [isLoaded, setIsLoaded] = useState(false);
+  const { daily_reminder_title: title, daily_reminder_body: body } = useTranslation();
 
   useEffect(() => {
     const loadSettings = async () => {
@@ -34,14 +41,36 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({
           setIsMutedState(JSON.parse(storedMuted[1]));
         if (storedVibration[1] !== null)
           setIsVibrationOffState(JSON.parse(storedVibration[1]));
-        if (storedPush[1] !== null)
-          setIsPushEnabledState(JSON.parse(storedPush[1]));
+        if (storedPush[1] !== null) {
+          pushEnabledRef.current = JSON.parse(storedPush[1]);
+          setIsPushEnabledState(pushEnabledRef.current);
+        }
       } finally {
         setIsLoaded(true);
       }
     };
     loadSettings();
   }, []);
+
+  useEffect(() => {
+    if (!isLoaded) return;
+    let timer: ReturnType<typeof setTimeout>;
+    const refresh = () => {
+      clearTimeout(timer);
+      void refreshDailyReminder(pushEnabledRef.current, { title, body });
+      timer = setTimeout(refresh, msUntilNextTbilisiMidnight() + 100);
+    };
+    refresh();
+    const unsubscribe = subscribeToDailyCompletion(refresh);
+    const subscription = AppState.addEventListener("change", (state) => {
+      if (state === "active") refresh();
+    });
+    return () => {
+      clearTimeout(timer);
+      unsubscribe();
+      subscription.remove();
+    };
+  }, [body, isLoaded, title]);
 
   const setIsMuted = (value: boolean) => {
     setIsMutedState(value);
@@ -54,8 +83,10 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   const setIsPushEnabled = (value: boolean) => {
+    pushEnabledRef.current = value;
     setIsPushEnabledState(value);
     AsyncStorage.setItem(STORAGE_KEYS.IS_PUSH_ENABLED, JSON.stringify(value));
+    void refreshDailyReminder(value, { title, body });
     if (Constants.executionEnvironment === "storeClient") return;
     const { registerForNotifications, unregisterNotifications } =
       // eslint-disable-next-line @typescript-eslint/no-require-imports

@@ -2,10 +2,10 @@
   "name": "functions",
   "scripts": {
     "build": "tsc",
-    "deploy": "npm run build && npx firebase-tools deploy --only functions"
+    "deploy": "npm run build && npx firebase-tools@13 deploy --only functions --project history-of-georgia-43551"
   },
   "engines": {
-    "node": "20"
+    "node": "22"
   },
   "main": "lib/index.js",
   "dependencies": {

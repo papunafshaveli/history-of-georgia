@@ -2,6 +2,8 @@ export enum ScreenName {
   SPLASH_SCREEN = "splash-screen",
   START_GAME_SCREEN = "start-game-screen",
   GAME_SCREEN = "game-screen",
+  DAILY_GAME_SCREEN = "daily-game-screen",
+  DAILY_RESULT_SCREEN = "daily-result-screen",
 
   HISTORICAL_TOPICS_SCREEN = "historical-topics-screen",
   LEADERBOARD_SCREEN = "leaderboard-screen",

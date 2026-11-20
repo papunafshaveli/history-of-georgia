@@ -9,7 +9,12 @@ import { NavigationProp, useNavigation } from "@react-navigation/native";
 import { RootStackParamList, ScreenName } from "@/src/types";
 import { CustomHeader } from "@/src/components";
 
-import { GameScreen, CustomSplashScreen } from "../screens/main-screens";
+import {
+  CustomSplashScreen,
+  DailyGameScreen,
+  DailyResultScreen,
+  GameScreen,
+} from "../screens/main-screens";
 
 import TabNavigation from "./TabNavigation";
 import {
@@ -72,6 +77,16 @@ export const AppNavigation: React.FC<AppNavigationProps> = ({
       <Stack.Screen
         name={ScreenName.GAME_SCREEN}
         component={GameScreen}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name={ScreenName.DAILY_GAME_SCREEN}
+        component={DailyGameScreen}
+        options={{ headerShown: false, gestureEnabled: false }}
+      />
+      <Stack.Screen
+        name={ScreenName.DAILY_RESULT_SCREEN}
+        component={DailyResultScreen}
         options={{ headerShown: false }}
       />
 

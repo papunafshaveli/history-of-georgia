@@ -3,3 +3,4 @@ export * from "./screens";
 export * from "./settingsContextType";
 export * from "./quizQuestion";
 export * from "./leaderboard";
+export * from "./daily";

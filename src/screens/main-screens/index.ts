@@ -4,3 +4,5 @@ export { default as HistoricalTopicsScreen } from "./historical-topics-screen/Hi
 export { default as GameScreen } from "./game-screen/GameScreen";
 export { default as StatsScreen } from "./stats-screen/StatsScreen";
 export { default as LeaderboardScreen } from "./leaderboard-screen/LeaderboardScreen";
+export { default as DailyGameScreen } from "./daily-game-screen/DailyGameScreen";
+export { default as DailyResultScreen } from "./daily-result-screen/DailyResultScreen";

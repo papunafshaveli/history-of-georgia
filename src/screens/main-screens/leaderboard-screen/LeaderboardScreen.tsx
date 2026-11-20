@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -9,7 +9,13 @@ import {
   type ListRenderItem,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useFocusEffect } from "@react-navigation/native";
+import {
+  useFocusEffect,
+  useNavigation,
+  useRoute,
+  type NavigationProp,
+  type RouteProp,
+} from "@react-navigation/native";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 
 import { AppText, ConfirmNameModal, EmptyState } from "@/src/components";
@@ -22,7 +28,11 @@ import {
   useStyles,
   useTranslation,
 } from "@/src/hooks";
-import { LeaderboardTab, type LeaderboardEntry } from "@/src/types";
+import {
+  LeaderboardTab,
+  type LeaderboardEntry,
+  type TabParamList,
+} from "@/src/types";
 
 import LeaderboardPodium from "./LeaderboardPodium";
 import LeaderboardRow from "./LeaderboardRow";
@@ -131,15 +141,27 @@ const LeaderboardScreen: React.FC = () => {
   const { isAnonymous, uid, isSigningIn, signInWithGoogle, signInWithApple } =
     useAuth();
 
+  const route = useRoute<RouteProp<TabParamList, "leaderboard-screen">>();
+  const navigation =
+    useNavigation<NavigationProp<TabParamList, "leaderboard-screen">>();
+  const requestedTab = route.params?.initialTab;
   const [activeTab, setActiveTab] = useState<LeaderboardTab>(
-    LeaderboardTab.WEEKLY,
+    requestedTab ?? LeaderboardTab.WEEKLY,
   );
+
+  // The tab screen stays mounted, so a later "open Today" request must switch it; clearing the
+  // param lets the same request switch it again after the player changed tabs by hand.
+  useEffect(() => {
+    if (!requestedTab) return;
+    setActiveTab(requestedTab);
+    navigation.setParams({ initialTab: undefined });
+  }, [requestedTab, navigation]);
   const [confirmNameOpen, setConfirmNameOpen] = useState(false);
   const [confirmNameInitial, setConfirmNameInitial] = useState<string | null>(
     null,
   );
 
-  const { entries, isLoading, isRefreshing, refresh } = useLeaderboard({
+  const { entries, isLoading, isRefreshing, refresh, reload } = useLeaderboard({
     tab: activeTab,
   });
 
@@ -179,10 +201,12 @@ const LeaderboardScreen: React.FC = () => {
     refresh();
   }, [refresh]);
 
+  // Today's board is up to 40 reads, so on focus it honours its short cache.
   useFocusEffect(
     useCallback(() => {
-      refresh();
-    }, [refresh]),
+      if (activeTab === LeaderboardTab.TODAY) reload();
+      else refresh();
+    }, [activeTab, reload, refresh]),
   );
 
   const ownRank = useMemo<number | null>(() => {
@@ -197,14 +221,23 @@ const LeaderboardScreen: React.FC = () => {
   }, [ownRank, t.leaderboard_your_rank]);
 
   const isLeaderboardEmpty = !isLoading && entries.length === 0;
-  const emptyTitle =
-    activeTab === LeaderboardTab.WEEKLY
-      ? t.leaderboard_empty_week_title
-      : t.leaderboard_empty_alltime_title;
-  const emptyDesc =
-    activeTab === LeaderboardTab.WEEKLY
-      ? t.leaderboard_empty_week_desc
-      : t.leaderboard_empty_alltime_desc;
+  const emptyCopy: Record<LeaderboardTab, { title: string; desc: string }> = {
+    [LeaderboardTab.TODAY]: {
+      title: t.leaderboard_empty_today_title,
+      desc: t.leaderboard_empty_today_desc,
+    },
+    [LeaderboardTab.WEEKLY]: {
+      title: t.leaderboard_empty_week_title,
+      desc: t.leaderboard_empty_week_desc,
+    },
+    [LeaderboardTab.ALLTIME]: {
+      title: t.leaderboard_empty_alltime_title,
+      desc: t.leaderboard_empty_alltime_desc,
+    },
+  };
+  const emptyTitle = emptyCopy[activeTab].title;
+  const emptyDesc = emptyCopy[activeTab].desc;
+  const showTiebreak = activeTab === LeaderboardTab.TODAY && entries.length > 0;
 
   const hasFullPodium = entries.length >= PODIUM_MIN_ENTRIES;
   const listData = hasFullPodium ? entries.slice(PODIUM_MIN_ENTRIES) : entries;
@@ -239,6 +272,17 @@ const LeaderboardScreen: React.FC = () => {
       <LeaderboardPodium entries={entries} currentUid={uid} />
     </View>
   );
+
+  const listFooter = showTiebreak ? (
+    <AppText
+      type="caption"
+      fontFamily="serif"
+      color={colors.textMuted}
+      style={styles.tiebreakCaption}
+    >
+      {t.leaderboard_today_tiebreak}
+    </AppText>
+  ) : null;
 
   let listEmpty: React.ReactNode = null;
   if (isLoading && entries.length === 0) {
@@ -300,6 +344,7 @@ const LeaderboardScreen: React.FC = () => {
           renderItem={renderListItem}
           ListHeaderComponent={listHeader}
           ListEmptyComponent={listEmpty}
+          ListFooterComponent={listFooter}
           contentContainerStyle={styles.scrollContent}
           refreshControl={
             <RefreshControl refreshing={isRefreshing} onRefresh={refresh} />

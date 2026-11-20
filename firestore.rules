@@ -2,6 +2,17 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
+    // Only the submitDailyResult function (Admin SDK) writes ranked results.
+    function dailyResultFields() {
+      return ['dailyDate', 'dailyCorrect', 'dailyTimeMs', 'currentStreak', 'longestStreak'];
+    }
+
+    // daily_challenges/{date}: written only by the scheduled ensureDailyChallenges function.
+    match /daily_challenges/{date} {
+      allow read: if true;
+      allow write: if false;
+    }
+
     // ---------------------------------------------------------------------
     // Existing rules (deployed in production; byte-for-byte preserved).
     // ---------------------------------------------------------------------
@@ -73,7 +84,8 @@ service cloud.firestore {
         && request.resource.data.totalCorrect == 0
         && request.resource.data.totalQuestions == 0
         && request.resource.data.bestSingleGameScore == 0
-        && request.resource.data.weekPoints == 0;
+        && request.resource.data.weekPoints == 0
+        && !request.resource.data.keys().hasAny(dailyResultFields());
 
       // `lastSeenAt` rule constraints (monotonic + bounded by
       // request.time) are deferred to v2.1 along with the
@@ -102,7 +114,8 @@ service cloud.firestore {
               && (request.resource.data.weekPoints - resource.data.weekPoints) <= 50000)
              || (request.resource.data.weekStart != resource.data.weekStart
                  && request.resource.data.weekPoints <= 50000)
-           );
+           )
+        && !request.resource.data.diff(resource.data).affectedKeys().hasAny(dailyResultFields());
 
       allow delete: if request.auth.uid == uid;
     }

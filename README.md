@@ -341,6 +341,73 @@ cd functions && npx firebase-tools deploy --only functions
 
 Requires the Blaze (pay-as-you-go) plan.
 
+## Daily challenge — release order
+
+The daily challenge needs its server side live **before** the app update reaches players.
+
+**Live in production since 2026-11-19** (all functions on `nodejs22`): the server-scored
+`firestore.rules`, the four indexes in `firestore.indexes.json` (Today index Enabled),
+`ensureDailyChallenges` (first three days force-run), `submitDailyResult`, and the existing
+`sendPushNotification`. Players see nothing until the app update below.
+
+Commands on this Mac use `firebase-tools@13` (14+ needs Java 21) and `nvm use 22`. Always pass
+`--only` and `--project`; if an index deploy asks to delete indexes, answer **No**. When rules and
+`submitDailyResult` both change, deploy the function first.
+
+```bash
+# Server changes after 2026-11-19 (redeploy both functions; rules and indexes unchanged)
+nvm use 22
+(cd functions && npm run build) \
+  && npx firebase-tools@13 deploy --only functions:submitDailyResult,functions:ensureDailyChallenges --project history-of-georgia-43551
+
+# Question data check (read-only): every Firestore ticket vs data.json
+cd functions && node ../scripts/fix-broken-tickets.cjs --scan && cd ..
+# Done 2026-11-19: six broken tickets fixed (fix-broken-tickets.cjs --apply) and 15 Firestore-only
+# leftovers removed (remove-orphan-tickets.cjs --apply; backup tickets-orphans-backup-2026-11-19.json,
+# undo with --restore). The scan then showed 1564 tickets, identical to data.json, 0 problems.
+```
+
+Roll the rules back with
+`git show main:firestore.rules > /tmp/r && cp /tmp/r firestore.rules && npx firebase-tools@13 deploy --only firestore:rules --project history-of-georgia-43551`.
+
+**First-time setup (done 2026-11-19, kept for a fresh project):**
+
+1. `npx firebase-tools@13 deploy --only firestore:indexes,functions:ensureDailyChallenges,functions:submitDailyResult --project <id>`, then `--only firestore:rules`.
+2. Create the first three days now instead of waiting for 00:05 Tbilisi: Google Cloud Console →
+   Cloud Scheduler → `firebase-schedule-ensureDailyChallenges-…` → **Force run**. Check that
+   `daily_challenges/{today}`, `{tomorrow}` and `{day after}` exist in Firestore.
+3. Wait until the new `users (dailyDate, isAnonymous, dailyCorrect, dailyTimeMs)` index shows
+   **Enabled** (Firebase Console → Firestore → Indexes).
+4. The daily ships as a **store release, v2.2.0** (runtime `2.2.0`), not as an OTA — see
+   INFRASTRUCTURE.md §19.2. Build and submit one platform at a time:
+
+   ```bash
+   eas build --profile production --platform ios --submit
+   eas build --profile production --platform android --submit
+   ```
+
+5. Only after 2.2.0 is live on both stores, set Firestore `app_config/version.latestVersion` to
+   `2.2.0`, so 2.0.0 and 2.1.0 installs get the soft update prompt. Keep `minSupportedVersion` at
+   `2.0.0`: raising it hard-blocks the iPhones below iOS 16.4, which can't install 2.2.0 and never
+   get the daily.
+
+A day can be replaced by hand: edit `daily_challenges/{YYYY-MM-DD}.ticketIds` (10 `tickets` ids,
+easy → hard) in the Console; the scheduler never overwrites an existing day. Only replace days at
+least **two days ahead**: phones download tomorrow's set a day early and keep the set of an attempt
+they started, so results for a replaced today/tomorrow can't be ranked. A hand-created day also needs
+a `date` field (`"YYYY-MM-DD"`), or the 150-day no-repeat window ignores it.
+
+## Run the app against local emulators (no production data)
+
+```bash
+# Terminal 1 — compile the callable, then start Firestore (8080), Auth (9099) and Functions (5001)
+npm --prefix functions run build
+npx firebase-tools@13 emulators:start --only firestore,auth,functions --project <projectId>
+
+# Terminal 2 — Metro pointed at them (dev builds only; release builds ignore the variable)
+EXPO_PUBLIC_FIREBASE_EMULATOR_HOST=127.0.0.1 npx expo start --dev-client
+```
+
 ## Firebase — Send Push Notification
 
 Add a document to Firestore `notifications` collection (via Firebase Console):

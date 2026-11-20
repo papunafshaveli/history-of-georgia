@@ -9,9 +9,9 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 import { NavigationProp, useNavigation } from "@react-navigation/native";
 
-import { IS_ANDROID, ScoreThreshold } from "@/src/constants";
+import { ScoreThreshold } from "@/src/constants";
 import { CircleIcon } from "@/src/assets";
-import { openAppOrUrl } from "@/src/helpers";
+import { openAppOrUrl, storeLink } from "@/src/helpers";
 import {
   useAppTheme,
   useStyles,
@@ -32,6 +32,14 @@ type GameSummaryProps = {
   onCloseSummary: () => void;
   score: number;
 };
+
+// The display font needs this tall line to draw its digits whole.
+const SCORE_LINE_HEIGHT = 100;
+const SCORE_FONT_SIZE = 35;
+// Two digits use the full size; longer scores (endless runs) scale down to keep a margin in the 100pt circle.
+const SCORE_FIT_DIGITS = 2.6;
+const scoreFontSize = (value: number) =>
+  SCORE_FONT_SIZE * Math.min(1, SCORE_FIT_DIGITS / String(value).length);
 
 const GameSummary: React.FC<GameSummaryProps> = ({
   onRestartBtnPress,
@@ -76,11 +84,7 @@ const GameSummary: React.FC<GameSummaryProps> = ({
   };
 
   const handleVisitStore = () => {
-    const visitLink = IS_ANDROID
-      ? "https://play.google.com/store/apps/details?id=com.papunafshaveli.historyofgeorgia"
-      : "https://apps.apple.com/app/id6741484980";
-
-    Linking.openURL(visitLink).catch(() => {});
+    Linking.openURL(storeLink()).catch(() => {});
   };
 
   const handleNavigateToLeaderboard = () => {
@@ -93,6 +97,7 @@ const GameSummary: React.FC<GameSummaryProps> = ({
     });
   };
 
+  const scoreSize = scoreFontSize(score);
   const scoreFeedback = useMemo(() => {
     if (score >= ScoreThreshold.Expert) return t.gamesummary_tier_expert;
     if (score >= ScoreThreshold.Strong) return t.gamesummary_tier_strong;
@@ -109,10 +114,12 @@ const GameSummary: React.FC<GameSummaryProps> = ({
         imageStyle={styles.imageBackground}
       >
         <AppText
-          lineHeight={100}
+          lineHeight={SCORE_LINE_HEIGHT}
+          fontSize={scoreSize}
           fontFamily="display"
           type="display"
           color={colors.onImage}
+          style={styles.scoreText}
         >
           {score}
         </AppText>

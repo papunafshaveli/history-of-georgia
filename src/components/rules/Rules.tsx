@@ -130,6 +130,27 @@ const Rules: React.FC = () => {
       >
         {t.rules_scoring_outro}
       </AppText>
+
+      <AppText
+        color={colors.onImage}
+        type="headline"
+        fontFamily="script"
+        style={styles.sectionTitle}
+      >
+        {t.rules_daily_title}
+      </AppText>
+
+      <RuleRow iconName="calendar-today" text={t.rules_daily_questions} />
+      <RuleDivider />
+      <RuleRow iconName="lightbulb-off-outline" text={t.rules_daily_all_questions} />
+      <RuleDivider />
+      <RuleRow iconName="numeric-1-circle-outline" text={t.rules_daily_one_attempt} />
+      <RuleDivider />
+      <RuleRow iconName="podium" text={t.rules_daily_ranking} />
+      <RuleDivider />
+      <RuleRow iconName="scale-balance" text={t.rules_daily_separate} />
+      <RuleDivider />
+      <RuleRow iconName="fire" text={t.rules_daily_streak} />
     </View>
   );
 };

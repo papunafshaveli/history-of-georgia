@@ -18,6 +18,13 @@ export type UserDoc = {
 
   hasSeenSignInNudge: boolean;
 
+  // Daily challenge (absent until the first daily is synced).
+  dailyDate?: string;
+  dailyCorrect?: number;
+  dailyTimeMs?: number;
+  currentStreak?: number;
+  longestStreak?: number;
+
   createdAt: Timestamp;
   updatedAt: Timestamp;
 };
@@ -39,9 +46,12 @@ export type LeaderboardEntry = {
   rank: number;
   points: number;
   gamesPlayed: number;
+  // Today tab only: total daily time, the tie-breaker.
+  timeMs?: number;
 };
 
 export enum LeaderboardTab {
+  TODAY = "today",
   WEEKLY = "weekly",
   ALLTIME = "alltime",
 }

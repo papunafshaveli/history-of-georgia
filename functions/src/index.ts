@@ -4,6 +4,8 @@ import { Expo, ExpoPushMessage, ExpoPushTicket } from "expo-server-sdk";
 
 admin.initializeApp();
 
+export { ensureDailyChallenges, submitDailyResult } from "./daily";
+
 const db = admin.firestore();
 const expo = new Expo();
 

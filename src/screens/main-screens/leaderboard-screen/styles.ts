@@ -123,9 +123,6 @@ export const getStyles = (theme: AppTheme) =>
     rowName: {
       flex: 1,
     },
-    rowPoints: {
-      fontVariant: ["tabular-nums"],
-    },
 
     tabsRibbonWrapper: {
       width: "100%",
@@ -139,9 +136,11 @@ export const getStyles = (theme: AppTheme) =>
     },
     tabButton: {
       flex: 1,
+      minWidth: 0,
       alignItems: "center",
       justifyContent: "center",
       paddingVertical: theme.spacing.x2,
+      paddingHorizontal: theme.spacing.x1,
     },
     tabButtonActive: {
       backgroundColor: theme.colors.bronzeDark,
@@ -225,16 +224,32 @@ export const getStyles = (theme: AppTheme) =>
       textAlign: "center",
       paddingHorizontal: theme.spacing.x1,
     },
-    podiumPoints: {
-      marginTop: theme.spacing.x1,
-      fontVariant: ["tabular-nums"],
-      letterSpacing: 1,
-    },
     podiumSelfTag: {
       marginTop: theme.spacing.x2,
       letterSpacing: 1,
     },
     rankTextWrapper: {
       marginBottom: getAdjustedHeight(12),
+    },
+    podiumScore: {
+      marginTop: theme.spacing.x1,
+      alignItems: "center",
+    },
+    scoreTime: {
+      alignItems: "flex-end",
+      gap: theme.spacing.x1,
+    },
+    scoreTimeCompact: {
+      alignItems: "center",
+    },
+    timeChip: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: theme.spacing.x1,
+    },
+    tiebreakCaption: {
+      textAlign: "center",
+      marginTop: theme.spacing.x4,
+      paddingHorizontal: theme.spacing.x4,
     },
   });

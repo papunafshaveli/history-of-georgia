@@ -4,6 +4,7 @@ import {
   ImageBackground,
   Pressable,
   ScrollView,
+  StyleSheet,
   View,
   type FlexStyle,
 } from "react-native";
@@ -49,10 +50,6 @@ const ReusableModal: React.FC<ReusableModalProps> = ({
   const { isThemeDark } = useThemeMode();
   const styles = useStyles(getStyles);
 
-  const handleModalPress = (event: { stopPropagation: () => void }) => {
-    event.stopPropagation();
-  };
-
   const horizontalInset =
     safeContentInset?.horizontal ?? SAFE_INSET_DEFAULTS.horizontal;
   const verticalInset =
@@ -75,8 +72,10 @@ const ReusableModal: React.FC<ReusableModalProps> = ({
       animationType="fade"
       onRequestClose={onClose}
     >
-      <Pressable style={styles.modalOverlay} onPress={onClose}>
-        <Pressable style={styles.modalContainer} onPress={handleModalPress}>
+      <View style={styles.modalOverlay}>
+        {/* A sibling, not a wrapper: a Pressable around the card blocks the ScrollView. */}
+        <Pressable style={StyleSheet.absoluteFill} onPress={onClose} />
+        <View style={styles.modalContainer}>
           <ImageBackground
             source={HeaderRoll}
             style={headerStyle}
@@ -117,8 +116,8 @@ const ReusableModal: React.FC<ReusableModalProps> = ({
               <View style={innerStyle}>{renderComponent}</View>
             )}
           </ImageBackground>
-        </Pressable>
-      </Pressable>
+        </View>
+      </View>
     </NativeModal>
   );
 };
