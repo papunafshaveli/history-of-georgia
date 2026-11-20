@@ -1,8 +1,9 @@
 # v2.2.0 — store "What's new" text
 
-English draft for the App Store "What's New in This Version" and the Google Play "Release notes"
-(Play limit: 500 characters per language). The Georgian text is the owner's / Codex's — nothing
-below is to be shipped in Georgian until it is filled in and approved.
+Shipped 2026-11-20. The English text is the App Store "What's New in This Version" (the App Store
+listing is English-only: Apple rejects Georgian outside Keywords). The Georgian text is the Google
+Play release note (ka-GE, 450/500 characters); it is copied word for word from the daily rules
+the owner approved in `src/locales/ka.json` (`rules_daily_*`), so no new Georgian was written.
 
 ## English
 
@@ -17,6 +18,15 @@ New: the Daily challenge.
 Also: the weekly leaderboard now starts at Monday 00:00 Tbilisi time, and our other apps are on the
 Home screen.
 
-## Georgian (ka-GE)
+## Georgian (ka-GE) — Google Play
 
-_To be written._
+```
+<ka-GE>
+დღის გამოწვევა
+• ყოველდღე ყველა მოთამაშეს ერთი და იგივე 10 კითხვა ხვდება.
+• უპასუხე ათივე კითხვას. შეცდომის შემდეგ თამაში გრძელდება. მინიშნებები არ არის.
+• დღეში მხოლოდ ერთი მცდელობა გაქვს.
+• დღევანდელ რეიტინგში ადგილი სწორი პასუხების რაოდენობაზეა დამოკიდებული. თანაბარი შედეგისას წინ ისაა, ვინც გამოწვევა უფრო სწრაფად დაასრულა.
+• ყოველდღე დაასრულე გამოწვევა. თუ ერთ დღეს გამოტოვებ, ზედიზედ ნათამაშები დღეების ათვლა თავიდან დაიწყება.
+</ka-GE>
+```

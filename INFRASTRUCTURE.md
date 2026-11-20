@@ -700,8 +700,36 @@ Did `runtimeVersion` change in app.config.ts since the last published binary?
 
 ### 19.2 Current release status (snapshot — keep updated)
 
-**As of 2026-11-20 — v2.2.0 (daily challenge) merged to `main` (PR #9) and building on EAS:
-iOS 1.0.24 (delivered to App Store Connect), Android versionCode 24.**
+**As of 2026-11-20 — v2.2.0 (daily challenge) SUBMITTED for review on both stores: iOS build
+1.0.25, Android versionCode 25** (both from `main` after PR #11; 1.0.24 / 24 were superseded because
+they lacked the daily exit-popup and dark-theme result fixes).
+
+- **iOS:** release type **Manual** — press Release after approval. Version page filled 2026-11-20:
+  6 new screenshots in the iPhone (Dynamic Island, medium) slot at 1206×2622 (the only iPhone slot
+  App Store Connect now offers), What's New, description (daily challenge section, "1,500+
+  questions"), promotional text, keywords (Georgian first:
+  `თავსატეხი,სიტყვები,ლოგიკა,ვიქტორინა,history,georgia,quiz,trivia,daily challenge,kings,battles`;
+  Apple accepts Georgian only in Keywords), copyright `2026 Papuna Fshaveli`, reviewer notes (guest
+  play, optional sign-in, where account deletion is). Age-rating questionnaire re-answered for
+  Apple's new questions (social media, location sharing, dating: all No) — still **4+**.
+- **Android:** production release 25 (2.2.0), full rollout, plus the store listing's 6 new phone
+  screenshots (1080×1920), sent for review together. **Managed publishing is ON** — press Publish
+  after approval. Play warns that `android.hardware.screen.portrait` (from `orientation: portrait`)
+  and `android.hardware.wifi` (implied by `ACCESS_WIFI_STATE`) are required features; both were
+  already true of 2.1.0, so the warning was ignored for this release (fix listed below).
+- Store screenshots and their composer live outside the repo:
+  `~/Desktop/hofge-2024/screenshots/store-2026-11/` (`build.mjs`, `source/`, `ios/`, `play/`).
+  Captions are approved app strings only; leaderboard shots use demo players on local emulators.
+- **For 2.2.1** (from the sign-in and prod-readiness reviews, 2026-11-20):
+  - returning Apple user can't sign back in (credential reused after `credential-already-in-use`;
+    use `OAuthProvider.credentialFromError`) — confirm on a device first;
+  - re-sign-in overwrites the leaderboard name (Google: real name/photo; Apple: name wiped →
+    hidden from all boards) and there is no way to set a name again;
+  - account deletion keeps local `daily:record:*` / `daily:streak` and re-uploads them to the new
+    anonymous account; local streak is device-wide, not per account;
+  - mark `android.hardware.screen.portrait` / `android.hardware.wifi` `required="false"` (or drop
+    `ACCESS_WIFI_STATE` if unused) — native change, store build only;
+  - Apple token revoke on deletion (5.1.1(v)), privacy policy mention of daily data + reminder.
 
 - ⚠️ **Deadline April 2027: iOS 27 SDK.** Apple's ITMS-90725 warning on 1.0.24 (built with the
   iOS 26.5 SDK): from April 2027 uploads must be built with the iOS 27 SDK / Xcode 27. Before the
