@@ -37,6 +37,8 @@ export type DailyCardState = {
   date: string;
   streak: number;
   correct: number;
+  // Today's answers in order, true = correct; drives the card's sword row.
+  marks: boolean[];
   elapsedMs: number;
 };
 
@@ -45,6 +47,7 @@ const INITIAL: DailyCardState = {
   date: todayTbilisi(),
   streak: 0,
   correct: 0,
+  marks: [],
   elapsedMs: 0,
 };
 
@@ -84,6 +87,7 @@ export const useDailyChallenge = () => {
       date: today,
       streak: visibleStreak(streak, today),
       correct: record ? correctCount(record) : 0,
+      marks: record ? record.answers.map((a) => a.isCorrect) : [],
       elapsedMs: record?.elapsedMs ?? 0,
     });
     setMsToNext(msUntilNextTbilisiMidnight());

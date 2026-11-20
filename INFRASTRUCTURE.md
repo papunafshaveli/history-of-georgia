@@ -228,8 +228,8 @@ All components live in `src/components/<folder>/<File>.tsx` and are barrel-expor
 | `TopicDetailsContent` | Detail-screen body (title, description, era, optional YouTube embed) |
 | `YoutubePlayer` | Wraps `react-native-youtube-iframe` |
 | `ErrorBoundary` | Class component, catches render errors at App root |
-| `DailyCard` | Home card for the daily (other-apps card style): play/continue with streak, or the quieter "done" card with score, time and countdown |
-| `DailyProgress` | Row of swords: whole = correct, broken (two clipped `sword` glyphs) = wrong, current, upcoming |
+| `DailyCard` | Home card for the daily: a night panel (same in both themes, `daily*` colours) with the king painting, 10-sword row and a bronze play/continue button with the streak; once played, a greyed painting, a wax seal with the score, time, streak, countdown and a Today-board button. Images: `king.webp`, `kingMuted.webp`, `waxSeal.webp` (pre-rendered — no react-native-svg) |
+| `DailyProgress` | Row of swords: whole = correct, broken (two clipped `sword` glyphs) = wrong, current, upcoming; an optional fixed `palette` for the always-dark daily card |
 
 ---
 

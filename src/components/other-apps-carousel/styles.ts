@@ -18,6 +18,9 @@ export const getStyles = (theme: AppTheme, props: StyleProps) =>
     // Same chrome as the tab bar so the title stays legible over the bright photo.
     titlePill: {
       alignSelf: "flex-start",
+      flexDirection: "row",
+      alignItems: "center",
+      gap: theme.spacing.x1,
       marginLeft: theme.spacing.x4,
       marginBottom: theme.spacing.x2,
       paddingHorizontal: theme.spacing.x3,

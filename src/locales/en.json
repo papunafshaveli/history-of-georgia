@@ -142,10 +142,8 @@
   "difficulty_hard": "Hard",
 
   "daily_section_title": "Today's challenge",
-  "daily_card_title": "10 questions",
   "daily_card_resume": "Continue today's challenge",
   "daily_card_description": "the same for everyone today",
-  "daily_days": "days",
   "daily_next_in": "Next challenge in {time}",
   "daily_card_a11y_play": "Today's challenge, {streak}-day streak",
   "daily_card_a11y_done": "Today's challenge done: {n} of 10 in {time}. Open today's leaderboard",

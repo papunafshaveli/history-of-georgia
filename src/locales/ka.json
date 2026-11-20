@@ -139,10 +139,8 @@
   "difficulty_hard": "რთული",
 
   "daily_section_title": "დღის გამოწვევა",
-  "daily_card_title": "10 კითხვა",
   "daily_card_resume": "გააგრძელე თამაში",
   "daily_card_description": "დღეს კითხვები ყველასთვის ერთია",
-  "daily_days": "დღე",
   "daily_next_in": "შემდეგ გამოწვევამდე {time}",
   "daily_card_a11y_play": "დღის გამოწვევა. ზედიზედ ნათამაშები დღეების რაოდენობაა {streak}.",
   "daily_card_a11y_done": "დღის გამოწვევა დასრულებულია. 10 კითხვიდან {n} სწორი პასუხი. დრო — {time}. გახსენი დღევანდელი რეიტინგი.",

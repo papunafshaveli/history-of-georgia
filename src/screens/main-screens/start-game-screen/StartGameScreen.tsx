@@ -138,6 +138,7 @@ const StartGameScreen = () => {
               kind={daily.kind}
               streak={daily.streak}
               correct={daily.correct}
+              marks={daily.marks}
               elapsedMs={daily.elapsedMs}
               msToNext={daily.msToNext}
               onPlay={handlePlayDaily}

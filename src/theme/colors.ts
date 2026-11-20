@@ -43,6 +43,31 @@ type ColorScheme = {
   ringEdge: string;
   ringActive: string;
   ringTextActive: string;
+  dailyCardBg: string;
+  dailyCardBgVeil: string;
+  dailyCardBgClear: string;
+  dailyCardShade: string;
+  dailyCardFrame: string;
+  dailyCardHairline: string;
+  dailyTitle: string;
+  dailyTitleShadow: string;
+  dailyText: string;
+  dailyTextMuted: string;
+  dailyStreak: string;
+  dailyFlame: string;
+  dailySwordWhole: string;
+  dailySwordBroken: string;
+  dailySwordCurrent: string;
+  dailySwordUpcoming: string;
+  dailyCtaTop: string;
+  dailyCtaMid: string;
+  dailyCtaBottom: string;
+  dailyCtaBorder: string;
+  dailyCtaText: string;
+  dailyGhostBorder: string;
+  dailyGhostBg: string;
+  dailyGhostText: string;
+  dailySealText: string;
 };
 
 export const lightColors: ColorScheme = {
@@ -111,6 +136,33 @@ export const lightColors: ColorScheme = {
   ringEdge: "#5C4030",
   ringActive: "#A8855F",
   ringTextActive: "#F5D9A8",
+
+  // Daily card — a night-painted panel, identical in both themes
+  dailyCardBg: "#140E0A",
+  dailyCardBgVeil: "rgba(20, 14, 10, 0.55)",
+  dailyCardBgClear: "rgba(20, 14, 10, 0)",
+  dailyCardShade: "rgba(15, 10, 7, 0.85)",
+  dailyCardFrame: "#8A6246",
+  dailyCardHairline: "rgba(240, 201, 158, 0.22)",
+  dailyTitle: "#EDC891",
+  dailyTitleShadow: "rgba(0, 0, 0, 0.7)",
+  dailyText: "#C4B29B",
+  dailyTextMuted: "#A8957F",
+  dailyStreak: "#EAD2B0",
+  dailyFlame: "#E0603F",
+  dailySwordWhole: "#E2B585",
+  dailySwordBroken: "rgba(160, 140, 120, 0.4)",
+  dailySwordCurrent: "#F6D8AE",
+  dailySwordUpcoming: "rgba(240, 201, 158, 0.42)",
+  dailyCtaTop: "#F6D8AE",
+  dailyCtaMid: "#D9A774",
+  dailyCtaBottom: "#A8714A",
+  dailyCtaBorder: "#3D281A",
+  dailyCtaText: "#2A1A10",
+  dailyGhostBorder: "rgba(240, 201, 158, 0.55)",
+  dailyGhostBg: "rgba(20, 14, 10, 0.55)",
+  dailyGhostText: "#F1D6AE",
+  dailySealText: "#F6D7C4",
 };
 
 export const darkColors: ColorScheme = {
@@ -179,4 +231,31 @@ export const darkColors: ColorScheme = {
   ringEdge: "#1A1410",
   ringActive: "#5A4535",
   ringTextActive: "#F5D9A8",
+
+  // Daily card — a night-painted panel, identical in both themes
+  dailyCardBg: "#140E0A",
+  dailyCardBgVeil: "rgba(20, 14, 10, 0.55)",
+  dailyCardBgClear: "rgba(20, 14, 10, 0)",
+  dailyCardShade: "rgba(15, 10, 7, 0.85)",
+  dailyCardFrame: "#8A6246",
+  dailyCardHairline: "rgba(240, 201, 158, 0.22)",
+  dailyTitle: "#EDC891",
+  dailyTitleShadow: "rgba(0, 0, 0, 0.7)",
+  dailyText: "#C4B29B",
+  dailyTextMuted: "#A8957F",
+  dailyStreak: "#EAD2B0",
+  dailyFlame: "#E0603F",
+  dailySwordWhole: "#E2B585",
+  dailySwordBroken: "rgba(160, 140, 120, 0.4)",
+  dailySwordCurrent: "#F6D8AE",
+  dailySwordUpcoming: "rgba(240, 201, 158, 0.42)",
+  dailyCtaTop: "#F6D8AE",
+  dailyCtaMid: "#D9A774",
+  dailyCtaBottom: "#A8714A",
+  dailyCtaBorder: "#3D281A",
+  dailyCtaText: "#2A1A10",
+  dailyGhostBorder: "rgba(240, 201, 158, 0.55)",
+  dailyGhostBg: "rgba(20, 14, 10, 0.55)",
+  dailyGhostText: "#F1D6AE",
+  dailySealText: "#F6D7C4",
 };

@@ -23,6 +23,8 @@ import { getStyles, OTHER_APP_CARD_GAP } from "./styles";
 
 const CARD_MAX_WIDTH = 320;
 const NEXT_CARD_PEEK = 88;
+// Hints that the cards continue below the fold on short phones.
+const TITLE_ARROW_SIZE = 18;
 
 enum OtherAppId {
   KROSSI = "krossi",
@@ -201,6 +203,11 @@ const OtherAppsCarousel = () => {
         >
           {t.other_apps_title}
         </AppText>
+        <MaterialCommunityIcons
+          name="chevron-down"
+          size={TITLE_ARROW_SIZE}
+          color={colors.bronzeLight}
+        />
       </View>
 
       <FlatList
