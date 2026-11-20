@@ -1,17 +1,8 @@
-const TBILISI_OFFSET_HOURS = 4;
+import { addDaysToDate, todayTbilisi } from "./tbilisiDate";
 
-const pad = (n: number) => n.toString().padStart(2, "0");
-
+// Monday of the current Tbilisi week (YYYY-MM-DD), independent of the phone's time zone.
 export const mondayTbilisi = (now: Date = new Date()): string => {
-  const utcMs = now.getTime() + now.getTimezoneOffset() * 60_000;
-  const tbilisi = new Date(utcMs + TBILISI_OFFSET_HOURS * 3_600_000);
-
-  const day = tbilisi.getUTCDay();
-  const daysSinceMonday = (day + 6) % 7;
-  tbilisi.setUTCDate(tbilisi.getUTCDate() - daysSinceMonday);
-
-  const year = tbilisi.getUTCFullYear();
-  const month = pad(tbilisi.getUTCMonth() + 1);
-  const date = pad(tbilisi.getUTCDate());
-  return `${year}-${month}-${date}`;
+  const today = todayTbilisi(now);
+  const daysSinceMonday = (new Date(`${today}T00:00:00Z`).getUTCDay() + 6) % 7;
+  return addDaysToDate(today, -daysSinceMonday);
 };
