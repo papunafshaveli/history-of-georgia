@@ -11,7 +11,10 @@ const BUTTON_HEIGHT = getAdjustedWidth(44);
 const COUNTDOWN_WIDTH = getAdjustedWidth(132);
 const ART_WIDTH = "58%";
 // The square painting is drawn a little larger and nudged left so the king clears the title.
-const ART_SIZE = CARD_HEIGHT * 1.14;
+const ART_SIZE = CARD_HEIGHT * 1.25;
+// The night painting is let through onto the brown ground so it doesn't read as a black block.
+const ART_OPACITY = 0.72;
+const ART_MUTED_OPACITY = 0.5;
 const ART_SHIFT_X = -CARD_HEIGHT * 0.04;
 const ART_SHIFT_Y = -CARD_HEIGHT * 0.06;
 const SEAL_TILT = "-9deg";
@@ -53,6 +56,10 @@ export const getStyles = (theme: AppTheme) =>
       left: ART_SHIFT_X,
       width: ART_SIZE,
       height: ART_SIZE,
+      opacity: ART_OPACITY,
+    },
+    artImageMuted: {
+      opacity: ART_MUTED_OPACITY,
     },
     hairline: {
       position: "absolute",

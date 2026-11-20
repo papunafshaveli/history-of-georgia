@@ -34,8 +34,8 @@ const DESCRIPTION_SIZE = 13;
 const DESCRIPTION_LINE = 18;
 const FLAME_ICON = 18;
 const SWORD_SIZE = getAdjustedWidth(17);
-// The painting fades in from the left so the copy sits on plain night.
-const ART_FADE = [0, 0.28, 0.55] as const;
+// The painting fades in from the left so the copy sits on plain ground.
+const ART_FADE = [0, 0.2, 0.45] as const;
 const SHADE_FADE = [0.55, 1] as const;
 const CTA_STOPS = [0, 0.48, 1] as const;
 const LEFT = { x: 0, y: 0 };
@@ -106,6 +106,7 @@ const DailyCard: React.FC<DailyCardProps> = ({
     : t.daily_card_a11y_play.replace("{streak}", String(streak));
   const onPress = isDone ? onOpenLeaderboard : onPlay;
   const art = isDone ? KingMuted : KingTopic;
+  const artStyle = isDone ? [styles.artImage, styles.artImageMuted] : styles.artImage;
 
   const playFooter = (
     <View style={styles.footer}>
@@ -175,7 +176,7 @@ const DailyCard: React.FC<DailyCardProps> = ({
         accessibilityLabel={a11y}
       >
         <View style={styles.art} pointerEvents="none">
-          <Image source={art} style={styles.artImage} />
+          <Image source={art} style={artStyle} />
           <LinearGradient
             colors={artColors}
             locations={ART_FADE}
