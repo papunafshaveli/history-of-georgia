@@ -378,21 +378,18 @@ Roll the rules back with
    `daily_challenges/{today}`, `{tomorrow}` and `{day after}` exist in Firestore.
 3. Wait until the new `users (dailyDate, isAnonymous, dailyCorrect, dailyTimeMs)` index shows
    **Enabled** (Firebase Console → Firestore → Indexes).
-4. Check who an OTA can reach. It only reaches installs of the **runtime `2.1.0`** binary (v2.1.0,
-   submitted to both stores 2026-09-04 — INFRASTRUCTURE.md §19.2). Confirm v2.1.0 is live in Play
-   Console and App Store Connect. If it is not live on a platform, that platform needs a store build
-   instead (`eas build --platform <p> --profile production`, then submit). Players still on 2.0.0,
-   including iPhones below iOS 16.4, never get the daily. Once 2.1.0 is live on both stores, set
-   Firestore `app_config/version.latestVersion` to `2.1.0` (it was still `2.0.0` on 2026-11-19), so
-   2.0.0 installs get the soft update prompt and then the daily. Keep `minSupportedVersion` at
-   `2.0.0`: raising it hard-blocks the iPhones that can't install 2.1.0.
-5. Only after every `daily_*` / `leaderboard_*today*` string in `src/locales/ka.json` has the
-   owner's Georgian, publish the OTA (see "OTA update" above — one platform at a time):
+4. The daily ships as a **store release, v2.2.0** (runtime `2.2.0`), not as an OTA — see
+   INFRASTRUCTURE.md §19.2. Build and submit one platform at a time:
 
    ```bash
-   eas update --branch production --platform ios     --environment production --message "daily challenge"
-   eas update --branch production --platform android --environment production --message "daily challenge"
+   eas build --profile production --platform ios --submit
+   eas build --profile production --platform android --submit
    ```
+
+5. Only after 2.2.0 is live on both stores, set Firestore `app_config/version.latestVersion` to
+   `2.2.0`, so 2.0.0 and 2.1.0 installs get the soft update prompt. Keep `minSupportedVersion` at
+   `2.0.0`: raising it hard-blocks the iPhones below iOS 16.4, which can't install 2.2.0 and never
+   get the daily.
 
 A day can be replaced by hand: edit `daily_challenges/{YYYY-MM-DD}.ticketIds` (10 `tickets` ids,
 easy → hard) in the Console; the scheduler never overwrites an existing day. Only replace days at

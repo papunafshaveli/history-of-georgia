@@ -700,10 +700,21 @@ Did `runtimeVersion` change in app.config.ts since the last published binary?
 
 ### 19.2 Current release status (snapshot — keep updated)
 
-**As of 2026-09-04 — v2.1.0 (Expo SDK 57) built and SUBMITTED to both stores, awaiting review.**
+**As of 2026-11-20 — v2.2.0 (daily challenge) prepared on `feat/daily-challenge`, not built yet.**
+
+- `app.config.ts`: `version: "2.2.0"`, `runtimeVersion: "2.2.0"`. No native changes since 2.1.0;
+  the runtime moves with the version, as for 2.0.0 and 2.1.0. Ships as a store build, not an OTA.
+- Also ships the "other apps" carousel (`cb13725`, on `main` since 2.1.0 but never released).
+- Server side (rules, indexes, `ensureDailyChallenges`, `submitDailyResult`) live since 2026-11-19.
+- After 2.2.0 is live on both stores: `app_config/version.latestVersion` → `"2.2.0"`;
+  `minSupportedVersion` stays `"2.0.0"`.
+- Store "What's new" text: [`docs/release/RELEASE_NOTES_2.2.0.md`](./docs/release/RELEASE_NOTES_2.2.0.md).
+
+**v2.1.0 (Expo SDK 57) LIVE on both stores** — Google Play 2026-09-04, App Store 2026-09-05. The
+notes below are the 2026-09-04 submission snapshot.
 
 - iOS build 1.0.23 uploaded to App Store Connect; Android versionCode 23 submitted to the Play
-  **internal** track and promoted to a production release. Neither is live yet.
+  **internal** track and promoted to a production release.
 - Firestore `app_config/version` deliberately left at `latestVersion: "2.0.0"` /
   `minSupportedVersion: "2.0.0"` — this release has no user-visible changes, so neither the soft
   nor the hard update modal should fire. Users receive 2.1.0 through normal store auto-update.
